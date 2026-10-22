@@ -3340,7 +3340,7 @@ if(st.s==='live'){const aa=E.some(e=>e.team==atk&&e.alive),da=E.some(e=>e.team!=
  if(!da)end(atk,'Défenseurs éliminés');else if(!aa&&!bomb.planted)end(1-atk,'Attaquants éliminés')}}
 // ---------- caches HUD ----------
 let miniMap=null,mg=null,MM=150/3600,MMW=150,MMH=100;
-const mmTarget=()=>CUR&&CUR.theme==='foret'?((typeof matchMedia==='function'&&matchMedia('(pointer:fine)').matches)?(innerWidth<600?150:190):(innerWidth<600?118:136)):CUR&&CUR.theme!=='nuit'?((typeof matchMedia==='function'&&matchMedia('(pointer:fine)').matches)?(innerWidth<600?190:240):(innerWidth<600?150:170)):150;
+const mmTarget=()=>CUR&&CUR.theme==='foret'?((typeof matchMedia==='function'&&matchMedia('(pointer:fine)').matches)?(innerWidth<600?120:152):(innerWidth<600?94:109)):CUR&&CUR.theme!=='nuit'?((typeof matchMedia==='function'&&matchMedia('(pointer:fine)').matches)?(innerWidth<600?190:240):(innerWidth<600?150:170)):150;
 function buildMini(){MMW=mmTarget();MMH=Math.round(MMW*WH/WW);miniMap=document.createElement('canvas');miniMap.width=MMW;miniMap.height=MMH;mg=miniMap.getContext('2d');MM=MMW/WW;
  mg.fillStyle=CUR.theme==='desert'?'#3a2c1e':(CUR.theme==='neon'?'#070a12':'#0a0f18');mg.fillRect(0,0,MMW,MMH);if(CUR.theme==='foret'){zMiniBuild();return}
  if(CUR.theme==='neon'){const NCc={white:'#9aa6bd',cyan:'#2aa9c0',magenta:'#b8399c',green:'#2f9a5c',amber:'#b87a2a',yellow:'#b89a2a',violet:'#7a5ab8'};
@@ -6522,7 +6522,6 @@ function zMiniBuild(){const D=CUR.DECO;mg.fillStyle='#17200f';mg.fillRect(0,0,MM
  mg.strokeStyle='#6a5638';mg.lineCap=mg.lineJoin='round';mg.lineWidth=Math.max(1.4,90*MM);for(const p of D.paths){mg.beginPath();p.forEach(([a,b],i)=>i?mg.lineTo(a*MM,b*MM):mg.moveTo(a*MM,b*MM));mg.stroke()}
  for(const o of OB)if(o.t==='o'){const cx=(o.x+o.w/2)*MM,cy=(o.y+o.h/2)*MM;mg.fillStyle='#2a4a5e';mg.beginPath();for(let k=0;k<=40;k++){const a=k/40*6.283,r=oasisR(o,a)*MM;k?mg.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r):mg.moveTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r)}mg.fill()}
  for(const[x,y,w,h]of D.cabins){mg.fillStyle='#b08a5a';mg.fillRect(x*MM,y*MM,Math.max(2.5,w*MM),Math.max(2.5,h*MM))}
- {const lit=new Set(FOREST.lights().map(C=>C.x+','+C.y));for(const[x,y]of D.cars){const on=lit.has(x+','+y);mg.fillStyle=on?'#ffe9a0':'#8a8a86';mg.fillRect(x*MM-(on?2:1.5),y*MM-(on?2:1.5),on?4:3,on?4:3)}}
  for(const o of OB)if(o.t==='R'){mg.fillStyle='#5a5e5a';mg.fillRect(o.x*MM,o.y*MM,Math.max(1.2,o.w*MM),Math.max(1.2,o.h*MM))}
  mg.globalAlpha=.85;mg.strokeStyle='#6d7d5a';mg.lineWidth=1;mg.strokeRect(0,0,MMW,MMH);mg.globalAlpha=1}
 function zMini(){const ox=10,oy=10;g.save();g.globalAlpha=.94;g.drawImage(miniMap,ox,oy);g.globalAlpha=1;g.translate(ox,oy);g.scale(MM,MM);
