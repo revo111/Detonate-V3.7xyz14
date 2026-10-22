@@ -5407,7 +5407,7 @@ function thinkZ(e){const mate=E.find(m=>m!==e&&m.team===e.team&&m.alive),lead=!m
  {const bt=zBotBetray(e);if(bt){pv=bt;pd=Math.hypot(bt.x-e.x,bt.y-e.y)}}
  const pvFight=pv&&(e.zbt===pv.id||hitBy===pv||pd<80||(e.hp>pv.hp+25&&e.agg>.4)||(gun&&!pv.wp&&e.agg>.3)),pvAvoid=pv&&!pvFight&&pd<300;
  // soins a l'abri ; rechargement quand rien ne presse
- if(!(e.bd>0)&&(e.hp<62||(e.bleed&&e.hp<92))&&(!zb||zd>350)&&!(pv&&pd<320)&&zCount(e,ZK.bdg)>0)zBandageKey(e);
+ if(!(e.bd>0)&&zCount(e,ZK.bdg)>0&&!(pv&&pd<320)&&(((e.hp<62||(e.bleed&&e.hp<92))&&(!zb||zd>300))||(e.hp<36&&(!zb||zd>190))||(e.hp<e.maxhp-34&&(!zb||zd>480))))zBandageKey(e);
  if(zGun(e)&&e.ammo<ZW[e.wp].mag*.5&&(!zb||zd>240))zReload(e);
  if(!(e.bd>0)&&(!zb||zd>300)&&!(pv&&pd<300)&&!zBotCraft(e,zb?zd:1e9))zBotEat(e);
  if(zb&&!(e.bd>0))zBotThrow(e);
@@ -5437,11 +5437,25 @@ function thinkZ(e){const mate=E.find(m=>m!==e&&m.team===e.team&&m.alive),lead=!m
 // bots : objets interessants a portee (arme si on n'en a pas ou meilleure, munitions, bandages, grenades) et voitures pas encore fouillees
 function zBotWant(e,it){const I=ZI[it.k];if(zGiftNo(e,it))return 0;if(I.w){const RK={3:1,1:2,4:3,2:4},ok=(w,n)=>w===3||(w===4?n>0:(n>0||zCount(e,ZK.ammo)>0)),hasA=ok(I.w,it.n);if(!e.wp)return hasA?(I.w===3?2.2:3):.4;
   const curOk=ok(e.wp,e.ammo);if(hasA&&(!curOk||RK[I.w]>RK[e.wp]))return 2.3+RK[I.w]*.1;if(e.b2&&!e.wp2&&I.w!==e.wp&&hasA)return 1.4;return 0}
- const K_=I.k,food=['cmeat','cfish','snack','meat','fish'].includes(K_);if(zRoom(e,it.k)<=0){if(food&&e.hun<55&&!(K_==='meat'||K_==='fish'))return 1.6;if(K_==='water'&&e.thi<55)return 1.8;return 0}
+ const K_=I.k,food=['cmeat','cfish','snack','meat','fish'].includes(K_);let v=zBotVal(e,it,K_,food);
+ if(zFromMate(e,it)){if(K_==='bdg')v=Math.max(v,3.2);else if(food||K_==='water')v=Math.max(v,(K_==='water'?e.thi:e.hun)<97?3:1.2);else if(K_==='ammo'&&e.wp&&e.wp<3)v=Math.max(v,3);else if(K_==='gren'||K_==='molo'||K_==='fuel'||K_==='lbag')v=Math.max(v,1.6)}   // bois, pierre... poses par le joueur : pas de priorite (il fait peut-etre de la place)
+ if(K_==='bdg'&&(e.hp<e.maxhp-30||e.bleed)&&!zCount(e,ZK.bdg))v=Math.max(v,2.8);
+ if(v<=0)return 0;if(zRoom(e,it.k)>0)return v;
+ if(food&&e.hun<55&&!(K_==='meat'||K_==='fish'))return Math.max(1.6,v*.9);if(K_==='water'&&e.thi<55)return Math.max(1.8,v*.9);
+ return v>=1.4&&zBotCheap(e,it.k,v)>=0?v*.9:0}
+// objet pose par un coequipier (humain) depuis moins de 2 min : pour moi
+const zFromMate=(e,it)=>it.dp!==undefined&&E[it.dp]&&E[it.dp]!==e&&E[it.dp].team===e.team&&T-(it.dpT||0)<120;
+// valeur d'un objet au sol pour un bot (s'il avait la place)
+function zBotVal(e,it,K_,food){
  if(K_==='ammo')return e.wp&&e.wp<3?(zCount(e,ZK.ammo)<90?2:.3):.5;if(K_==='bdg')return 1.8;if(K_==='gren'||K_==='molo')return .8;
  if(K_==='water')return e.thi<70?2.2:(zCount(e,ZK.water)?.3:1);if(K_==='bottle')return zCount(e,ZK.water)+zCount(e,ZK.bottle)<1&&e.bag.filter(s=>!s).length>=2?.5:0;if(food)return e.hun<60?2:(K_==='meat'||K_==='fish'?.4:.9);if(K_==='fuel')return e.lf<70?1.5:.3;if(K_==='leather')return e.bag.length<4?.8:.3;if((K_==='wood'||K_==='stone')&&e.wp!==3&&!(e.wp&&zAmmoT(e)>20))return zCount(e,ZK[K_])<(K_==='wood'?5:1)?1.1:0;if(K_==='wood'&&zCount(e,ZK.wood)<3)return .4;if(K_==='lbag')return e.bag.length<4&&!zCount(e,ZK.lbag)?1.6:0;if(K_==='metal'&&!zShots(e)&&zCount(e,ZK.metal)<2)return 1.1;return 0}
-function zBotLoot(e,mate,lead,zd){if(zd<380)return false;
- let best=null,bs=0;const R=lead||!mate?520:260;for(const it of GI){const d=Math.hypot(it.x-e.x,it.y-e.y);if(d>R)continue;if(mate&&!lead&&Math.hypot(it.x-mate.x,it.y-mate.y)>300)continue;if(e.zbl&&e.zbl.includes(it.id))continue;const w=zBotWant(e,it);if(w<=0)continue;const s=w/(1+d/250);if(s>bs){bs=s;best=it}}
+function zBotKeep(e,s){const K_=ZI[s.k].k;if(K_==='bdg')return 3;if(K_==='ammo')return e.wp&&e.wp<3?3:.9;if(K_==='water')return 2.6;if(K_==='cmeat'||K_==='cfish'||K_==='snack')return 2.4;if(K_==='gren'||K_==='molo'||K_==='lbag')return 2;
+ if(K_==='meat'||K_==='fish')return 1.4;if(K_==='fuel')return e.lf<90?1.3:.6;if(K_==='metal')return zShots(e)?.7:1.2;if(K_==='leather')return 1;if(K_==='wood')return .8;if(K_==='stone')return .5;if(K_==='bottle')return .4;return .6}
+function zBotCheap(e,k,v){let bi=-1,bv=v-.3;for(let i=0;i<e.bag.length;i++){const s=e.bag[i];if(!s||s.k===k)continue;const kv=zBotKeep(e,s);if(kv<bv){bv=kv;bi=i}}return bi}
+function zBotMakeRoom(e,k,v){if(zRoom(e,k)>0)return true;const i=zBotCheap(e,k,v);if(i<0)return false;const it=zDropSlot(e,i);if(it){(e.zbl||(e.zbl=[])).push(it.id);if(e.zbl.length>12)e.zbl.shift()}return true}
+function zBotLoot(e,mate,lead,zd){if(zd<200)return false;const near=zd<380;   // zombies pas loin : seulement ce que le coequipier a pose tout pres, ou un bandage quand on est blesse
+ let best=null,bs=0;const R=lead||!mate?520:260;for(const it of GI){const d=Math.hypot(it.x-e.x,it.y-e.y);if(d>R)continue;if(mate&&!lead&&Math.hypot(it.x-mate.x,it.y-mate.y)>300&&!zFromMate(e,it))continue;if(e.zbl&&e.zbl.includes(it.id))continue;
+  if(near&&(d>220||!(zFromMate(e,it)||(it.k===ZK.bdg&&(e.hp<60||e.bleed)))))continue;const w=zBotWant(e,it);if(w<=0)continue;const s=w/(1+d/250);if(s>bs){bs=s;best=it}}
  if(best){if(e.zitId!==best.id){e.zitId=best.id;e.zitT=T}else if(T-e.zitT>9){(e.zbl||(e.zbl=[])).push(best.id);if(e.zbl.length>12)e.zbl.shift();e.zitId=0;return false}   // objet inaccessible : on l'oublie
   e.mode='loot';e.zg=[best.x,best.y];return true}
  if(lead&&zd>500){const C=(CUR.DECO&&CUR.DECO.cars)||[];let bi=-1,bd=650;for(let i=0;i<C.length;i++){if(zSearched(i)||(e.zcbl&&e.zcbl.includes(i)))continue;const d=Math.hypot(C[i][0]-e.x,C[i][1]-e.y);if(d<bd){bd=d;bi=i}}
@@ -5463,7 +5477,7 @@ function zBotMove(e,dt){let mx=0,my=0,fire=0;const t=e.zt;
   else{if(d>keep+8){const v=zNav(e,t.x,t.y,dt,0);mx=v[0];my=v[1]}else if(d<keep-12){mx=-Math.cos(a)*.85;my=-Math.sin(a)*.85}else{mx=Math.cos(a+1.57*e.strafe)*.4;my=Math.sin(a+1.57*e.strafe)*.4;if(Math.random()<dt*.8)e.strafe=-e.strafe}
   if(d<(e.wp===3&&e.wk?ZW[3].r:Z_KN.r)+(isZ?ZT[t.t].r*.6:6)-4&&Math.abs(zAng(a,e.ang))<.45)fire=1}}
  else if(e.mode==='search'&&e.zcar>=0){const C=CUR.DECO.cars[e.zcar],d=Math.hypot(C[0]-e.x,C[1]-e.y);if(d>80){const v=zNav(e,e.zg[0],e.zg[1],dt,0);mx=v[0];my=v[1];e.want=Math.atan2(my,mx)}else{e.want=Math.atan2(C[1]-e.y,C[0]-e.x);return[0,0,0,1]}}
- else if(e.mode==='loot'&&e.zg){const d=Math.hypot(e.zg[0]-e.x,e.zg[1]-e.y);if(d<42){const it=GI.find(o=>o.id===e.zitId);if(it&&Math.hypot(it.x-e.x,it.y-e.y)<46){const F=zIsFood(it.k)?ZFOOD[ZI[it.k].k]:null;if(F&&(F.t?e.thi:e.hun)<55&&!(F.hp&&e.hp<30))zEatGround(e,it);else zPick(e,it);e.zv_=e.zv_||[];e.zv_.push(it.id)}e.zg=null;e.tk=0}else{const v=zNav(e,e.zg[0],e.zg[1],dt,0);mx=v[0];my=v[1];e.want=Math.atan2(my,mx)}}
+ else if(e.mode==='loot'&&e.zg){const d=Math.hypot(e.zg[0]-e.x,e.zg[1]-e.y);if(d<42){const it=GI.find(o=>o.id===e.zitId);if(it&&Math.hypot(it.x-e.x,it.y-e.y)<46){const F=zIsFood(it.k)?ZFOOD[ZI[it.k].k]:null;if(F&&(F.t?e.thi:e.hun)<55&&!(F.hp&&e.hp<30))zEatGround(e,it);else{if(!ZI[it.k].w&&zRoom(e,it.k)<=0)zBotMakeRoom(e,it.k,zBotWant(e,it)/.9);zPick(e,it)}e.zv_=e.zv_||[];e.zv_.push(it.id)}e.zg=null;e.tk=0}else{const v=zNav(e,e.zg[0],e.zg[1],dt,0);mx=v[0];my=v[1];e.want=Math.atan2(my,mx)}}
  else if(e.zg&&!(e.mode==='explore'&&e.zwait>T)){const d=Math.hypot(e.zg[0]-e.x,e.zg[1]-e.y),fol=e.mode==='follow'||e.mode==='regroup',stop=fol?(d<300&&los(e,{x:e.zg[0],y:e.zg[1]})?85:20):30;if(d>stop){const v=zNav(e,e.zg[0],e.zg[1],dt,stop);mx=v[0];my=v[1];if(mx||my)e.want=Math.atan2(my,mx);if(fol&&d<130){mx*=.7;my*=.7}}}
  if(!mx&&!my&&!t){e.want+=Math.sin(T*.7+e.id*2)*dt*.8}
  e.ang+=Math.max(-13*dt,Math.min(13*dt,zAng(e.want,e.ang)));return[mx,my,fire]}
@@ -5718,10 +5732,14 @@ function zPick(e,it){const I=ZI[it.k];
  if(I.w){zTakeWeapon(e,I.w,it.n);zGDel(it);zToast(e,8,it.k,1);return 1}
  const got=zGive(e,it.k,it.n,0,it.u);if(!got){zToast(e,9);return 0}it.n-=got;if(it.n<=0)zGDel(it);else{ZS.gv++;ZGD=1}zToast(e,8,it.k,got);return got}
 // en passant dessus : complete les piles deja commencees (sans prendre de nouvel emplacement)
-function zAutoPick(e){for(const it of GI){if(Math.abs(it.x-e.x)>30||Math.abs(it.y-e.y)>30||ZI[it.k].w||(!e.p&&zGiftNo(e,it)))continue;if(Math.hypot(it.x-e.x,it.y-e.y)>28)continue;const got=zGive(e,it.k,it.n,1);if(got){it.n-=got;if(it.n<=0)zGDel(it);else{ZS.gv++;ZGD=1}zToast(e,8,it.k,got);return}}}
+function zAutoPick(e){for(const it of GI){if(Math.abs(it.x-e.x)>30||Math.abs(it.y-e.y)>30||ZI[it.k].w||(!e.p&&zGiftNo(e,it))||it.dp===e.id)continue;if(Math.hypot(it.x-e.x,it.y-e.y)>28)continue;const got=zGive(e,it.k,it.n,1);if(got){it.n-=got;if(it.n<=0)zGDel(it);else{ZS.gv++;ZGD=1}zToast(e,8,it.k,got);return}}}
 // prendre une arme : main libre, sinon emplacement de rechange (sac en cuir), sinon on lache celle qu'on tient
 function zTakeWeapon(e,w,n){if(!e.wp){e.wp=w;e.ammo=n;e.wk=1;e.rl=0;return}if(e.b2&&!e.wp2){e.wp2=w;e.am2=n;return}const[x,y]=zDropPos(e.x,e.y,16);zGAdd(zWK(e.wp),e.ammo,x,y);e.wp=w;e.ammo=n;e.wk=1;e.rl=0}
-function zDropSlot(e,i){const s=e.bag[i];if(!s)return null;const[x,y]=zDropPos(e.x+Math.cos(e.ang)*22,e.y+Math.sin(e.ang)*22,8);const it=zGAdd(s.k,s.n,x,y);if(s.u!==undefined)it.u=s.u;e.bag[i]=null;if(s.k===ZK.rod)e.fsh=0;zThrowSync(e);return it}
+function zDropSlot(e,i){const s=e.bag[i];if(!s)return null;const[x,y]=zDropPos(e.x+Math.cos(e.ang)*22,e.y+Math.sin(e.ang)*22,8);const it=zGAdd(s.k,s.n,x,y);if(s.u!==undefined)it.u=s.u;if(e.p){it.dp=e.id;it.dpT=T}e.bag[i]=null;if(s.k===ZK.rod)e.fsh=0;zThrowSync(e);return it}
+// lacher UN objet de la case (munitions : 10) ; les appuis successifs s'empilent au meme endroit
+function zDropOne(e,i){const s=e.bag[i];if(!s)return null;const n=s.k===ZK.ammo?Math.min(10,s.n):1;if(n>=s.n||s.u!==undefined)return zDropSlot(e,i);
+ const fx=e.x+Math.cos(e.ang)*22,fy=e.y+Math.sin(e.ang)*22;let it=GI.find(o=>o.k===s.k&&o.u===undefined&&o.dp===e.id&&T-(o.dpT||0)<20&&Math.hypot(o.x-fx,o.y-fy)<40);
+ s.n-=n;if(it){it.n+=n;ZS.gv++;ZGD=1}else{const[x,y]=zDropPos(fx,fy,8);it=zGAdd(s.k,n,x,y)}if(e.p){it.dp=e.id;it.dpT=T}zThrowSync(e);return it}
 function zDropWeapon(e){if(!e.wp||!e.wk)return;const[x,y]=zDropPos(e.x+Math.cos(e.ang)*22,e.y+Math.sin(e.ang)*22,8);zGAdd(zWK(e.wp),e.ammo,x,y);e.wp=0;e.ammo=0;e.wk=0;e.rl=0;if(e.wp2){e.wp=e.wp2;e.ammo=e.am2;e.wp2=0;e.am2=0}}
 // a la mort : tout le contenu du sac et l'arme restent au sol, autour du corps
 function zDropAll(e){if(e.ta)zTaCancel(e);e.fdI=0;if(e.wp){const[x,y]=zDropPos(e.x,e.y,14);zGAdd(zWK(e.wp),e.ammo,x,y);e.wp=0;e.ammo=0}if(e.wp2){const[x,y]=zDropPos(e.x,e.y,14);zGAdd(zWK(e.wp2),e.am2,x,y);e.wp2=0;e.am2=0}e.lit=0;e.tch=0;e.bleed=0;e.fsh=0;for(let i=0;i<e.bag.length;i++){const s=e.bag[i];if(!s)continue;const[x,y]=zDropPos(e.x,e.y,18);const it=zGAdd(s.k,s.n,x,y);if(s.u!==undefined)it.u=s.u;e.bag[i]=null}if(e.bag.length>3){const[x,y]=zDropPos(e.x,e.y,18);zGAdd(ZK.lbag,1,x,y);e.bag.length=3}e.gren=0;e.bd=0;e.sr=0}
@@ -5743,7 +5761,7 @@ const ZFOOD={snack:{v:25},water:{v:45,t:1},meat:{v:15,hp:10},cmeat:{v:40},fish:{
 const Z_FUEL=90,Z_TORCH=120,Z_BDG2=5;
 // operations demandees par le joueur (file numerotee : rien n'est perdu ni rejoue) : 1 utiliser, 2 lacher, 3 lacher l'arme, 4 arme <-> poignard, 5 bandage
 function zOps(e,ops){if(!ops||!ops.length)return;for(const q of ops){if(!Array.isArray(q)||!(q[0]>(e.zop||0)))continue;e.zop=q[0];const op=q[1],sl=Math.max(0,Math.min(op===6?40:e.bag.length-1,q[2]|0));
- if(op===7&&e.alive&&st.s==='live'){zAllyOp(e);continue}if(op===8&&e.alive&&st.s==='live'){zAllyRefuse(e);continue}if(!e.alive||e.down||st.s!=='live')continue;if(op===1)zUse(e,sl);else if(op===2)zDropSlot(e,sl);else if(op===3)zDropWeapon(e);else if(op===4)zSwap(e);else if(op===5)zBandageKey(e);else if(op===6)zCraft(e,sl)}}
+ if(op===7&&e.alive&&st.s==='live'){zAllyOp(e);continue}if(op===8&&e.alive&&st.s==='live'){zAllyRefuse(e);continue}if(!e.alive||e.down||st.s!=='live')continue;if(op===1)zUse(e,sl);else if(op===2)zDropSlot(e,sl);else if(op===3)zDropWeapon(e);else if(op===4)zSwap(e);else if(op===5)zBandageKey(e);else if(op===6)zCraft(e,sl);else if(op===9)zDropOne(e,sl)}}
 // X : arme principale -> arme de rechange -> poignard -> ...
 function zSwap(e){if(!e.wp&&!e.wp2)return;e.rl=0;if(!e.wk){if(!e.wp&&e.wp2){e.wp=e.wp2;e.ammo=e.am2;e.wp2=0;e.am2=0}e.wk=1;e.swc=0;return}
  if(e.wp2&&!e.swc){const w=e.wp,a=e.ammo;e.wp=e.wp2;e.ammo=e.am2;e.wp2=w;e.am2=a;e.swc=1;return}e.wk=0;e.swc=0}
@@ -5790,14 +5808,17 @@ const ZKD={KeyQ:'A',KeyW:'Z',KeyA:'Q',KeyZ:'W',Digit2:'é',Digit3:'"',Digit4:"'"
 function zKL(c){const v=ZKLM&&ZKLM.get&&ZKLM.get(c);if(v)return /^[a-z]$/.test(v)?v.toUpperCase():v;if(LANG==='en'&&!ZKLM)return c.replace('Key','').replace('Digit','');return ZKD[c]||c.replace('Key','').replace('Digit','')}
 const zSlotKey=i=>zKL(['Digit2','Digit3','Digit4','Digit5'][i]);
 addEventListener('keydown',e=>{if(!ZMB()||e.repeat||(e.target&&e.target.tagName==='INPUT'))return;const c=e.code,sl=ZKS[c]===undefined?-1:ZKS[c];
- if(sl>=0||c==='KeyQ'){ZKH[c]={t:performance.now(),sl,done:0}}else if(c==='KeyV'){ZXG=1}else if(c==='KeyB')zOp(5);else if(c==='KeyZ')zOp(7);else if(c==='KeyX')zOp(8);else if(c==='KeyC'){ZCM=!ZCM;uiClick()}else if(c==='Escape')ZCM=false});
-let ZXG=0;addEventListener('keyup',e=>{if(e.code==='KeyV'&&ZXG){ZXG=0;if(ZMB())requestGren();return}const h=ZKH[e.code];if(!h)return;delete ZKH[e.code];if(h.done||!ZMB())return;if(e.code==='KeyQ')zOp(4);else zOp(1,h.sl)});
+ if(sl>=0||c==='KeyQ'){ZKH[c]={t:performance.now(),sl,done:0}}else if(c==='KeyV'){ZXG=1}else if(c==='KeyB')zOp(5);else if(c==='KeyZ')zOp(7);else if(c==='KeyX')zOp(8);else if(c==='KeyC'){ZCM=!ZCM;uiClick()}else if(c==='Escape')ZCM=false;else if(c==='KeyT')ZDH={t:performance.now(),done:0}});
+// objet choisi dans le sac (molette, clic) : la touche T le lache
+let ZSEL=0,ZDH=null;
+addEventListener('wheel',e=>{if(!ZMB()||typeof st==='undefined'||st.s!=='live'||!E)return;const me=E[localSlot];if(!me||!me.alive||!me.bag||(typeof menuOpen==='function'&&menuOpen()))return;const n=me.bag.length;ZSEL=((ZSEL+(e.deltaY>0?1:-1))%n+n)%n},{passive:true});
+let ZXG=0;addEventListener('keyup',e=>{if(e.code==='KeyV'&&ZXG){ZXG=0;if(ZMB())requestGren();return}if(e.code==='KeyT'){const h=ZDH;ZDH=null;if(h&&!h.done&&ZMB())zOp(9,ZSEL);return}const h=ZKH[e.code];if(!h)return;delete ZKH[e.code];if(h.done||!ZMB())return;if(e.code==='KeyQ')zOp(4);else zOp(1,h.sl)});
 // appui long (clavier ou toucher) : lacher
-function zHoldTick(){const now=performance.now();for(const c in ZKH){const h=ZKH[c];if(!h.done&&now-h.t>600){h.done=1;if(c==='KeyQ')zOp(3);else zOp(2,h.sl)}}
+function zHoldTick(){const now=performance.now();if(ZDH&&!ZDH.done&&now-ZDH.t>600){ZDH.done=1;zOp(2,ZSEL)}for(const c in ZKH){const h=ZKH[c];if(!h.done&&now-h.t>600){h.done=1;if(c==='KeyQ')zOp(3);else zOp(2,h.sl)}}
  if(ZTP&&!ZTP.done&&now-ZTP.t>600&&ZTP.sl>-2){ZTP.done=1;if(ZTP.sl<0)zOp(3);else zOp(2,ZTP.sl)}}
 // emplacements de l'inventaire a l'ecran (le toucher ne devient pas un joystick)
 let ZBR=[],ZTP=null;
-function zSlotDown(e){if(!ZMB()||st.s!=='live')return false;if(zCraftClick(e))return true;const r=ZBR.find(r=>e.clientX>=r[0]&&e.clientX<=r[0]+r[2]&&e.clientY>=r[1]&&e.clientY<=r[1]+r[3]);if(!r)return false;ZTP={id:e.pointerId,sl:r[4],t:performance.now(),done:0};return true}
+function zSlotDown(e){if(!ZMB()||st.s!=='live')return false;if(zCraftClick(e))return true;const r=ZBR.find(r=>e.clientX>=r[0]&&e.clientX<=r[0]+r[2]&&e.clientY>=r[1]&&e.clientY<=r[1]+r[3]);if(!r)return false;if(e.pointerType==='mouse'&&r[4]>=0&&r[4]!==ZSEL){ZSEL=r[4];uiClick();return true}ZTP={id:e.pointerId,sl:r[4],t:performance.now(),done:0};return true}
 addEventListener('pointerup',e=>{if(!ZTP||e.pointerId!==ZTP.id)return;const h=ZTP;ZTP=null;if(h.done)return;if(h.sl===-2){ZCM=!ZCM;uiClick()}else if(h.sl<0)zOp(4);else zOp(1,h.sl)});
 addEventListener('pointercancel',e=>{if(ZTP&&e.pointerId===ZTP.id)ZTP=null});
 
@@ -5966,6 +5987,8 @@ function zBotNeeds(e,zd){const crit=e.thi<16||e.hun<16;if(zd<(crit?240:420))retu
  // de la nourriture ou de l'eau par terre pas loin : on va la manger / boire sur place (meme sac plein)
  {const want=k=>k==='water'?e.thi<55:(k!=='meat'&&k!=='fish'?e.hun<55:e.hun<30);let fi=null,fd=560;for(const it of GI){if(!zIsFood(it.k)||!want(ZI[it.k].k)||(e.zbl&&e.zbl.includes(it.id))||zGiftNo(e,it))continue;const d=Math.hypot(it.x-e.x,it.y-e.y);if(d<fd){fd=d;fi=it}}
   if(fi){if(e.zitId!==fi.id){e.zitId=fi.id;e.zitT=T}else if(T-e.zitT>9){(e.zbl||(e.zbl=[])).push(fi.id);e.zitId=0;return false}e.mode='loot';e.zg=[fi.x,fi.y];return true}}
+ if((e.hp<55||e.bleed)&&!zCount(e,ZK.bdg)){let bi=null,bd=650;for(const it of GI){if(it.k!==ZK.bdg||(e.zbl&&e.zbl.includes(it.id))||zGiftNo(e,it))continue;const d=Math.hypot(it.x-e.x,it.y-e.y);if(d<bd){bd=d;bi=it}}
+  if(bi){if(e.zitId!==bi.id){e.zitId=bi.id;e.zitT=T}else if(T-e.zitT>9){(e.zbl||(e.zbl=[])).push(bi.id);e.zitId=0;return false}e.mode='loot';e.zg=[bi.x,bi.y];return true}}
  if(e.hun<55&&!['cmeat','cfish','snack','meat','fish'].some(k=>zCount(e,ZK[k]))){let a=null,ad=e.hun<25?1500:950;for(const q of ZAN){if(q.hp<=0||(e.hbl&&e.hbl[q.id]>T))continue;const d=Math.hypot(q.x-e.x,q.y-e.y)*(q.t===0?1.7:(q.t===2?.8:1));if(d<ad){ad=d;a=q}}
   if(a){if(e.hId!==a.id){e.hId=a.id;e.hT=T}else if(T-e.hT>14){(e.hbl||(e.hbl={}))[a.id]=T+30;e.hId=0;return false}e.mode='hunt';e.zt=a;return true}}
  return false}
@@ -6112,6 +6135,8 @@ function zDownMarks(c,hm,now){g.save();
    if(hm&&zUp(hm)&&e!==hm&&Math.hypot(e.x-hm.x,e.y-hm.y)<56){const t1=(e.rvBy===hm.id&&e.rvP>0)?LG('Tu le relèves…','Reviving…'):LG('Relever (maintenir)','Revive (hold)');g.font='700 11px system-ui';const w=g.measureText(t1).width+(IS_PC?34:16);pill(sx-w/2,sy-50,w,20,10,'rgba(30,42,60,.9)');txt(t1,sx-(IS_PC?9:0),sy-40,11,'#ffe28a',null,700);if(IS_PC)keycapS(sx+w/2-16,sy-40,'E')}
    // hors de l'ecran : fleche au bord
    if(e.team===MT&&e!==hm&&(sx<20||sy<20||sx>W-20||sy>H-20)){const a=Math.atan2(sy-H/2,sx-W/2),ex=Math.max(24,Math.min(W-24,W/2+Math.cos(a)*W)),ey=Math.max(24,Math.min(H-24,H/2+Math.sin(a)*H));g.fillStyle='#ff5a46';g.beginPath();g.arc(ex,ey,9,0,7);g.fill();g.fillStyle='#fff';g.fillRect(ex-1.5,ey-5,3,10);g.fillRect(ex-5,ey-1.5,10,3)}}
+  else if(e.team===MT&&e!==hm&&((e.hun??100)<25||(e.thi??100)<25)&&sx>-30&&sy>-30&&sx<W+30&&sy<H+30){const L_=[];if((e.hun??100)<25)L_.push(ZK.cmeat);if((e.thi??100)<25)L_.push(ZK.water);const pul=.7+.3*Math.sin(now/170);
+   L_.forEach((k,j)=>{const ix=sx+20+j*19,iy=sy-6;g.globalAlpha=pul;g.fillStyle='rgba(8,12,22,.78)';g.beginPath();g.arc(ix,iy,9,0,7);g.fill();g.strokeStyle='#ff7a6a';g.lineWidth=1.6;g.stroke();g.globalAlpha=1;zIco(k,ix,iy,13,0)})}
   else if(e.team!==MT&&Math.abs(sx-W/2)<W&&Math.abs(sy-H/2)<H){const TT=TD(e.team);g.font='700 10px system-ui';const t1='🤝 '+TT.un;const w=g.measureText(t1).width+12;pill(sx-w/2,sy-36,w,16,8,'rgba(8,12,22,.6)');txt(t1,sx,sy-28,10,TT.css,null,700)}}
  g.restore()}
 // ATH : a terre
@@ -6261,14 +6286,16 @@ function zInv(hm,narrow){ZBR.length=0;if(!hm||!hm.alive||hm.down||st.s==='end'||
    if(hm.wp2){zIco(zWK(hm.wp2),sx,sy,S*.46,1);if(hm.wp2!==3)txt(String(hm.am2),sx,y0+S*.82,Math.round(9.5*sc_*1.15),'rgba(255,255,255,.6)',null,700)}else txt(LG('rechange','spare'),sx,y0+S*.82,Math.round(8.5*sc_*1.15),'rgba(255,255,255,.35)',null,600)}
   if(IS_PC)txt(zKL('KeyQ'),x0+8,y0+9,9,'rgba(255,255,255,.55)',null,800);ZBR.push([x0,y0,ww,S,-1])}
  // sac
- for(let i=0;i<nb;i++){const x=x0+ww+gap+i*(S+gap),sl=hm.bag[i],pr=ZTP&&ZTP.sl===i,hold=pr&&now-ZTP.t>150?Math.min(1,(now-ZTP.t)/600):0;bx(x,S,false,pr);
+ if(ZSEL>=nb)ZSEL=nb-1;if(ZSEL<0)ZSEL=0;
+ for(let i=0;i<nb;i++){const x=x0+ww+gap+i*(S+gap),sl=hm.bag[i],pr=ZTP&&ZTP.sl===i,selD=IS_PC&&i===ZSEL&&ZDH&&!ZDH.done&&now-ZDH.t>120,hold=pr&&now-ZTP.t>150?Math.min(1,(now-ZTP.t)/600):(selD?Math.min(1,(now-ZDH.t)/600):0);bx(x,S,IS_PC&&i===ZSEL,pr||(IS_PC&&i===ZSEL));
+  if(IS_PC&&i===ZSEL){g.save();g.fillStyle='#ffd27a';g.beginPath();g.moveTo(x+S/2-5,y0-7);g.lineTo(x+S/2+5,y0-7);g.lineTo(x+S/2,y0-2);g.closePath();g.fill();g.restore()}
   if(sl){zIco(sl.k,x+S/2,y0+S*.44,S*.6,0);if(sl.k===ZK.rod){const u=sl.u===undefined?Z_ROD:sl.u;for(let j=0;j<Z_ROD;j++){g.fillStyle=j<u?'#7ac8ff':'rgba(255,255,255,.2)';g.beginPath();g.arc(x+S-8-j*7,y0+S-8,2.6,0,7);g.fill()}}else if(sl.n>1||ZI[sl.k].max>1)txt(String(sl.n),x+S-7,y0+S-9,Math.round(11*sc_*1.15),sl.n>=ZI[sl.k].max?'#ffd27a':'#fff','right',800)}
   else txt('—',x+S/2,y0+S/2,12,'rgba(255,255,255,.25)',null,700);
   if(hold>0){g.save();g.strokeStyle='#ff8a6a';g.lineWidth=3;g.beginPath();g.arc(x+S/2,y0+S/2,S*.42,-Math.PI/2,-Math.PI/2+hold*6.283);g.stroke();g.restore()}
   if(IS_PC)txt(zSlotKey(i),x+8,y0+9,9,'rgba(255,255,255,.55)',null,800);ZBR.push([x,y0,S,S,i])}
  // bouton d'artisanat (C)
  {const x=x0+ww+gap+nb*(S+gap),pr=ZTP&&ZTP.sl===-2;bx(x,cbw,ZCM,pr||ZCM);zIco(-2,x+cbw/2,y0+S*.42,S*.5,0);txt(LG('fabriquer','craft'),x+cbw/2,y0+S*.82,Math.round(8.5*sc_*1.15),'rgba(255,255,255,.7)',null,700);if(IS_PC)txt('C',x+8,y0+9,9,'rgba(255,255,255,.55)',null,800);ZBR.push([x,y0,cbw,S,-2])}
- if(IS_PC&&!(ZCTA>0.05)){const t1=[0,1,2].map(zSlotKey).join(' ')+LG(' : utiliser',' : use')+' · '+zKL('KeyQ')+LG(' : arme',' : weapon')+' · V : '+LG('grenade','grenade')+' · '+zKL('KeyZ')+' : '+LG('alliance','alliance')+' · G : '+LG('briquet','lighter')+' · C : '+LG('artisanat','crafting')+' · H : '+LG('commandes','controls');
+ if(IS_PC&&!(ZCTA>0.05)){const t1=[0,1,2].map(zSlotKey).join(' ')+LG(' : utiliser',' : use')+' · '+zKL('KeyQ')+LG(' : arme',' : weapon')+' · V : '+LG('grenade','grenade')+' · '+zKL('KeyZ')+' : '+LG('alliance','alliance')+' · G : '+LG('briquet','lighter')+' · C : '+LG('artisanat','crafting')+' · '+zKL('KeyT')+' : '+LG('lâcher','drop')+' · H : '+LG('commandes','controls');
   g.font='600 10px system-ui';const tw=g.measureText(t1).width,fs=Math.max(8,Math.min(10,10*(W-30)/tw));txt(t1,W/2,y0-9,fs,'rgba(255,255,255,.42)',null,600)}
  // progression : bandage, fouille, rechargement
  let pb=null;if(hm.bd>0)pb=[hm.bdT>=0?LG('Soin du coéquipier…','Patching up teammate…'):LG('Bandage…','Bandaging…'),1-hm.bd/(hm.bdT>=0?Z_BDG2:Z_BDG),'#7ef0a0'];
@@ -6278,7 +6305,7 @@ function zInv(hm,narrow){ZBR.length=0;if(!hm||!hm.alive||hm.down||st.s==='end'||
  if(pb){const w=150,yy=y0-(IS_PC?40:26);pill(W/2-w/2,yy,w,6,3,'rgba(255,255,255,.18)');pill(W/2-w/2,yy,Math.max(6,w*Math.min(1,pb[1])),6,3,pb[2]);txt(pb[0],W/2,yy-10,11,pb[2],null,800)}
  // messages courts
  // messages courts : colonne a gauche, au-dessus du milieu de l'ecran (ils ne cachent ni le personnage ni l'inventaire)
- ZTO=ZTO.filter(m=>now-m.t<2400);let ty=Math.min(H*.6,y0-24);for(let i=ZTO.length-1;i>=0;i--){const m=ZTO[i],f=(now-m.t)/2400,a=f<.1?f/.1:(f>.75?(1-f)/.25:1);g.save();g.globalAlpha=a;g.font='700 12px system-ui';const w=g.measureText(m.txt).width+(m.k?44:24),x=12;
+ ZTO=ZTO.filter(m=>now-m.t<2400);let ty=Math.min(H*.6,y0-24);for(let i=ZTO.length-1;i>=0;i--){if(ty-12<ZCARDB+4)break;const m=ZTO[i],f=(now-m.t)/2400,a=f<.1?f/.1:(f>.75?(1-f)/.25:1);g.save();g.globalAlpha=a;g.font='700 12px system-ui';const w=g.measureText(m.txt).width+(m.k?44:24),x=12;
   pill(x,ty-11,w,22,11,'rgba(8,12,22,.82)');if(m.k)zIco(m.k,x+16,ty,16,0);txt(m.txt,x+(m.k?30:12),ty,12,m.c,'left',700);g.restore();ty-=26}}
 // ---------- objets : petits reflets dans le noir, nom de l'objet le plus proche, voiture a fouiller ----------
 function zItemsHud(c,hm){const now=performance.now();
@@ -6533,6 +6560,17 @@ function zMini(){const ox=10,oy=10;g.save();g.globalAlpha=.94;g.drawImage(miniMa
  g.restore();
  const me=E&&E[localSlot];if(me&&me.alive){const mx=ox+me.x*MM,my=oy+me.y*MM,r=MMW>150?5.5:4.6,a=me.ang||0;g.save();g.fillStyle='#ffe14a';g.strokeStyle='#0b0f18';g.lineWidth=1.2;
   g.beginPath();g.moveTo(mx+Math.cos(a)*(r+5),my+Math.sin(a)*(r+5));g.lineTo(mx+Math.cos(a+.55)*(r-.5),my+Math.sin(a+.55)*(r-.5));g.lineTo(mx+Math.cos(a-.55)*(r-.5),my+Math.sin(a-.55)*(r-.5));g.closePath();g.fill();g.stroke();g.lineWidth=2;g.beginPath();g.arc(mx,my,r,0,7);g.fill();g.stroke();g.restore()}}
+// ---------- coequipier(s) : nom, vie (ou temps a terre), faim, soif ----------
+let ZCARDB=0;
+function zMateCard(mt,y){ZCARDB=0;const L=E.filter(e=>e.team===mt&&e.id!==localSlot&&e.alive);if(!L.length)return;const w=Math.max(132,Math.min(170,MMW)),x=10,now=performance.now(),TT=TD(mt);
+ for(const m of L){const h=47;pill(x,y,w,h,9,'rgba(8,12,22,.8)');txt(NM[m.id]||'',x+9,y+10,10.5,TT.css,'left',800);
+  const dn=!!m.down,fr=dn?Math.max(0,Math.min(1,(m.dhp||0)/100)):Math.max(0,Math.min(1,m.hp/(m.maxhp||BASE_HP))),hc=dn?'#ff5a46':(fr>.5?'#4fd37a':(fr>.3?'#ffc83c':'#ff5a4a'));
+  txt(dn?LG('À TERRE','DOWNED'):(m.bleed?LG('saigne · ','bleeding · '):'')+Math.ceil(Math.max(0,m.hp))+LG(' PV',' HP'),x+w-8,y+10,9.5,dn||m.bleed||fr<=.3?'#ff7a6a':'rgba(255,255,255,.75)','right',800);
+  pill(x+8,y+18,w-16,6,3,'rgba(255,255,255,.12)');if(fr>0)pill(x+8,y+18,Math.max(6,(w-16)*fr),6,3,hc);
+  const hw=(w-22)/2;for(const[i,v,c,ic]of[[0,m.hun??100,'#e8a54a',ZK.cmeat],[1,m.thi??100,'#5ab8f4',ZK.water]]){const bx=x+8+i*(hw+6),low=v<25,bw=hw-30;zIco(ic,bx+5,y+35,12,0);
+   pill(bx+13,y+32,bw,6,3,'rgba(255,255,255,.12)');if(v>0)pill(bx+13,y+32,Math.max(6,bw*v/100),6,3,low?'rgba(255,90,74,'+(.6+.4*Math.sin(now/160)).toFixed(2)+')':c);txt(String(Math.ceil(v)),bx+hw,y+35.5,9.5,low?'#ff8a7a':'rgba(255,255,255,.8)','right',800)}
+  y+=h+6}
+ ZCARDB=y}
 // ---------- ATH : vie + briquet ----------
 const Z_ATH_H=84;
 function zATH(hm,narrow){const sc_=(W<420?.92:(W>=1100&&H>=650?1.12:1))*.8,pw=Math.min(W-24,360*sc_),ph=Z_ATH_H*sc_,px=W/2-pw/2,py=H-ph-(narrow?26:14),mx=BASE_HP,hp=hm.down?0:Math.max(0,Math.min(mx,hm.hp)),fr=hp/mx;athX=px;athW=pw;athTop=py;
@@ -6594,6 +6632,7 @@ function zElimClick(e){if(!ZMB()||!ZELR.length||st.s!=='live')return false;const
 // commandes (PC)
 function zControls(a){if(a<=0)return;const R_=[[['Z','Q','S','D','/','W','A','S','D'],LG('Se déplacer','Move')],[[LG('Souris','Mouse')],LG('Viser','Aim')],[[LG('Clic gauche','Left click'),'/','F'],LG('Tirer · coup de poignard / de lance','Shoot · knife / spear attack')],
   [['E','/',LG('Espace','Space')],LG('Ramasser · fouiller · boire · relever (maintenir)','Pick up · search · drink · revive (hold)')],[[0,1,2,3].map(zSlotKey),LG('Objets 1 à 4 : utiliser (maintenir : lâcher)','Items 1-4: use (hold: drop)')],
+  [[LG('Molette','Wheel'),'/',LG('Clic','Click')],LG('Choisir un objet du sac (clic sur l’objet choisi : l’utiliser)','Select a bag item (click it again: use it)')],[[zKL('KeyT')],LG('Lâcher 1 objet choisi (maintenir : toute la pile)','Drop 1 selected item (hold: whole stack)')],
   [[zKL('KeyQ')],LG('Arme ↔ poignard (maintenir : lâcher l’arme)','Weapon ↔ knife (hold: drop weapon)')],[['R'],LG('Recharger','Reload')],[['V'],LG('Grenade / Molotov (maintenir pour viser)','Grenade / Molotov (hold to aim)')],
   [['G'],LG('Briquet : allumer / éteindre','Lighter: on / off')],[['B'],LG('Bandage (sur soi, ou un coéquipier proche)','Bandage (self or a nearby teammate)')],[['C','/',LG('Échap','Esc')],LG('Artisanat : ouvrir / fermer','Crafting: open / close')],
   [[zKL('KeyZ')],LG('Alliance : proposer · accepter · rompre','Alliance: offer · accept · break')],[['X'],LG('Refuser une alliance','Decline an alliance')],[['TAB'],LG('Équipes (maintenir)','Teams (hold)')],[['M'],LG('Couper le son','Mute')],[['H'],LG('Afficher les commandes (maintenir)','Show controls (hold)')]];
@@ -6613,6 +6652,7 @@ function zHud(){const mt=MT,now=performance.now(),me=E.find(e=>e.id===localSlot)
  if(netMode&&netStarted&&!isHost){const nw=performance.now(),old=NETQ.sent.filter(x=>nw-x>1500),lost=old.filter(x=>!NETQ.ok.has(x)).length,loss=old.length?Math.round(lost/old.length*100):0,jit=Math.round(NETQ.jit),bad=netPing>150||jit>30||loss>2;
   g.save();g.font='600 10px system-ui';g.textAlign='left';const t1='Ping '+netPing+' ms   Jitter '+jit+' ms   Pertes '+loss+' %',tw=g.measureText(t1).width;g.fillStyle='rgba(6,10,18,.45)';g.fillRect(5,H-19,tw+10,15);g.fillStyle=bad?'rgba(255,160,120,.95)':'rgba(255,255,255,.62)';g.fillText(t1,10,H-8);g.restore()}
  HUDR.length=0;if(!HUDH){zMini();HUDR.push([10,10,MMW,MMH])}else drawHudGhost();
+ if(st.s!=='end')zMateCard(mt,HUDH?56:18+MMH);else ZCARDB=0;
  const narrow=W<640||W/2-130<MMW+22,SH=SBH&&st.s!=='end';
  // ---- panneau du haut : vague + minuteur, equipes en vie (2 points par equipe), zombies en vie
  const pw=narrow?Math.max(170,W-MMW-34):260,px=narrow?MMW+22:W/2-pw/2,py=10,pcx=px+pw/2,ph=36,wv=Math.max(1,ZS.wave),nx=Math.max(0,Math.ceil(ZS.next-ZS.t)),za=Z.filter(z=>z.hp>0).length;
