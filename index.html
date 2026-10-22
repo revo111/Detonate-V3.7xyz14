@@ -3045,7 +3045,7 @@ function netSnapshot(){const r=v=>Math.round(v*10)/10;return{map:MAPID,T:Math.ro
 function netClientTick(dt){
  xfx(dt);
  localInpC=input();if(localInpC.rel)relPend=1;const li=localInpC,k=1-Math.exp(-dt*16);if(ZMB())zClientTick(dt,li);
- {const me=E[localSlot];cliCd-=dt;if(me&&me.alive&&!me.moto&&me.sco!==1&&!(me.frz>0)&&st.s==='live'&&li.fire&&cliCd<=0&&me.ammo>0&&!(me.rl>0)&&!(me.act&&me.can)&&(!ZMB()||(zGun(me)&&!(me.bd>0)))){cliCd=ZMB()?ZW[me.wp].cd:.2/(me.boost?1.3:1);const m=BP.find(w=>!w.visible);
+ {const me=E[localSlot];cliCd-=dt;if(me&&me.alive&&!me.moto&&me.sco!==1&&!(me.frz>0)&&st.s==='live'&&li.fire&&cliCd<=0&&me.ammo>0&&!(me.rl>0)&&!(me.act&&me.can)&&(!ZMB()||(zGun(me)&&!(me.bd>0)&&!me.down))){cliCd=ZMB()?ZW[me.wp].cd:.2/(me.boost?1.3:1);const m=BP.find(w=>!w.visible);
   if(m){m.visible=true;const a=aimAng;B.push({loc:1,born:performance.now(),x:me.x+Math.cos(a)*14,y:me.y+Math.sin(a)*14,vx:Math.cos(a)*960,vy:Math.sin(a)*960,team:me.team,id:me.id,m,t:.9});me.fT=.06;shot(1,0,me.team)}}}
  for(const e of E){if(e.tx===undefined)continue;const ox=e.x,oy=e.y;e.fT-=dt;
   if(e.id===localSlot&&e.alive&&st.s==='live'){let mx=li.mx,my=li.my;if((e.act&&e.can)||e.frz>0){mx=my=0;if(e.frz>0)e.bv=0}const len=Math.hypot(mx,my);if(len>1){mx/=len;my/=len}let ddx,ddy;if(e.moto){const d=bikeMove(e,mx,my,dt,MOTO_V*(e.boost?1.2:1));ddx=d[0];ddy=d[1]}else if(e.sco===1){const ox_=e.x,oy_=e.y;vanMove(e,mx,my,dt);ddx=e.x-ox_;ddy=e.y-oy_}else if(e.sco===2||e.zyv>0){ddx=ddy=0;e.x+=(e.tx-e.x)*.5;e.y+=(e.ty-e.y)*.5}else{const zk=ZMB()?zSpd(e):1;ddx=mx*152*(e.boost?1.2:1)*zk*dt;ddy=my*152*(e.boost?1.2:1)*zk*dt;mv(e,ddx,ddy)}e.pdx=(e.pdx||0)+ddx;e.pdy=(e.pdy||0)+ddy;
@@ -5196,7 +5196,7 @@ function puffTick(dt){if(!PUF)return;for(const p of PUF.bits){if(!p.m.visible)co
 // derniere equipe en vie gagne. Tout est calcule par l'hote / le serveur ; les invites recoivent les zombies dans l'etat du jeu.
 const Z_KN={r:52,arc:1.0,dmg:34,cd:.5},Z_LIT={t:180,r:150},Z_WAVES=20,Z_WAVE_T=60,Z_CAP=60;
 // types : 0 rodeur (des la vague 1), 1 coureur (vague 5), 2 brute (vague 10), 3 hurleur (vague 15)
-const ZT=[{n:'Rôdeur',hp:75,sp:58,dmg:12,cd:1.2,r:13,k:1},{n:'Coureur',hp:55,sp:148,dmg:9,cd:.9,r:12,k:.96},{n:'Brute',hp:320,sp:64,dmg:30,cd:1.6,r:19,k:1.42},{n:'Hurleur',hp:65,sp:92,dmg:8,cd:1.2,r:13,k:1.04}];
+const ZT=[{n:'Rôdeur',hp:75,sp:58,dmg:12,cd:1.2,r:13,k:1},{n:'Coureur',hp:55,sp:148,dmg:9,cd:.9,r:12,k:.96},{n:'Brute',hp:280,sp:64,dmg:30,cd:1.6,r:19,k:1.42},{n:'Hurleur',hp:65,sp:92,dmg:8,cd:1.2,r:13,k:1.04}];
 // plus coriaces et plus forts a chaque vague (+3 % de vie, +2 % de degats par vague, jusqu'a la vague 20)
 const zScale=w=>{const k=Math.min(Math.max(1,w),Z_WAVES)-1;return{hp:1+.03*k,dmg:1+.02*k}};
 TEAMS.foret=[
@@ -5283,7 +5283,7 @@ function zUpd(dt){
   if(!warm&&!e.down)zSurvTick(e,dt);if(!e.alive)continue;
   // rechargement termine : les balles viennent du sac ; bandage : 3 s sans etre touche, +35 PV
   if(e.rl>0){e.rl-=dt;if(e.rl<=0){e.rl=0;if(e.wp&&e.wp<3)e.ammo+=zTake(e,ZK.ammo,ZW[e.wp].mag-e.ammo)}}
-  zBdgTick(e,dt);zFishTick(e,dt);
+  zBdgTick(e,dt);zFishTick(e,dt);zTaTick(e,dt);
   const sp=(e.p?152:(e.mode==='follow'||e.mode==='revive'||e.mode==='regroup'?157:146))*zSpd(e),len=Math.hypot(mx,my);if(len>1){mx/=len;my/=len}
   const ox=e.x,oy=e.y;
   if(netMode&&isHost&&e.p&&e.id!==localSlot&&e.mq){const lim=sp*1.2*.3;for(const[q,dx,dy]of e.mq){if(!warm){const l=Math.hypot(dx,dy),f=l>lim?lim/l:1;mv(e,dx*f,dy*f)}e.ack=q}e.mq.length=0}
@@ -5295,11 +5295,11 @@ function zUpd(dt){
   zAct(e,act&&!warm?1:0,dt,mvd);
   if(!warm&&!e.down&&(ZS.fr+e.id)%12===0)zAutoPick(e);
   // tir (arme en main et balles dans le chargeur) ou coup de poignard ; pas pendant un bandage
-  if(fire&&!warm&&!(e.bd>0)&&!e.down){if(zGun(e)){if(e.ammo>0&&e.rl<=0&&e.cd<=0)zFire(e);else if(e.ammo<=0)zReload(e)}else if(e.kcd<=0){if(e.wp===3&&e.wk)zSpear(e);else zKnife(e)}}}
+  if(fire&&!warm&&!(e.bd>0)&&!e.down){if(e.ta)zTaCancel(e,1);if(zGun(e)){if(e.ammo>0&&e.rl<=0&&e.cd<=0)zFire(e);else if(e.ammo<=0)zReload(e)}else if(e.kcd<=0){if(e.wp===3&&e.wk)zSpear(e);else zKnife(e)}}}
  if(!warm){zBullets(dt);updGren(dt);zWaves(dt);zZombies(dt);zAnimals(dt);zCampfires(dt);zFires(dt);zAllyTick(dt);zFogTick(dt)}
  zCheckEnd()}
 // briquet : allume / eteint (3 min d'autonomie au total)
-function zLighter(e){if(e.down)return;if(e.lit)e.lit=0;else if(e.lf>0&&!(e.tch>0))e.lit=1;else if(e.tch>0)zToast(e,30);if(!HEADLESS&&e.id===localSlot)zSnd(e.lit?'lighter':'lid',e.x,e.y)}
+function zLighter(e){if(e.down)return;if(e.lit)e.lit=0;else if(e.lf>0&&!(e.tch>0))e.lit=1;else if(e.tch>0)zToast(e,30);else{zToast(e,112);return}if(!HEADLESS&&e.id===localSlot)zSnd(e.lit?'lighter':'lid',e.x,e.y)}
 // poignard : coup dans un arc devant soi (zombie ou joueur d'une autre equipe le plus proche)
 function zKnife(e){e.kcd=Z_KN.cd;e.ks=(e.ks||0)+1;e.ksw=.24;if(!HEADLESS&&!(netMode&&!isHost&&e.id===localSlot))zSnd('swing',e.x,e.y);zMelee(e,Z_KN.r,Z_KN.dmg,Z_KN.arc)}
 // lancer : grenade ou cocktail Molotov (selon l'objet choisi)
@@ -5307,15 +5307,18 @@ function zThrow(e,tx,ty){const k=zThrowK(e);if(!k||e.down)return;e.gren=zCount(e
 function zHit(z,dmg,e,md){z.hp-=dmg;z.fl=T;z.stag=md===1?.07:(md===2?.5:.26);if(md!==1)z.wind=0;
  const a=Math.atan2(z.y-e.y,z.x-e.x),kb=(z.t===2?.3:1)*(md===1?3:(md===2?18:10));if(!hit(z.x+Math.cos(a)*kb,z.y+Math.sin(a)*kb,9)){z.x+=Math.cos(a)*kb;z.y+=Math.sin(a)*kb}
  if(z.hp>0){z.tgt=e.id;z.st='hunt';z.lost=0;zEv(1,z.x,z.y,e.id,z.id)}
- else{z.hp=0;z.dT=T;z.st='dead';if(e.team>=0&&e.team<5&&E[e.id]){stat(e.id).p++;ZS.kills[e.team]++}zEv(2,z.x,z.y,e.id,z.id)}}
+ else{z.hp=0;z.dT=T;z.st='dead';if(e.team>=0&&e.team<5&&E[e.id]){stat(e.id).p++;ZS.kills[e.team]++}zEv(2,z.x,z.y,e.id,z.id);zDrop(z)}}
+// butin sur les zombies : 14 % munitions, 3 % bandage, 4 % snack, 2 % eau ; les brutes laissent souvent des munitions (70 %)
+function zDrop(z){if(GI.length>170)return;const r=Math.random(),[x,y]=zDropPos(z.x,z.y,6);if(z.t===2&&r<.7){zGAdd(ZK.ammo,14+(Math.random()*11|0),x,y);return}if(r<.14)zGAdd(ZK.ammo,8+(Math.random()*9|0),x,y);else if(r<.17)zGAdd(ZK.bdg,1,x,y);else if(r<.21)zGAdd(ZK.snack,1,x,y);else if(r<.23)zGAdd(ZK.water,1,x,y)}
 // ---------- vagues : 1 par minute ; (vague + 1) zombies par equipe en vie ; 60 zombies vivants au plus (le reste attend) ----------
-function zType(w){const r=Math.random();if(w>=15&&r<.08)return 3;if(w>=10&&r<.18)return 2;if(w>=5&&r<.42)return 1;return 0}
+function zType(w){const r=Math.random();if(w>=15&&r<.08)return 3;if(w>=10&&r<.15)return 2;if(w>=5&&r<.42)return 1;return 0}
 function zTeamC(t){let x=0,y=0,n=0;for(const e of E)if(e.team===t&&e.alive){x+=e.x;y+=e.y;n++}return n?{x:x/n,y:y/n}:null}
 function zWaves(dt){if(ZS.t>=ZS.next){ZS.wave++;ZS.next+=Z_WAVE_T;const w=Math.min(ZS.wave,Z_WAVES);
-  for(let t=0;t<5;t++){if(!E.some(e=>e.team===t&&e.alive))continue;for(let k=0;k<1+w;k++)ZQ.push({tm:t,ty:zType(w),w:ZS.wave})}if(ZQ.length>140)ZQ.splice(0,ZQ.length-140)
-  zEv(5,0,0,ZS.wave);if(ZS.wave>=Z_WAVES&&!ZS.fog)zFogStart();zLootRespawn(8);zAnSpawn(Math.min(3,22-ZAN.filter(a=>a.hp>0).length))}   // quelques animaux reviennent a chaque vague
+  for(let t=0;t<5;t++){if(!E.some(e=>e.team===t&&e.alive))continue;for(let k=0;k<1+Math.round(w*.8);k++)ZQ.push({tm:t,ty:zType(w),w:ZS.wave})}if(ZQ.length>140)ZQ.splice(0,ZQ.length-140)
+  zEv(5,0,0,ZS.wave);if(ZS.wave>=Z_WAVES&&!ZS.fog)zFogStart();zLootRespawn(8+Math.min(8,ZS.wave>>1));zAnSpawn(Math.min(3,22-ZAN.filter(a=>a.hp>0).length))}   // quelques animaux reviennent a chaque vague
  ZS.qT=(ZS.qT||0)-dt;if(ZQ.length&&ZS.qT<=0){ZS.qT=.15;let n=0;for(const z of Z)if(z.hp>0)n++;
-  for(let k=0;k<4&&ZQ.length&&n<Z_CAP;k++){const q=ZQ.shift();if(!E.some(e=>e.team===q.tm&&e.alive)){const al=[0,1,2,3,4].filter(t=>E.some(e=>e.team===t&&e.alive));if(!al.length)break;q.tm=al[Math.random()*al.length|0]}
+  const cap=Math.min(Z_CAP,14+12*[0,1,2,3,4].filter(t=>E.some(e=>e.team===t&&e.alive)).length);   // moins d'equipes en vie : horde plafonnee plus bas
+  for(let k=0;k<4&&ZQ.length&&n<cap;k++){const q=ZQ.shift();if(!E.some(e=>e.team===q.tm&&e.alive)){const al=[0,1,2,3,4].filter(t=>E.some(e=>e.team===t&&e.alive));if(!al.length)break;q.tm=al[Math.random()*al.length|0]}
    const p=zSpawnPos(q.tm);if(!p){ZQ.push(q);break}Z.push(zMake(q.ty,p[0],p[1],q.tm,q.w));n++}}}
 function zSpawnPos(t){const c=zTeamC(t);if(!c)return null;const pl=E.filter(e=>e.alive);
  for(let k=0;k<40;k++){const a=Math.random()*6.283,d=(k<25?950:1300)+Math.random()*450,x=c.x+Math.cos(a)*d,y=c.y+Math.sin(a)*d;
@@ -5329,7 +5332,7 @@ function zThink(z){let best=null,bd=1e9;
   let det=d<190||(z.tgt===e.id&&z.st==='hunt'&&d<620);
   if(!det&&(e.lit||e.tch>0)&&d<(e.tch>0?860:760))det=d<(e.tch>0?360:300)||los(z,e);
   if(!det&&d<360&&e.mvn>.6)det=los(z,e);
-  if(det&&d<bd){bd=d;best=e}}
+  if(det&&d+(e.down?220:0)<bd){bd=d+(e.down?220:0);best=e}}
  if(best){if(z.tgt!==best.id||z.st!=='hunt'){z.tgt=best.id;z.st='hunt'}z.lost=0;z.lx=best.x;z.ly=best.y;z.los=bd<520&&los(z,best)?1:0}
  else if(z.st==='hunt'){z.lost+=.3;z.los=0;if(z.lost>4){z.st='go';z.gx=z.lx;z.gy=z.ly;z.tgt=-1;z.gT=5}}
  else{z.gT-=.3;if(z.gT<=0){z.gT=6;let c=zTeamC(z.tm);if(!c){let bd2=1e9;for(let t=0;t<5;t++){const q=zTeamC(t);if(q){const d=Math.hypot(q.x-z.x,q.y-z.y);if(d<bd2){bd2=d;c=q;z.tm=t}}}}
@@ -5366,7 +5369,7 @@ function zZombies(dt){const ta=[0,1,2,3,4].map(t=>E.some(e=>e.team===t&&e.alive)
    else{const cx=Math.max(b.x,Math.min(z.x,b.x+b.w)),cy=Math.max(b.y,Math.min(z.y,b.y+b.h));z.ang+=zAng(Math.atan2(cy-z.y,cx-z.x),z.ang)*Math.min(1,dt*6);
     if(z.wind>0){z.wind-=dt;if(z.wind<=0){z.cd=C0.cd;zBarHit(b,z.t===2?60:6);zEv(43,cx,cy,-1,z.id)}}else if(z.cd<=0)z.wind=z.t===2?.5:.36;continue}}
   if(hunt){const d=Math.hypot(tg.x-z.x,tg.y-z.y);
-   if(z.wind>0){z.wind-=dt;z.ang+=zAng(Math.atan2(tg.y-z.y,tg.x-z.x),z.ang)*Math.min(1,dt*6);if(z.wind<=0){z.cd=C0.cd;if(d<C0.r+28&&los(z,tg)){hurt(tg,z.dm||C0.dmg,-1,0,z.x,z.y);if(!tg.alive)tg.body=1;else if(!tg.bleed&&Math.random()<.35){tg.bleed=1;tg.blt=0;zToast(tg,25)}zEv(3,tg.x,tg.y,tg.id,z.id)}}continue}
+   if(z.wind>0){z.wind-=dt;z.ang+=zAng(Math.atan2(tg.y-z.y,tg.x-z.x),z.ang)*Math.min(1,dt*6);if(z.wind<=0){z.cd=C0.cd;if(d<C0.r+28&&los(z,tg)){hurt(tg,z.dm||C0.dmg,-1,0,z.x,z.y);if(!tg.alive)tg.body=1;else if(!tg.bleed&&!tg.down&&Math.random()<.28){tg.bleed=1;tg.blt=0;tg.bld=0;zToast(tg,25)}zEv(3,tg.x,tg.y,tg.id,z.id)}}continue}
    if(d<C0.r+18&&z.cd<=0){z.wind=z.t===2?.5:.36;continue}
    if(d<C0.r+12){z.ang+=zAng(Math.atan2(tg.y-z.y,tg.x-z.x),z.ang)*Math.min(1,dt*8);continue}}
   else if(z.st==='hunt'){z.st='go';z.tgt=-1;z.gT=0}
@@ -5398,14 +5401,16 @@ function thinkZ(e){const mate=E.find(m=>m!==e&&m.team===e.team&&m.alive),lead=!m
  let pv=null,pd=1e9;for(const f of E){if(!f.alive||f.team===e.team||zAllied(f.team,e.team))continue;const d=Math.hypot(f.x-e.x,f.y-e.y);if(d<(f.lit?520:200)&&d<pd&&(d<90||los(e,f))){pd=d;pv=f}}
  if(e.agg===undefined)e.agg=.15+Math.random()*.45;const hitBy=e.zhit&&T-e.zhit.t<3&&E[e.zhit.id]&&E[e.zhit.id].alive&&!zFriend(E[e.zhit.id].team,e.team)?E[e.zhit.id]:null;if(hitBy&&(!pv||Math.hypot(hitBy.x-e.x,hitBy.y-e.y)<pd+40)){pv=hitBy;pd=Math.hypot(hitBy.x-e.x,hitBy.y-e.y)}
  const gun=e.wp&&e.wp<3&&(e.ammo>0||zCount(e,ZK.ammo)>0);if(e.wp)e.wk=gun||e.wp===3?1:0;
+ if(gun&&zb&&(zb.t===0||zb.t===3)&&near<=2&&!brute&&zd<260&&e.hp>55&&zAmmoT(e)<120&&!(pv&&pd<300))e.wk=0;   // on garde les balles pour les groupes, les coureurs et les brutes
  {const bt=zBotBetray(e);if(bt){pv=bt;pd=Math.hypot(bt.x-e.x,bt.y-e.y)}}
  const pvFight=pv&&(e.zbt===pv.id||hitBy===pv||pd<80||(e.hp>pv.hp+25&&e.agg>.4)||(gun&&!pv.wp&&e.agg>.3)),pvAvoid=pv&&!pvFight&&pd<300;
  // soins a l'abri ; rechargement quand rien ne presse
  if(!(e.bd>0)&&(e.hp<62||(e.bleed&&e.hp<92))&&(!zb||zd>350)&&!(pv&&pd<320)&&zCount(e,ZK.bdg)>0)zBandageKey(e);
  if(zGun(e)&&e.ammo<ZW[e.wp].mag*.5&&(!zb||zd>240))zReload(e);
- if(!(e.bd>0)&&(!zb||zd>300)&&!(pv&&pd<300))zBotEat(e);
+ if(!(e.bd>0)&&(!zb||zd>300)&&!(pv&&pd<300)&&!zBotCraft(e,zb?zd:1e9))zBotEat(e);
+ if(zb&&!(e.bd>0))zBotThrow(e);
  e.zt=null;e.zit=0;
- if(zb&&(gun0?((e.hp<40&&near>=3)||near>=7):((e.hp<40&&near>=2)||(brute&&e.hp<100)||near>=4))){e.mode='flee';let ax=0,ay=0;for(const z of Z){if(z.hp<=0)continue;const d=Math.hypot(z.x-e.x,z.y-e.y);if(d<320){ax+=(e.x-z.x)/(d+1);ay+=(e.y-z.y)/(d+1)}}
+ if(zb&&(gun0?((e.hp<40&&near>=3)||near>=7):((e.hp<40&&near>=2)||brute||near>=4))&&!(mate&&mate.p&&mate.down&&e.hp>45)){e.mode='flee';let ax=0,ay=0;for(const z of Z){if(z.hp<=0)continue;const d=Math.hypot(z.x-e.x,z.y-e.y);if(d<320){ax+=(e.x-z.x)/(d+1);ay+=(e.y-z.y)/(d+1)}}
   if(mate&&Math.hypot(mate.x-e.x,mate.y-e.y)>200){ax+=(mate.x-e.x)/900;ay+=(mate.y-e.y)/900}const L=Math.hypot(ax,ay)||1;e.zg=zFreeNear(e.x+ax/L*280,e.y+ay/L*280)||e.zg}
  else if(zInFog(e.x,e.y)&&zBotZone(e,zb?zd:1e9)){}
  else if((!zb||zd>170)&&zBotRevive(e,zb?zd:1e9)){}
@@ -5413,6 +5418,8 @@ function thinkZ(e){const mate=E.find(m=>m!==e&&m.team===e.team&&m.alive),lead=!m
  else if(pvFight&&pd<260){e.mode='pvp';e.zt=pv}
  else if(pvAvoid){e.mode='avoid';const a=Math.atan2(e.y-pv.y,e.x-pv.x);e.zg=zFreeNear(e.x+Math.cos(a)*320,e.y+Math.sin(a)*320)||e.zg}
  else if(e.bd>0){e.mode='heal';e.zg=null}
+ else if(e.ta&&e.ta.k==='cook'&&(!zb||zd>260)){e.mode='cook';e.zg=null}
+ else if(zBotGive(e,mate,zb?zd:1e9)){}
  else if(zBotZone(e,zb?zd:1e9)){}
  else if(zBotNeeds(e,zb?zd:1e9)){}
  else if(zBotLoot(e,mate,lead,zb?zd:1e9)){}
@@ -5426,10 +5433,10 @@ function thinkZ(e){const mate=E.find(m=>m!==e&&m.team===e.team&&m.alive),lead=!m
  // briquet : allume pendant un combat (on y voit), eteint ensuite pour ne pas attirer la horde
  if(e.mode==='fight'&&zd<280){e.zlT=T+3;if(!e.lit&&e.lf>12)zLighter(e)}else if(e.lit&&T>(e.zlT||0))zLighter(e)}
 // bots : objets interessants a portee (arme si on n'en a pas ou meilleure, munitions, bandages, grenades) et voitures pas encore fouillees
-function zBotWant(e,it){const I=ZI[it.k];if(I.w){if(!e.wp)return I.w===3?2.2:3;if(I.w<3&&e.wp===3)return 2.6;if(I.w===2&&e.wp===1)return 2.4;if(e.b2&&!e.wp2&&I.w!==e.wp)return 1.4;return 0}
- if(zRoom(e,it.k)<=0)return 0;const K_=I.k,food=['cmeat','cfish','snack','meat','fish'].includes(K_);
+function zBotWant(e,it){const I=ZI[it.k];if(zGiftNo(e,it))return 0;if(I.w){const hasA=I.w===3||it.n>0||zCount(e,ZK.ammo)>0,curOk=e.wp===3||e.ammo>0||zCount(e,ZK.ammo)>0;if(!e.wp)return I.w===3?2.2:(hasA?3:.4);if(I.w<3&&e.wp===3)return hasA?2.6:0;if(I.w===3&&!curOk)return 2.2;if(I.w===2&&e.wp===1)return hasA?2.4:0;if(e.b2&&!e.wp2&&I.w!==e.wp)return 1.4;return 0}
+ const K_=I.k,food=['cmeat','cfish','snack','meat','fish'].includes(K_);if(zRoom(e,it.k)<=0){if(food&&e.hun<55&&!(K_==='meat'||K_==='fish'))return 1.6;if(K_==='water'&&e.thi<55)return 1.8;return 0}
  if(K_==='ammo')return e.wp&&e.wp<3?(zCount(e,ZK.ammo)<90?2:.3):.5;if(K_==='bdg')return 1.8;if(K_==='gren'||K_==='molo')return .8;
- if(K_==='water')return e.thi<70?2.2:(zCount(e,ZK.water)?.3:1);if(food)return e.hun<60?2:(K_==='meat'||K_==='fish'?.4:.9);if(K_==='fuel')return e.lf<70?1.5:.3;if(K_==='leather')return e.bag.length<4?.8:.3;if(K_==='lbag')return e.bag.length<4&&!zCount(e,ZK.lbag)?1.6:0;return 0}
+ if(K_==='water')return e.thi<70?2.2:(zCount(e,ZK.water)?.3:1);if(K_==='bottle')return zCount(e,ZK.water)+zCount(e,ZK.bottle)<1&&e.bag.filter(s=>!s).length>=2?.5:0;if(food)return e.hun<60?2:(K_==='meat'||K_==='fish'?.4:.9);if(K_==='fuel')return e.lf<70?1.5:.3;if(K_==='leather')return e.bag.length<4?.8:.3;if((K_==='wood'||K_==='stone')&&e.wp!==3&&!(e.wp&&zAmmoT(e)>20))return zCount(e,ZK[K_])<(K_==='wood'?5:1)?1.1:0;if(K_==='wood'&&zCount(e,ZK.wood)<3)return .4;if(K_==='lbag')return e.bag.length<4&&!zCount(e,ZK.lbag)?1.6:0;return 0}
 function zBotLoot(e,mate,lead,zd){if(zd<380)return false;
  let best=null,bs=0;const R=lead||!mate?520:260;for(const it of GI){const d=Math.hypot(it.x-e.x,it.y-e.y);if(d>R)continue;if(mate&&!lead&&Math.hypot(it.x-mate.x,it.y-mate.y)>300)continue;if(e.zbl&&e.zbl.includes(it.id))continue;const w=zBotWant(e,it);if(w<=0)continue;const s=w/(1+d/250);if(s>bs){bs=s;best=it}}
  if(best){if(e.zitId!==best.id){e.zitId=best.id;e.zitT=T}else if(T-e.zitT>9){(e.zbl||(e.zbl=[])).push(best.id);if(e.zbl.length>12)e.zbl.shift();e.zitId=0;return false}   // objet inaccessible : on l'oublie
@@ -5439,6 +5446,8 @@ function zBotLoot(e,mate,lead,zd){if(zd<380)return false;
  return false}
 function zBotMove(e,dt){let mx=0,my=0,fire=0;const t=e.zt;
  if(e.znT>T&&e.znx){mx=e.znx[0];my=e.znx[1];e.want=Math.atan2(my,mx)}
+ else if(e.mode==='cook'){e.want+=Math.sin(T*.7+e.id*2)*dt*.3;e.ang+=Math.max(-13*dt,Math.min(13*dt,zAng(e.want,e.ang)));return[0,0,0]}
+ else if(e.mode==='give'&&e.zg){const d=Math.hypot(e.zg[0]-e.x,e.zg[1]-e.y);if(d>90){const v=zNav(e,e.zg[0],e.zg[1],dt,80);mx=v[0];my=v[1];if(mx||my)e.want=Math.atan2(my,mx)}}
  else if(e.mode==='drink'){e.want+=Math.sin(T*.7+e.id*2)*dt*.4;return[0,0,0,1]}
  else if(e.mode==='revive'){const m=E[e.zrv];if(m&&m.alive&&m.down){const d=Math.hypot(m.x-e.x,m.y-e.y);if(d>40){const v=zNav(e,m.x,m.y,dt,30);mx=v[0];my=v[1];e.want=Math.atan2(my,mx)}else{e.want=Math.atan2(m.y-e.y,m.x-e.x);e.ang+=Math.max(-13*dt,Math.min(13*dt,zAng(e.want,e.ang)));return[0,0,0,1]}}else{e.mode='';e.tk=0}}
  else if(t&&(t.mhp!==undefined?t.hp>0:t.alive)&&zGun(e)&&(e.ammo>0||e.rl>0)){const isZ=t.mhp!==undefined,d=Math.hypot(t.x-e.x,t.y-e.y),a=Math.atan2(t.y-e.y,t.x-e.x),seen=d<560&&los(e,t),keep=t.an?120:(isZ?(t.t===1?210:170):230);
@@ -5451,7 +5460,7 @@ function zBotMove(e,dt){let mx=0,my=0,fire=0;const t=e.zt;
   else{if(d>keep+8){const v=zNav(e,t.x,t.y,dt,0);mx=v[0];my=v[1]}else if(d<keep-12){mx=-Math.cos(a)*.85;my=-Math.sin(a)*.85}else{mx=Math.cos(a+1.57*e.strafe)*.4;my=Math.sin(a+1.57*e.strafe)*.4;if(Math.random()<dt*.8)e.strafe=-e.strafe}
   if(d<(e.wp===3&&e.wk?ZW[3].r:Z_KN.r)+(isZ?ZT[t.t].r*.6:6)-4&&Math.abs(zAng(a,e.ang))<.45)fire=1}}
  else if(e.mode==='search'&&e.zcar>=0){const C=CUR.DECO.cars[e.zcar],d=Math.hypot(C[0]-e.x,C[1]-e.y);if(d>80){const v=zNav(e,e.zg[0],e.zg[1],dt,0);mx=v[0];my=v[1];e.want=Math.atan2(my,mx)}else{e.want=Math.atan2(C[1]-e.y,C[0]-e.x);return[0,0,0,1]}}
- else if(e.mode==='loot'&&e.zg){const d=Math.hypot(e.zg[0]-e.x,e.zg[1]-e.y);if(d<42){const it=GI.find(o=>o.id===e.zitId);if(it&&Math.hypot(it.x-e.x,it.y-e.y)<46){zPick(e,it);e.zv_=e.zv_||[];e.zv_.push(it.id)}e.zg=null;e.tk=0}else{const v=zNav(e,e.zg[0],e.zg[1],dt,0);mx=v[0];my=v[1];e.want=Math.atan2(my,mx)}}
+ else if(e.mode==='loot'&&e.zg){const d=Math.hypot(e.zg[0]-e.x,e.zg[1]-e.y);if(d<42){const it=GI.find(o=>o.id===e.zitId);if(it&&Math.hypot(it.x-e.x,it.y-e.y)<46){const F=zIsFood(it.k)?ZFOOD[ZI[it.k].k]:null;if(F&&(F.t?e.thi:e.hun)<55&&!(F.hp&&e.hp<30))zEatGround(e,it);else zPick(e,it);e.zv_=e.zv_||[];e.zv_.push(it.id)}e.zg=null;e.tk=0}else{const v=zNav(e,e.zg[0],e.zg[1],dt,0);mx=v[0];my=v[1];e.want=Math.atan2(my,mx)}}
  else if(e.zg&&!(e.mode==='explore'&&e.zwait>T)){const d=Math.hypot(e.zg[0]-e.x,e.zg[1]-e.y),fol=e.mode==='follow'||e.mode==='regroup',stop=fol?(d<300&&los(e,{x:e.zg[0],y:e.zg[1]})?85:20):30;if(d>stop){const v=zNav(e,e.zg[0],e.zg[1],dt,stop);mx=v[0];my=v[1];if(mx||my)e.want=Math.atan2(my,mx);if(fol&&d<130){mx*=.7;my*=.7}}}
  if(!mx&&!my&&!t){e.want+=Math.sin(T*.7+e.id*2)*dt*.8}
  e.ang+=Math.max(-13*dt,Math.min(13*dt,zAng(e.want,e.ang)));return[mx,my,fire]}
@@ -5460,8 +5469,8 @@ function zBotMove(e,dt){let mx=0,my=0,fire=0;const t=e.zt;
 function zSnap(){return{w:ZS.wave,nx:Math.max(0,Math.round((ZS.next-ZS.t)*10)/10),t:Math.round(ZS.t*10)/10,pl:ZS.pl,k:ZS.kills,eT:ZS.eT,q:ZQ.length,
  z:Z.map(z=>[z.id,z.t,Math.round(z.x),Math.round(z.y),Math.round(z.ang*20),Math.max(0,Math.ceil(z.hp/z.mhp*20)),z.wind>0?1:0,z.hp<=0?Math.round((T-z.dT)*10):-1]),
  ev:ZS.ev.filter(q=>T-q.t<1.2).map(q=>[q.u,q.k,Math.round(q.x),Math.round(q.y),q.a,q.z]),gi:zSnapItems(),cs:ZS.cs||0,...zSnapS(),...zSnap4()}}
-function zPSnap(e){return{li:e.lit?1:0,lf:Math.ceil(e.lf||0),ks:e.ks||0,bg:zBagSnap(e),wp:e.wp||0,wk:e.wk||0,bd:Math.round((e.bd||0)*10),sr:Math.round((e.sr||0)*10),sk:e.srK||0,hu:Math.round(e.hun*10)/10,th:Math.round(e.thi*10)/10,bl:e.bleed?1:0,tc:Math.ceil(e.tch||0),b2:e.b2||0,w2:e.wp2||0,a2:e.am2||0,tr:e.thr||0,bt:e.bdT>=0?e.bdT:-1,fs:Math.round((e.fsh||0)*10),fa:Math.round((e.fsa||0)*100),em:e.emoT>T?e.emo:0,ex:e.emoT>T?Math.round((e.emoT-T)*10):0,dn:e.down?1:0,dh:Math.round(e.dhp||0),rb:e.rvBy>=0?e.rvBy:-1,rp:Math.round((e.rvP||0)*100)}}
-function zPApply(e,q){e.lit=q.li;e.lf=q.lf;if(e.id!==localSlot&&q.ks!==e.ks){if(e.ks!==undefined&&!e.fresh){const sp_=e.wp===3&&e.wk;e.ksw=sp_?.3:.24;zSnd(sp_?'swing2':'swing',e.x,e.y)}e.ks=q.ks}zBagApply(e,q.bg);e.wp=q.wp||0;e.wk=q.wk||0;e.bd=(q.bd||0)/10;e.sr=(q.sr||0)/10;e.srK=q.sk||0;if(q.hu!==undefined){e.hun=q.hu;e.thi=q.th}e.bleed=q.bl||0;e.tch=q.tc||0;e.b2=q.b2||0;e.wp2=q.w2||0;e.am2=q.a2||0;e.thr=q.tr||0;e.bdT=q.bt===undefined?-1:q.bt;e.fsh=(q.fs||0)/10;e.fsa=(q.fa||0)/100;e.emo=q.em||0;e.emoT=q.em?T+(q.ex||0)/10:0;e.down=q.dn||0;e.dhp=q.dh||0;e.rvBy=q.rb===undefined?-1:q.rb;e.rvP=(q.rp||0)/100;zThrowSync(e)}
+function zPSnap(e){return{li:e.lit?1:0,lf:Math.ceil(e.lf||0),ks:e.ks||0,bg:zBagSnap(e),wp:e.wp||0,wk:e.wk||0,bd:Math.round((e.bd||0)*10),sr:Math.round((e.sr||0)*10),sk:e.srK||0,hu:Math.round(e.hun*10)/10,th:Math.round(e.thi*10)/10,bl:e.bleed?1:0,tc:Math.ceil(e.tch||0),b2:e.b2||0,w2:e.wp2||0,a2:e.am2||0,tr:e.thr||0,bt:e.bdT>=0?e.bdT:-1,fh:e.fdI&&!e.fdDone?Math.round(e.fdH/Z_EATH*20):0,ta:e.ta?({eat:1,drink:2,cook:3})[e.ta.k]:0,tp:e.ta?Math.round(e.ta.t*10):0,tn:e.ta?e.ta.n:0,tt:e.ta?e.ta.tot:0,fs:Math.round((e.fsh||0)*10),fa:Math.round((e.fsa||0)*100),em:e.emoT>T?e.emo:0,ex:e.emoT>T?Math.round((e.emoT-T)*10):0,dn:e.down?1:0,dh:Math.round(e.dhp||0),rb:e.rvBy>=0?e.rvBy:-1,rp:Math.round((e.rvP||0)*100)}}
+function zPApply(e,q){e.lit=q.li;e.lf=q.lf;if(e.id!==localSlot&&q.ks!==e.ks){if(e.ks!==undefined&&!e.fresh){const sp_=e.wp===3&&e.wk;e.ksw=sp_?.3:.24;zSnd(sp_?'swing2':'swing',e.x,e.y)}e.ks=q.ks}zBagApply(e,q.bg);e.wp=q.wp||0;e.wk=q.wk||0;e.bd=(q.bd||0)/10;e.sr=(q.sr||0)/10;e.srK=q.sk||0;if(q.hu!==undefined){e.hun=q.hu;e.thi=q.th}e.bleed=q.bl||0;e.tch=q.tc||0;e.b2=q.b2||0;e.wp2=q.w2||0;e.am2=q.a2||0;e.thr=q.tr||0;e.bdT=q.bt===undefined?-1:q.bt;e.fhP=(q.fh||0)/20;e.ta=q.ta?{k:['','eat','drink','cook'][q.ta],t:(q.tp||0)/10,n:q.tn||0,tot:q.tt||0}:null;e.fsh=(q.fs||0)/10;e.fsa=(q.fa||0)/100;e.emo=q.em||0;e.emoT=q.em?T+(q.ex||0)/10:0;e.down=q.dn||0;e.dhp=q.dh||0;e.rvBy=q.rb===undefined?-1:q.rb;e.rvP=(q.rp||0)/100;zThrowSync(e)}
 function zApply(m){ZS.wave=m.w;ZS.t=m.t;ZS.next=m.t+m.nx;ZS.pl=m.pl;ZS.kills=m.k;ZS.eT=m.eT;ZS.q=m.q;ZS.cs=m.cs||0;zApplyS(m);zApply4(m);if(m.gi){GI=m.gi.map(q=>({id:q[0],k:q[1],n:q[2],x:q[3],y:q[4]}));ZGD=1}
  const old=new Map(Z.map(z=>[z.id,z])),nz=[];
  for(const q of m.z){let z=old.get(q[0]);const C0=ZT[q[1]];if(!z)z={id:q[0],t:q[1],x:q[2],y:q[3],ang:q[4]/20,ph:Math.random()*6,mvn:0};
@@ -5469,10 +5478,10 @@ function zApply(m){ZS.wave=m.w;ZS.t=m.t;ZS.next=m.t+m.nx;ZS.pl=m.pl;ZS.kills=m.k
  Z=nz;if(m.ev.length&&m.ev[m.ev.length-1][0]<ZLU-5)ZLU=0;   // nouvelle partie sur le serveur : les numeros repartent de zero
  for(const q of m.ev){if(q[0]<=ZLU)continue;ZLU=q[0];zFx({u:q[0],k:q[1],x:q[2],y:q[3],a:q[4],z:q[5]})}}
 function zClientTick(dt,li){const me=E[localSlot];for(const e of E)if(e.ksw>0)e.ksw-=dt;zHoldTick();
- if(me&&me.alive&&st.s==='live'){me.kcd=(me.kcd||0)-dt;if(li.fire&&me.kcd<=0&&!zGun(me)&&!(me.bd>0)){const sp_=me.wp===3&&me.wk;me.kcd=sp_?ZW[3].cd:Z_KN.cd;me.ksw=sp_?.3:.24;zSnd(sp_?'swing2':'swing',me.x,me.y)}}   // coup de poignard affiche tout de suite (le serveur calcule le resultat)
+ if(me&&me.alive&&st.s==='live'){me.kcd=(me.kcd||0)-dt;if(li.fire&&me.kcd<=0&&!zGun(me)&&!(me.bd>0)&&!me.down){const sp_=me.wp===3&&me.wk;me.kcd=sp_?ZW[3].cd:Z_KN.cd;me.ksw=sp_?.3:.24;zSnd(sp_?'swing2':'swing',me.x,me.y)}}   // coup de poignard affiche tout de suite (le serveur calcule le resultat)
  zAnClient(dt);const k=1-Math.exp(-dt*12);
  for(const z of Z){if(z.tx===undefined)continue;const ox=z.x,oy=z.y;if(Math.hypot(z.tx-z.x,z.ty-z.y)>160){z.x=z.tx;z.y=z.ty}else{z.x+=(z.tx-z.x)*k;z.y+=(z.ty-z.y)*k}z.ang+=zAng(z.ta,z.ang)*k;const v=Math.hypot(z.x-ox,z.y-oy)/Math.max(dt,.001);z.mvn=Math.min(1,v/40);z.ph+=dt*v/11}}
-function zLqPress(){if(!ZMB())return;LQ.seq++;const me=E&&E[localSlot];if(netMode&&!isHost&&me&&me.alive){if(me.lit)me.lit=0;else if(me.lf>0&&!(me.tch>0))me.lit=1;zSnd(me.lit?'lighter':'lid',me.x,me.y)}}
+function zLqPress(){if(!ZMB())return;LQ.seq++;const me=E&&E[localSlot];if(netMode&&!isHost&&me&&me.alive&&!me.down){if(me.lit)me.lit=0;else if(me.lf>0&&!(me.tch>0))me.lit=1;else return;zSnd(me.lit?'lighter':'lid',me.x,me.y)}}
 // cibles de la visee tactile : zombies et joueurs ennemis visibles (dans la lumiere ou tout pres)
 function zAimCand(me){const out=[],lit=E.filter(e=>e.alive&&zLit(e));const inL=o=>Math.hypot(o.x-me.x,o.y-me.y)<170||lit.some(l=>Math.hypot(l.x-o.x,l.y-o.y)<(l.tch>0?Z_TCH_R:Z_LIT.r)+20)||ZCF.some(f=>Math.hypot(f.x-o.x,f.y-o.y)<Z_CF_R)||ZFI.some(f=>Math.hypot(f.x-o.x,f.y-o.y)<150)||FOREST.litAt(o.x,o.y)>.3;
  const R=zGun(me)?460:300;for(const z of Z)if(z.hp>0&&Math.hypot(z.x-me.x,z.y-me.y)<R&&inL(z))out.push(z);for(const a of ZAN)if(a.hp>0&&Math.hypot(a.x-me.x,a.y-me.y)<R&&inL(a))out.push(a);
@@ -5494,6 +5503,7 @@ function zFx(q){if(HEADLESS)return;const now=performance.now();
  else if(q.k===42){zSnd('break',q.x,q.y);puffAt(q.x,q.y,0,0,'B')}
  else if(q.k===43)zSnd('thud',q.x,q.y);
  else if(q.k===51)zSnd('splash',q.x,q.y);
+ else if(q.k===66)zSnd('sizzle',q.x,q.y);
  else if(q.k>=52&&q.k<=65)zFx4(q,now);
  else if(q.k>=100&&q.k<=120){if(q.a===localSlot){zToastShow(q);if(q.k===100)zSnd('cough')}}
  else if(q.k>=8&&q.k<=50){if(q.a===localSlot)zToastShow(q)}}
@@ -5586,7 +5596,7 @@ function zSnd(k,x,y,ty){if(!AC||!WS||(typeof localSlot!=='undefined'&&localSlot<
  else if(k==='scream'){const F=[[900,1],[1900,.7],[3000,.35]];zVox(o,t,{d:1.3,f0:520,fm:1080,tm:.22,f1:620,F,q:5,g:.46,br:.35,dist:2,vr:9,vd:.06,a:.05,s:.6});zVox(o,t+.02,{d:1.2,f0:780,fm:1600,tm:.25,f1:900,F,q:6,g:.18,br:.2,dist:1.5,vr:11,vd:.07,a:.06,s:.55});zSw(o,t,1.1,'highpass',2500,4000,.8,.12,.08)}
  else if(k==='horn'){
   // nouvelle vague : deux coups d'une grosse cloche au loin (partiels inharmoniques, longue resonance), un battement sourd, la horde qui gemit au loin ; volume reduit
-  const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2200;lp.Q.value=.5;const bo=AC.createGain();bo.gain.value=.18;lp.connect(bo);bo.connect(o);
+  const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2200;lp.Q.value=.5;const bo=AC.createGain();bo.gain.value=.216;lp.connect(bo);bo.connect(o);
   const P=[[.5,.5,4.2],[1,.34,3.4],[1.19,.2,2.6],[1.56,.14,2.2],[2,.1,1.8],[2.51,.07,1.4],[3.01,.05,1.1]],f=98+r()*6;
   for(const tt of[0,1.7])for(const[m,gg,dd]of P){const ff=f*m*(1+(r()-.5)*.004);impTone(lp,t+tt,'sine',ff,ff*.998,dd,gg*(tt?.8:1))}
   impNz(lp,t,.06,'lowpass',500,1,.35,.002);impNz(lp,t+1.7,.06,'lowpass',500,1,.3,.002);impTone(lp,t,'sine',55,40,.9,.25);
@@ -5612,6 +5622,7 @@ function zSnd(k,x,y,ty){if(!AC||!WS||(typeof localSlot!=='undefined'&&localSlot<
  else if(k==='revive'){impTone(o,t,'triangle',440,880,.3,.16);impTone(o,t+.12,'triangle',660,1320,.35,.12)}
  else if(k==='cough'){for(let i=0;i<2+(r()*2|0);i++)zVox(o,t+i*.22,{d:.16,f0:180+r()*40,f1:140,F:ZV.ah,q:2.5,g:.35,br:1.4,a:.005,s:.2})}
  else if(k==='ally'){[523,659,784].forEach((f,i)=>impTone(o,t+i*.09,'triangle',f,f,.35,.12))}
+ else if(k==='sizzle'){for(let i=0;i<14;i++)impNz(o,t+r()*1.2,.01+r()*.02,'highpass',3000+r()*3000,.8,.12+r()*.12,.001);impNz(o,t,1.3,'bandpass',4500,.8,.08,.2)}
  else if(k==='crackle'){for(let i=0;i<2;i++)impNz(o,t+r()*.05,.006+r()*.012,'highpass',2500+r()*3000,.8,.2+r()*.3,.0005)}
  }catch(x){}}
 // ---------- ambiance : vent dans les arbres, grillons, chouette, craquements, feux qui crepitent ----------
@@ -5661,15 +5672,15 @@ const zWK=w=>w===3?ZK.spear:w,zGun=e=>!!(e&&e.wp&&e.wp<3&&e.wk);   // type d'obj
 // armes : chargeur, cadence (s), degats, dispersion, rechargement (s), bruit (rayon ou les zombies entendent le tir)
 const ZW={1:{mag:12,cd:.26,dmg:28,sp:.035,rl:1.4,noise:600,v:980},2:{mag:30,cd:.11,dmg:22,sp:.07,rl:2.2,noise:900,v:1020},3:{melee:1,r:82,dmg:46,cd:.7,arc:.6}};
 // tirage au sort selon le lieu : c chalet (plus d'armes), v voiture, f foret (plus de ressources)
-const ZLOOT={c:[['pistol',18],['ar',8],['ammo',24],['bdg',12],['gren',8],['water',10],['snack',10],['metal',6],['fuel',5],['bottle',4]],
- v:[['ammo',24],['metal',24],['fuel',16],['pistol',8],['water',10],['snack',10],['bdg',6],['gren',4],['bottle',6]],
- f:[['wood',30],['stone',30],['metal',6],['ammo',9],['water',7],['snack',7],['bdg',5],['pistol',4],['gren',2]]};
+const ZLOOT={c:[['pistol',18],['ar',8],['ammo',30],['bdg',12],['gren',8],['water',10],['snack',10],['metal',6],['fuel',5],['bottle',4]],
+ v:[['ammo',30],['metal',24],['fuel',16],['pistol',8],['water',10],['snack',10],['bdg',6],['gren',4],['bottle',6]],
+ f:[['wood',30],['stone',30],['metal',6],['ammo',14],['water',7],['snack',7],['bdg',5],['pistol',4],['gren',2]]};
 // fouille d'une voiture (4 s, une seule fois par voiture, bruyant)
 const ZCAR=[['ammo',26],['water',18],['snack',13],['bdg',10],['pistol',11],['fuel',9],['gren',8],['ar',5]];
 const Z_SEARCH=4,Z_BDG=3,Z_BDG_HP=35;
 let GI=[],ZGD=1;   // objets au sol ; ZGD : le rendu doit etre refait
 function zRoll(T_){let s=0;for(const q of T_)s+=q[1];let r=Math.random()*s;for(const q of T_)if((r-=q[1])<=0)return q[0];return T_[0][0]}
-function zQty(k){return k==='ammo'?15+(Math.random()*16|0):(k==='wood'||k==='stone')?1+(Math.random()*3|0):k==='metal'?1+(Math.random()*2|0):k==='pistol'?ZW[1].mag:k==='ar'?ZW[2].mag:1}
+function zQty(k){return k==='ammo'?18+(Math.random()*19|0):(k==='wood'||k==='stone')?1+(Math.random()*3|0):k==='metal'?1+(Math.random()*2|0):k==='pistol'?ZW[1].mag:k==='ar'?ZW[2].mag:1}
 function zGAdd(k,n,x,y){const it={id:++ZS.gid,k,n,x:Math.round(x),y:Math.round(y)};GI.push(it);ZS.gv++;ZGD=1;return it}
 function zGDel(it){const i=GI.indexOf(it);if(i>=0){GI.splice(i,1);ZS.gv++;ZGD=1}}
 // position libre pres d'un point (les objets ne tombent pas dans un tronc, un mur ou l'eau)
@@ -5698,18 +5709,19 @@ function zPick(e,it){const I=ZI[it.k];
  if(I.w){zTakeWeapon(e,I.w,it.n);zGDel(it);zToast(e,8,it.k,1);return 1}
  const got=zGive(e,it.k,it.n,0,it.u);if(!got){zToast(e,9);return 0}it.n-=got;if(it.n<=0)zGDel(it);else{ZS.gv++;ZGD=1}zToast(e,8,it.k,got);return got}
 // en passant dessus : complete les piles deja commencees (sans prendre de nouvel emplacement)
-function zAutoPick(e){for(const it of GI){if(Math.abs(it.x-e.x)>30||Math.abs(it.y-e.y)>30||ZI[it.k].w)continue;if(Math.hypot(it.x-e.x,it.y-e.y)>28)continue;const got=zGive(e,it.k,it.n,1);if(got){it.n-=got;if(it.n<=0)zGDel(it);else{ZS.gv++;ZGD=1}zToast(e,8,it.k,got);return}}}
+function zAutoPick(e){for(const it of GI){if(Math.abs(it.x-e.x)>30||Math.abs(it.y-e.y)>30||ZI[it.k].w||(!e.p&&zGiftNo(e,it)))continue;if(Math.hypot(it.x-e.x,it.y-e.y)>28)continue;const got=zGive(e,it.k,it.n,1);if(got){it.n-=got;if(it.n<=0)zGDel(it);else{ZS.gv++;ZGD=1}zToast(e,8,it.k,got);return}}}
 // prendre une arme : main libre, sinon emplacement de rechange (sac en cuir), sinon on lache celle qu'on tient
 function zTakeWeapon(e,w,n){if(!e.wp){e.wp=w;e.ammo=n;e.wk=1;e.rl=0;return}if(e.b2&&!e.wp2){e.wp2=w;e.am2=n;return}const[x,y]=zDropPos(e.x,e.y,16);zGAdd(zWK(e.wp),e.ammo,x,y);e.wp=w;e.ammo=n;e.wk=1;e.rl=0}
-function zDropSlot(e,i){const s=e.bag[i];if(!s)return;const[x,y]=zDropPos(e.x+Math.cos(e.ang)*22,e.y+Math.sin(e.ang)*22,8);const it=zGAdd(s.k,s.n,x,y);if(s.u!==undefined)it.u=s.u;e.bag[i]=null;if(s.k===ZK.rod)e.fsh=0;zThrowSync(e)}
+function zDropSlot(e,i){const s=e.bag[i];if(!s)return null;const[x,y]=zDropPos(e.x+Math.cos(e.ang)*22,e.y+Math.sin(e.ang)*22,8);const it=zGAdd(s.k,s.n,x,y);if(s.u!==undefined)it.u=s.u;e.bag[i]=null;if(s.k===ZK.rod)e.fsh=0;zThrowSync(e);return it}
 function zDropWeapon(e){if(!e.wp||!e.wk)return;const[x,y]=zDropPos(e.x+Math.cos(e.ang)*22,e.y+Math.sin(e.ang)*22,8);zGAdd(zWK(e.wp),e.ammo,x,y);e.wp=0;e.ammo=0;e.wk=0;e.rl=0;if(e.wp2){e.wp=e.wp2;e.ammo=e.am2;e.wp2=0;e.am2=0}}
 // a la mort : tout le contenu du sac et l'arme restent au sol, autour du corps
-function zDropAll(e){if(e.wp){const[x,y]=zDropPos(e.x,e.y,14);zGAdd(zWK(e.wp),e.ammo,x,y);e.wp=0;e.ammo=0}if(e.wp2){const[x,y]=zDropPos(e.x,e.y,14);zGAdd(zWK(e.wp2),e.am2,x,y);e.wp2=0;e.am2=0}e.lit=0;e.tch=0;e.bleed=0;e.fsh=0;for(let i=0;i<e.bag.length;i++){const s=e.bag[i];if(!s)continue;const[x,y]=zDropPos(e.x,e.y,18);const it=zGAdd(s.k,s.n,x,y);if(s.u!==undefined)it.u=s.u;e.bag[i]=null}if(e.bag.length>3){const[x,y]=zDropPos(e.x,e.y,18);zGAdd(ZK.lbag,1,x,y);e.bag.length=3}e.gren=0;e.bd=0;e.sr=0}
+function zDropAll(e){if(e.ta)zTaCancel(e);e.fdI=0;if(e.wp){const[x,y]=zDropPos(e.x,e.y,14);zGAdd(zWK(e.wp),e.ammo,x,y);e.wp=0;e.ammo=0}if(e.wp2){const[x,y]=zDropPos(e.x,e.y,14);zGAdd(zWK(e.wp2),e.am2,x,y);e.wp2=0;e.am2=0}e.lit=0;e.tch=0;e.bleed=0;e.fsh=0;for(let i=0;i<e.bag.length;i++){const s=e.bag[i];if(!s)continue;const[x,y]=zDropPos(e.x,e.y,18);const it=zGAdd(s.k,s.n,x,y);if(s.u!==undefined)it.u=s.u;e.bag[i]=null}if(e.bag.length>3){const[x,y]=zDropPos(e.x,e.y,18);zGAdd(ZK.lbag,1,x,y);e.bag.length=3}e.gren=0;e.bd=0;e.sr=0}
 // utiliser un objet du sac (bandage : 3 s, +35 PV ; les autres serviront a l'etape suivante : faim, soif, artisanat)
 function zUse(e,i){const s=e.bag[i];if(!s)return;const k=s.k;
- if(k===ZK.bdg){if(e.bd>0)return;const m=E.find(o=>o!==e&&o.alive&&o.team===e.team&&Math.hypot(o.x-e.x,o.y-e.y)<62&&(o.bleed||o.hp<o.maxhp-20)&&(o.bleed||!e.bleed)&&o.hp<=e.hp+40);
+ if(k===ZK.bdg){if(e.bd>0)return;const full=e.hp>=e.maxhp&&!e.bleed,m=E.find(o=>o!==e&&o.alive&&!o.down&&o.team===e.team&&Math.hypot(o.x-e.x,o.y-e.y)<62&&(o.bleed||o.hp<o.maxhp-20)&&(full||(o.bleed&&!e.bleed)||(!e.bleed&&o.hp<e.hp-15)));
   if(m){e.bd=Z_BDG2;e.bdT=m.id;e.bdHp=e.hp;m.bdHp=m.hp;return}if(e.hp>=e.maxhp&&!e.bleed){zToast(e,13);return}e.bd=Z_BDG;e.bdT=-1;e.bdHp=e.hp;return}
- const F=ZFOOD[ZI[k].k];if(F){const st_=F.t?'thi':'hun';if(e[st_]>=97){zToast(e,27,k);return}zTake(e,k,1);e[st_]=Math.min(100,e[st_]+F.v);if(F.hp)zDmg(e,F.hp);if(k===ZK.water&&!(e.p&&zGive(e,ZK.bottle,1))){const[x,y]=zDropPos(e.x,e.y,12);zGAdd(ZK.bottle,1,x,y)}zToast(e,17,k,F.v);if(!HEADLESS&&e.id===localSlot)zSnd(F.t?'drink':'eat',e.x,e.y);return}
+ const F=ZFOOD[ZI[k].k];if(F){if(e.ta)return;const st_=F.t?'thi':'hun';if(e[st_]>=97){zToast(e,27,k);return}zTaStart(e,F.t?'drink':'eat',{it:k});return}   // 2 s pour manger / boire (l'objet est consomme a la fin)
+ if(k===ZK.bottle){if(!zNearWater(e)){zToast(e,105);return}zTake(e,k,1);if(!zGive(e,ZK.water,1)){const[x,y]=zDropPos(e.x,e.y,12);zGAdd(ZK.water,1,x,y)}zToast(e,106,ZK.water);if(!HEADLESS&&e.id===localSlot)zSnd('splash',e.x,e.y);return}
  if(k===ZK.fuel){if(e.lf>=Z_LIT.t-1){zToast(e,29);return}zTake(e,k,1);e.lf=Math.min(Z_LIT.t,e.lf+Z_FUEL);zToast(e,19,k);return}
  if(k===ZK.torch){if(e.tch>0){zToast(e,30);return}if(e.lf<=0&&!zNearFire(e,150)){zToast(e,31);return}zTake(e,k,1);if(!zNearFire(e,150))e.lf=Math.max(0,e.lf-1);e.tch=Z_TORCH;e.lit=0;zToast(e,20,k);return}
  if(k===ZK.molo||k===ZK.gren){e.thr=k===ZK.molo?1:0;zThrowSync(e);zToast(e,32,k);return}
@@ -5737,7 +5749,7 @@ function zNoise(x,y,r,e){for(const z of Z){if(z.hp<=0)continue;const d=Math.hypo
  if(z.st==='hunt'&&z.tgt>=0&&E[z.tgt]&&E[z.tgt].alive)continue;if(e&&d<r*.45&&e.alive){z.st='hunt';z.tgt=e.id;z.lost=0;z.lx=e.x;z.ly=e.y;continue}
  z.st='go';z.gx=x+(Math.random()-.5)*120;z.gy=y+(Math.random()-.5)*120;z.gT=8;if(e)z.tm=e.team}}
 // ----- tir : une balle (degats selon l'arme), le bruit porte loin
-function zFire(e){const W_=ZW[e.wp];e.cd=W_.cd;e.ammo--;e.fT=.06;const a=e.ang+(Math.random()-.5)*W_.sp*(e.p?1:1.6),m=BP.find(q=>!q.visible);
+function zFire(e){const W_=ZW[e.wp];e.cd=W_.cd;e.ammo--;e.fT=.06;const a=e.ang+(Math.random()-.5)*W_.sp*(e.p?1:1.15),m=BP.find(q=>!q.visible);
  if(m){m.visible=true;B.push({x:e.x+Math.cos(a)*16,y:e.y+Math.sin(a)*16,vx:Math.cos(a)*W_.v,vy:Math.sin(a)*W_.v,t:.85,team:e.team,id:e.id,u:++bseq,m,dm:W_.dmg})}
  if(!HEADLESS&&!(netMode&&!isHost&&e.id===localSlot))shot(Math.max(.15,1-Math.hypot(e.x-CP.x,e.y-CP.y)/1100),e.x-CP.x,e.team);zNoise(e.x,e.y,W_.noise,e)}
 function zReload(e){if(!e.wp||e.wp>2||e.rl>0||e.ammo>=ZW[e.wp].mag||zCount(e,ZK.ammo)<=0)return;e.rl=ZW[e.wp].rl}
@@ -5777,7 +5789,7 @@ addEventListener('pointerup',e=>{if(!ZTP||e.pointerId!==ZTP.id)return;const h=ZT
 addEventListener('pointercancel',e=>{if(ZTP&&e.pointerId===ZTP.id)ZTP=null});
 
 // ---------- mode Zombie, etape 3 : faim, soif, saignement, animaux, peche, artisanat, feu de camp, torche, barricades, cocktail Molotov ----------
-const Z_THI=360,Z_HUN=540;   // secondes pour passer de 100 a 0 (soif 6 min, faim 9 min)
+const Z_THI=420,Z_HUN=660;   // secondes pour passer de 100 a 0 (soif 7 min, faim 11 min)
 let ZAN=[],ZBA=[],ZCF=[],ZFI=[],ZBC=null;   // animaux, barricades, feux de camp, feux de Molotov, cases de barricades (les zombies y passent pour les casser)
 const ZAT=[{hp:22,sp:128,wk:38,meat:1,r:9,k:.85},{hp:60,sp:100,wk:28,meat:2,r:14,k:1.05},{hp:150,sp:74,wk:20,meat:3,lea:1,r:19,k:1.4}];   // poulet, cochon, vache
 // recettes (le nom et la description sont dans le HUD) ; fire : a faire pres d'un feu de camp
@@ -5791,11 +5803,11 @@ const Z_TCH_R=235,Z_CF_R=270;   // rayons de lumiere : torche, feu de camp
 function zSurvInit(){ZAN=[];ZCF=[];ZFI=[];ZBA=[];ZBC=null;ZS.sid=0;ZS.aid=0;
  if(OB.some(o=>o.zb)){OB=OB.filter(o=>!o.zb);buildGrid();buildNav();ZFT.fill(-9)}if(!HEADLESS&&typeof ZSR!=='undefined')ZSR.reset();zAnSpawn(16)}
 // degats « internes » (faim, soif, saignement, viande crue, feu) : sans marqueur de touche ; un bandage en cours n'est pas interrompu
-function zDmg(e,n){if(!e.alive||n<=0)return;if(e.bdHp!==undefined)e.bdHp-=n;if(e.hp-n<=0){hurt(e,n,-1,0,e.x,e.y);if(!e.alive)e.body=1;return}e.hp-=n}
-const zSpd=e=>(e.down?.22:1)*(e.bd>0?.5:1)*((e.thi<20||e.hun<20)?.85:1);
+function zDmg(e,n){if(!e.alive||n<=0)return;if(e.bdHp!==undefined)e.bdHp-=n;if(e.ta)e.ta.hp0-=n;if(e.fsh>0)e.fshHp-=n;if(e.hp-n<=0){hurt(e,n,-1,0,e.x,e.y);if(!e.alive)e.body=1;return}e.hp-=n}
+const zSpd=e=>(e.down?.22:1)*(e.ta?.6:1)*(e.bd>0?.5:1)*((e.thi<20||e.hun<20)?.85:1);
 function zSurvTick(e,dt){e.thi=Math.max(0,e.thi-100/Z_THI*dt);e.hun=Math.max(0,e.hun-100/Z_HUN*dt);
- const s_=(e.thi<=0?1:0)+(e.hun<=0?1:0);if(s_){e.stv=(e.stv||0)+dt*s_;while(e.stv>=2&&e.alive){e.stv-=2;zDmg(e,1)}}   // a zero : -1 PV toutes les 2 s (par jauge vide)
- if(e.bleed){e.blt=(e.blt||0)+dt;while(e.blt>=1&&e.alive){e.blt-=1;zDmg(e,1)}}   // saignement : -1 PV par seconde jusqu'au bandage
+ const s_=(e.thi<=0?1:0)+(e.hun<=0?1:0);if(s_){e.stv=(e.stv||0)+dt*s_;while(e.stv>=2.5&&e.alive){e.stv-=2.5;zDmg(e,1)}}   // a zero : -1 PV toutes les 2,5 s (par jauge vide)
+ if(e.bleed){e.blt=(e.blt||0)+dt;e.bld=(e.bld||0)+dt;while(e.blt>=1&&e.alive){e.blt-=1;zDmg(e,1)}if(e.bld>=25){e.bleed=0;e.bld=0}}   // la plaie finit par se refermer (25 s)   // saignement : -1 PV par seconde jusqu'au bandage
  if(e.tch>0){e.tch-=dt;if(e.tch<=0){e.tch=0;zToast(e,33)}}}
 // bandage : 3 s sur soi, 5 s sur un coequipier ; arrete le saignement, +35 PV ; interrompu si l'un des deux est touche ou s'eloigne
 function zBdgTick(e,dt){if(!(e.bd>0))return;const m=e.bdT>=0?E[e.bdT]:null;
@@ -5805,9 +5817,34 @@ function zBdgTick(e,dt){if(!(e.bd>0))return;const m=e.bdT>=0?E[e.bdT]:null;
 function zNearWater(e){for(const o of OB){if(o.t!=='o')continue;const cx=o.x+o.w/2,cy=o.y+o.h/2,dx=e.x-cx,dy=e.y-cy;if(Math.abs(dx)>o.w||Math.abs(dy)>o.h)continue;const d=Math.hypot(dx,dy),r=oasisR(o,Math.atan2(dy,dx));if(d-r<58&&d-r>-25)return o}return null}
 function zShore(o,x,y){const cx=o.x+o.w/2,cy=o.y+o.h/2,a=Math.atan2(y-cy,x-cx);for(let k=0;k<12;k++){const aa=a+(k%2?1:-1)*Math.ceil(k/2)*.25,r=oasisR(o,aa)+30,px=cx+Math.cos(aa)*r,py=cy+Math.sin(aa)*r;if(!hit(px,py,14))return[px,py]}return[cx+Math.cos(a)*(oasisR(o,a)+30),cy+Math.sin(a)*(oasisR(o,a)+30)]}
 // ----- action (maintenir) : ramasser > fouiller une voiture > demonter une barricade > boire > pecher
-function zAct(e,act,dt,mvd){if(!act){e.sr=0;e.srK=0;e.actP=0;return}
+// nourriture et eau posees au sol : les manger / boire sur place, sans passer par le sac
+const zIsFood=k=>!!(ZI[k]&&ZFOOD[ZI[k].k]);
+function zNearFood(e,r){let b=null,bd=r||46;for(const it of GI){if(!zIsFood(it.k))continue;const d=Math.hypot(it.x-e.x,it.y-e.y);if(d<bd){bd=d;b=it}}return b}
+function zEatGround(e,it){const F=ZFOOD[ZI[it.k].k];if(!F||e.ta)return 0;const st_=F.t?'thi':'hun';if(e[st_]>=97){zToast(e,27,it.k);return 0}
+ it.n--;if(it.n<=0)zGDel(it);else{ZS.gv++;ZGD=1}zTaStart(e,F.t?'drink':'eat',{it:it.k,gk:it.k});return 1}   // la portion est prise au sol (reposee si on est interrompu)
+// ----- actions qui prennent du temps : manger / boire (2 s), cuire (5 s par aliment) ; ralenti pendant ce temps ; un coup recu ou une attaque interrompt
+const Z_EAT_T=2,Z_COOK_T=5;
+function zTaStart(e,k,o){if(e.down||!e.alive)return 0;e.ta=Object.assign({k,t:0,hp0:e.hp,n:0,tot:0},o||{});return 1}
+function zTaCancel(e,why){const a=e.ta;if(!a)return;e.ta=null;if(a.gk){const[x,y]=zDropPos(e.x,e.y,10);zGAdd(a.gk,1,x,y)}if(why)zToast(e,107,0,a.k==='cook'?2:1)}
+function zFoodApply(e,k,ground){const F=ZFOOD[ZI[k].k];if(!F)return;const st_=F.t?'thi':'hun';e[st_]=Math.min(100,e[st_]+F.v);if(F.hp)zDmg(e,F.hp);
+ if(k===ZK.water&&!(e.p&&!ground&&zGive(e,ZK.bottle,1))){const[x,y]=zDropPos(e.x,e.y,12);zGAdd(ZK.bottle,1,x,y)}zToast(e,17,k,F.v)}
+function zTaTick(e,dt){const a=e.ta;if(!a)return;if(!e.alive||e.down){e.ta=null;return}
+ if(a.k!=='cook'&&e.hp<a.hp0-.01){zTaCancel(e,1);return}a.hp0=Math.max(a.hp0,e.hp);
+ if(a.k==='cook'&&!zNearFire(e,170)){zTaCancel(e,1);return}
+ a.t+=dt;
+ if(a.k==='cook'){if(a.t<Z_COOK_T)return;a.t=0;const raw=zCount(e,ZK.meat)?ZK.meat:(zCount(e,ZK.fish)?ZK.fish:0);if(!raw){e.ta=null;return}
+  zTake(e,raw,1);const out=raw===ZK.meat?ZK.cmeat:ZK.cfish;if(zGive(e,out,1)<1){const[x,y]=zDropPos(e.x,e.y,12);zGAdd(out,1,x,y)}a.n++;zToast(e,108,out,a.n);if(!(zCount(e,ZK.meat)+zCount(e,ZK.fish)))e.ta=null;return}
+ if(a.t<Z_EAT_T)return;e.ta=null;
+ if(a.gk){zFoodApply(e,a.gk,1);return}
+ if(zTake(e,a.it,1))zFoodApply(e,a.it,0)}
+const Z_EATH=.4;
+function zAct(e,act,dt,mvd){
+ if(!act){if(e.fdI){const it=GI.find(o=>o.id===e.fdI);if(it&&!e.fdDone&&Math.hypot(it.x-e.x,it.y-e.y)<60){if(zRoom(e,it.k)>0)zPick(e,it);else zEatGround(e,it)}}   // appui court : on ramasse (sac plein : on mange)
+  e.fdI=0;e.fdH=0;e.fdDone=0;e.sr=0;e.srK=0;e.actP=0;return}
+ if(e.fdI){const it=GI.find(o=>o.id===e.fdI);if(it&&Math.hypot(it.x-e.x,it.y-e.y)<60){if(!e.fdDone){e.fdH+=dt;if(e.fdH>=Z_EATH){e.fdDone=1;if(!zEatGround(e,it)){e.fdI=0;e.fdH=0;e.fdDone=0}}}e.actP=1;e.sr=0;e.srK=0;return}e.fdI=0;e.fdH=0}
  // relever un coequipier (ou un allie) a terre : 4 s sans bouger
  {const dm=zNearDown(e,56);if(dm){if(mvd>.2){e.sr=0;e.actP=1;return}if(e.srK!==5||e.srC!==dm.id){e.srK=5;e.srC=dm.id;e.sr=0}e.sr+=dt;dm.rvBy=e.id;dm.rvP=Math.min(1,e.sr/Z_REV_T);if(e.sr>=Z_REV_T){e.sr=0;e.srK=0;zReviveDone(e,dm)}e.actP=1;return}}
+ {const fi=!e.actP?zNearFood(e,46):null;const ni=zNearItem(e,46,1);if(fi&&(!ni||Math.hypot(fi.x-e.x,fi.y-e.y)<=Math.hypot(ni.x-e.x,ni.y-e.y)+4)){e.fdI=fi.id;e.fdH=0;e.fdDone=0;e.actP=1;e.sr=0;e.srK=0;return}}
  const it=zNearItem(e,46,1);if(it){if(!e.actP||T>e.pkT){zPick(e,it);e.pkT=T+.35}e.sr=0;e.srK=0;e.actP=1;return}
  let ci=zNearCar(e,1);if(ci<0)ci=zNearCar(e);const car=ci>=0&&!zSearched(ci);let K_=0,tg=-1,dur=0;
  if(car){K_=1;tg=ci;dur=Z_SEARCH}
@@ -5866,7 +5903,7 @@ function zCraft(e,ri){const R=ZRC[ri];if(!R||!e.alive)return;if(!zCanCraft(e,ri)
  if(R.id==='fire'){const p=zFront(e,46);if(!p){zToast(e,36);return}take();if(!(e.tch>0))e.lf=Math.max(0,e.lf-1);ZCF.push({id:++ZS.sid,x:p[0],y:p[1],t:90});zNoise(p[0],p[1],300,e)}
  else if(R.id==='torch'){take();give(ZK.torch,1)}
  else if(R.id==='stoke'){const f=zNearFire(e,130);take();f.t=Math.min(180,f.t+45)}
- else if(R.id==='cook'){const a=zCount(e,ZK.meat),b=zCount(e,ZK.fish);zTake(e,ZK.meat,a);zTake(e,ZK.fish,b);if(a)give(ZK.cmeat,a);if(b)give(ZK.cfish,b)}
+ else if(R.id==='cook'){if(e.ta)return;zTaStart(e,'cook',{tot:zCount(e,ZK.meat)+zCount(e,ZK.fish)});zToast(e,109);zEv(66,e.x,e.y,e.id);return}   // 5 s par aliment, pres du feu
  else if(R.id==='spear'){take();if(!e.wp||(e.b2&&!e.wp2))zTakeWeapon(e,3,0);else{const[x,y]=zDropPos(e.x,e.y,16);zGAdd(ZK.spear,0,x,y)}}
  else if(R.id==='rod'){take();const g=zGive(e,ZK.rod,1,0,Z_ROD);if(!g){const[x,y]=zDropPos(e.x,e.y,16);zGAdd(ZK.rod,1,x,y).u=Z_ROD;zToast(e,44,ZK.rod)}}
  else if(R.id==='bar'||R.id==='bar2'){if(!zBarPlace(e,R.id==='bar2'?2:1)){zToast(e,36);return}take()}
@@ -5905,18 +5942,53 @@ function zApplyS(m){if(m.an){const old=new Map(ZAN.map(a=>[a.id,a])),na=[];for(c
  if(m.cf)ZCF=m.cf.map(q=>({id:q[0],x:q[1],y:q[2],t:q[3]}));if(m.fi)ZFI=m.fi.map(q=>({id:q[0],x:q[1],y:q[2],t:q[3]/10}))}
 function zAnClient(dt){const k=1-Math.exp(-dt*10);for(const a of ZAN){if(a.tx===undefined)continue;const ox=a.x,oy=a.y;if(Math.hypot(a.tx-a.x,a.ty-a.y)>150){a.x=a.tx;a.y=a.ty}else{a.x+=(a.tx-a.x)*k;a.y+=(a.ty-a.y)*k}a.ang+=zAng(a.ta,a.ang)*k;const v=Math.hypot(a.x-ox,a.y-oy)/Math.max(dt,.001);a.mvn=Math.min(1,v/40);a.ph+=dt*v/7}}
 // ----- bots : manger, boire (bouteille ou etang), chasser quand la faim presse
-function zBotEat(e){{const li=e.bag.findIndex(s=>s&&s.k===ZK.lbag);if(li>=0&&e.bag.length<4){zUse(e,li);return}if(zCount(e,ZK.leather)&&e.bag.length<4&&!zCount(e,ZK.lbag)){zCraft(e,ZRC.findIndex(r=>r.id==='bag'));return}}{const bi=e.bag.findIndex(s=>s&&s.k===ZK.bottle);if(bi>=0&&!e.bag.some(s=>!s)){zDropSlot(e,bi);return}}if(zCount(e,ZK.leather)&&zCount(e,ZK.bdg)<2&&zRoom(e,ZK.bdg)>=2){zCraft(e,ZRC.findIndex(r=>r.id==='bdg'));return}if(e.lf<40&&zCount(e,ZK.fuel)){zUse(e,e.bag.findIndex(s=>s&&s.k===ZK.fuel));return}
+function zBotEat(e){if(e.hun<70||e.thi<70){const fi=zNearFood(e,50);if(fi&&!zGiftNo(e,fi)){const F=ZFOOD[ZI[fi.k].k];if((F.t?e.thi:e.hun)<70&&!(F.hp&&e.hp<30)){zEatGround(e,fi);return}}}
+ {const li=e.bag.findIndex(s=>s&&s.k===ZK.lbag);if(li>=0&&e.bag.length<4){zUse(e,li);return}if(zCount(e,ZK.leather)&&e.bag.length<4&&!zCount(e,ZK.lbag)){zCraft(e,ZRC.findIndex(r=>r.id==='bag'));return}}{const bi=e.bag.findIndex(s=>s&&s.k===ZK.bottle);if(bi>=0&&!e.bag.some(s=>!s)){const it=zDropSlot(e,bi);if(it){(e.zbl||(e.zbl=[])).push(it.id);if(e.zbl.length>12)e.zbl.shift()}return}}if(zCount(e,ZK.leather)&&zCount(e,ZK.bdg)<2&&zRoom(e,ZK.bdg)>=2){zCraft(e,ZRC.findIndex(r=>r.id==='bdg'));return}if(e.lf<40&&zCount(e,ZK.fuel)){zUse(e,e.bag.findIndex(s=>s&&s.k===ZK.fuel));return}
  if(e.thi<45&&zCount(e,ZK.water)){zUse(e,e.bag.findIndex(s=>s&&s.k===ZK.water));return}
  if(e.hun<45){for(const k of['cmeat','cfish','snack','meat','fish']){const i=e.bag.findIndex(s=>s&&s.k===ZK[k]);if(i>=0&&!((k==='meat'||k==='fish')&&e.hp<25)){zUse(e,i);return}}}}
-function zBotNeeds(e,zd){if(zd<420)return false;
- const keep=(e.mode==='drink'||e.mode==='water')&&e.thi<85;if((e.thi<38||keep)&&!zCount(e,ZK.water)){let best=null,bd=1500;for(const o of OB){if(o.t!=='o'||(e.zwbl&&e.zwbl.includes(o)))continue;const d=Math.hypot(o.x+o.w/2-e.x,o.y+o.h/2-e.y)-Math.max(o.w,o.h)/2;if(d<bd){bd=d;best=o}}
-  if(best){if(zNearWater(e)){e.mode='drink';e.zg=null;return true}e.mode='water';e.zwo=best;if(!e.zg||e.zgo!==best){e.zg=zShore(best,e.x,e.y);e.zgo=best}else if(Math.hypot(e.zg[0]-e.x,e.zg[1]-e.y)<36){(e.zwbl||(e.zwbl=[])).push(best);e.zg=null;return false}return true}}
- if(e.hun<40&&!['cmeat','cfish','snack','meat','fish'].some(k=>zCount(e,ZK[k]))){let a=null,ad=900;for(const q of ZAN){if(q.hp<=0||(e.hbl&&e.hbl[q.id]>T))continue;const d=Math.hypot(q.x-e.x,q.y-e.y)*(q.t===0?1.7:(q.t===2?.8:1));if(d<ad){ad=d;a=q}}
+function zBotNeeds(e,zd){const crit=e.thi<16||e.hun<16;if(zd<(crit?240:420))return false;   // jauge presque vide : on y va meme avec des zombies pas loin
+ const keep=(e.mode==='drink'||e.mode==='water')&&e.thi<88;if((e.thi<48||keep)&&!zCount(e,ZK.water)){let best=null,bd=e.thi<25?2600:1600;for(const o of OB){if(o.t!=='o'||(e.zwbl&&e.zwbl.includes(o)))continue;const d=Math.hypot(o.x+o.w/2-e.x,o.y+o.h/2-e.y)-Math.max(o.w,o.h)/2;if(d<bd){bd=d;best=o}}
+  if(best){if(zNearWater(e)){{const bi=e.bag.findIndex(s=>s&&s.k===ZK.bottle);if(bi>=0&&e.thi>70)zUse(e,bi)}e.mode='drink';e.zg=null;return true}e.mode='water';e.zwo=best;if(!e.zg||e.zgo!==best){e.zg=zShore(best,e.x,e.y);e.zgo=best}else if(Math.hypot(e.zg[0]-e.x,e.zg[1]-e.y)<36){(e.zwbl||(e.zwbl=[])).push(best);e.zg=null;return false}return true}}
+ // de la nourriture ou de l'eau par terre pas loin : on va la manger / boire sur place (meme sac plein)
+ {const want=k=>k==='water'?e.thi<55:(k!=='meat'&&k!=='fish'?e.hun<55:e.hun<30);let fi=null,fd=560;for(const it of GI){if(!zIsFood(it.k)||!want(ZI[it.k].k)||(e.zbl&&e.zbl.includes(it.id))||zGiftNo(e,it))continue;const d=Math.hypot(it.x-e.x,it.y-e.y);if(d<fd){fd=d;fi=it}}
+  if(fi){if(e.zitId!==fi.id){e.zitId=fi.id;e.zitT=T}else if(T-e.zitT>9){(e.zbl||(e.zbl=[])).push(fi.id);e.zitId=0;return false}e.mode='loot';e.zg=[fi.x,fi.y];return true}}
+ if(e.hun<55&&!['cmeat','cfish','snack','meat','fish'].some(k=>zCount(e,ZK[k]))){let a=null,ad=e.hun<25?1500:950;for(const q of ZAN){if(q.hp<=0||(e.hbl&&e.hbl[q.id]>T))continue;const d=Math.hypot(q.x-e.x,q.y-e.y)*(q.t===0?1.7:(q.t===2?.8:1));if(d<ad){ad=d;a=q}}
   if(a){if(e.hId!==a.id){e.hId=a.id;e.hT=T}else if(T-e.hT>14){(e.hbl||(e.hbl={}))[a.id]=T+30;e.hId=0;return false}e.mode='hunt';e.zt=a;return true}}
  return false}
 
+// ----- bots (etape 5) -----
+const zAmmoT=e=>(e.ammo||0)+zCount(e,ZK.ammo);
+// lancer une grenade / un cocktail Molotov au milieu d'un groupe de zombies (pas pres d'un ami)
+function zBotThrow(e){if(!(e.gren>0)||T<(e.gcdT||0))return;let best=null,bn=0;
+ for(const z of Z){if(z.hp<=0)continue;const d=Math.hypot(z.x-e.x,z.y-e.y);if(d<140||d>360)continue;let n=0;for(const o of Z)if(o.hp>0&&Math.abs(o.x-z.x)<110&&Math.abs(o.y-z.y)<110&&Math.hypot(o.x-z.x,o.y-z.y)<100)n+=o.t===2?2:1;if(n>bn&&los(e,z)){bn=n;best=z}}
+ if(!best||bn<4)return;if(E.some(f=>f.alive&&zFriend(f.team,e.team)&&Math.hypot(f.x-best.x,f.y-best.y)<GR_R+50))return;e.gcdT=T+3;zThrow(e,best.x+(best.vx||0)*.3,best.y+(best.vy||0)*.3)}
+// artisanat des bots : lance (sans arme a feu utilisable), feu de camp + cuisson quand on a de la viande crue et qu'on est tranquille
+function zBotCraft(e,zd){const RI=id=>ZRC.findIndex(r=>r.id===id);
+ const gunOk=e.wp&&e.wp<3&&zAmmoT(e)>0;
+ if(!gunOk&&e.wp!==3&&zCount(e,ZK.wood)>=2&&zCount(e,ZK.stone)>=1&&zd>250){if(e.wp&&e.wp<3)zDropWeapon(e);zCraft(e,RI('spear'));e.wk=1;return true}
+ const raw=zCount(e,ZK.meat)+zCount(e,ZK.fish);
+ if(raw>=1&&zd>450&&e.hun<75){if(zNearFire(e,130)){zCraft(e,RI('cook'));return true}
+  if(raw>=2&&zCount(e,ZK.wood)>=3&&(e.lf>3||e.tch>0)&&!Z.some(z=>z.hp>0&&Math.hypot(z.x-e.x,z.y-e.y)<600)){zCraft(e,RI('fire'));if(zNearFire(e,130))zCraft(e,RI('cook'));return true}}
+ return false}
+
+// ----- entraide : un bot donne a son coequipier (humain ou bot) un bandage, de la nourriture ou de l'eau quand il en a besoin
+const zGiftNo=(e,it)=>it.gf!==undefined&&it.gf!==e.id&&T<it.gfT;   // objet donne a quelqu'un d'autre (reserve)
+const zFoodKs=()=>[ZK.cmeat,ZK.cfish,ZK.snack,ZK.meat,ZK.fish];
+function zNeedOf(m){if(!zUp(m))return null;const has=ks=>ks.some(k=>zCount(m,k)>0)||GI.some(it=>ks.includes(it.k)&&Math.abs(it.x-m.x)<110&&Math.abs(it.y-m.y)<110);
+ if((m.bleed||m.hp<60)&&!has([ZK.bdg])&&!(m.bd>0))return 'bdg';if(m.thi<40&&!has([ZK.water]))return 'water';if(m.hun<40&&!has(zFoodKs()))return 'food';return null}
+function zGiveItem(e,m,need){const ks=need==='bdg'?[ZK.bdg]:(need==='water'?[ZK.water]:zFoodKs());
+ for(const k of ks){const n=zCount(e,k);if(!n)continue;
+  // le bot garde un bandage pour lui s'il est blesse, et ne donne pas sa derniere eau / nourriture s'il en a besoin lui-meme
+  if(need==='bdg'&&n<2&&(e.hp<70||e.bleed))continue;if(need==='water'&&e.thi<35&&n<2)continue;if(need==='food'&&e.hun<35&&n<2)continue;
+  zTake(e,k,1);if(zGive(m,k,1)<1){const[x,y]=zDropPos(m.x,m.y,10),it=zGAdd(k,1,x,y);it.gf=m.id;it.gfT=T+60}e.emo=5;e.emoT=T+2.5;zToast(m,111,k,e.id+1);if(!HEADLESS&&m.id===localSlot)zSnd('pick',m.x,m.y);return true}
+ return false}
+function zBotGive(e,mate,zd){if(!mate||e.p||!zUp(e)||!zUp(mate)||T<(e.gvT||0))return false;const need=zNeedOf(mate);if(!need)return false;
+ const ks=need==='bdg'?[ZK.bdg]:(need==='water'?[ZK.water]:zFoodKs());if(!ks.some(k=>zCount(e,k)>0))return false;
+ const d=Math.hypot(mate.x-e.x,mate.y-e.y);if(d<120){if(zGiveItem(e,mate,need))e.gvT=T+6;else e.gvT=T+15;return false}
+ if(d<800&&zd>220){e.mode='give';e.zg=[mate.x,mate.y];return true}return false}
+
 // ---------- mode Zombie, etape 4 : joueurs a terre (on les releve), alliances entre equipes, brouillard toxique apres la vague 20 ----------
-const Z_DOWN_T=30,Z_REV_T=4,Z_REV_HP=35,Z_FOG_W=45,Z_FOG_S=50;
+const Z_DOWN_T=40,Z_REV_T=4,Z_REV_HP=35,Z_FOG_W=45,Z_FOG_S=50;
 const zUp=e=>!!(e&&e.alive&&!e.down);
 const zAllied=(a,b)=>a!==b&&a>=0&&b>=0&&!!ZS.al&&ZS.al[a]===b;
 const zFriend=(a,b)=>a===b||zAllied(a,b);
@@ -5924,9 +5996,9 @@ const zFriend=(a,b)=>a===b||zAllied(a,b);
 function zCanDown(e){return E.some(m=>m!==e&&zUp(m)&&zFriend(m.team,e.team))}
 // appele au debut de hurt() : renvoie les degats a appliquer (0 = encaisses a terre)
 function zDownDmg(e,dmg,kid){if(e.noDown)return dmg;
- if(e.down){e.dhp-=dmg*(kid<0?.55:1);e.dhT=T;if(e.dhp<=0){e.down=0;e.dhp=0;return e.hp+1}return 0}
+ if(e.down){e.dhp-=dmg*(kid<0?.4:1);e.dhT=T;if(e.dhp<=0){e.down=0;e.dhp=0;return e.hp+1}return 0}
  if(e.hp-dmg>0||!zCanDown(e))return dmg;
- e.down=1;e.dhp=100;e.dkid=kid;e.lit=0;e.bd=0;e.bdT=-1;e.fsh=0;e.sr=0;e.srK=0;e.rvBy=-1;e.rvP=0;e.tch=0;zEv(52,e.x,e.y,e.id,kid>=0?kid:-1);return e.hp-1}
+ if(e.ta)zTaCancel(e);e.fdI=0;e.down=1;e.dhp=100;e.dkid=kid;e.lit=0;e.bd=0;e.bdT=-1;e.fsh=0;e.sr=0;e.srK=0;e.rvBy=-1;e.rvP=0;e.tch=0;zEv(52,e.x,e.y,e.id,kid>=0?kid:-1);return e.hp-1}
 function zDownTick(e,dt){if(!e.down)return;e.dhp-=100/Z_DOWN_T*dt;if(!(e.rvBy>=0&&E[e.rvBy]&&E[e.rvBy].srK===5))e.rvP=0;
  // plus personne pour relever (coequipier et allies a terre ou morts) : on ne se releve pas
  if(e.dhp<=0||!zCanDown(e)){e.down=0;e.noDown=1;hurt(e,e.hp+1,e.dkid>=0&&E[e.dkid]&&E[e.dkid].alive?e.dkid:-1,0,e.x,e.y);e.noDown=0;if(!e.alive)e.body=1}}
@@ -5988,7 +6060,9 @@ function zBotZone(e,zd){const F=ZS.fog;if(!F)return false;const soon=F.st===1||F
  const a=Math.atan2(cy-e.y,cx-e.x),L=Math.min(d,Math.max(220,d-R+320));e.mode='zone';const p=zFreeNear(e.x+Math.cos(a)*L,e.y+Math.sin(a)*L);e.zg=p||[cx,cy];return true}
 // ----- bots : relever un coequipier (ou un allie) a terre quand ce n'est pas trop dangereux
 function zBotRevive(e,zd){let b=null,bd=950;for(const m of E){if(m===e||!m.alive||!m.down||!zFriend(m.team,e.team))continue;const d=Math.hypot(m.x-e.x,m.y-e.y)*(m.team===e.team?1:1.6);if(d<bd){bd=d;b=m}}
- if(!b)return false;const zn=Z.filter(z=>z.hp>0&&Math.hypot(z.x-b.x,z.y-b.y)<200).length;if(zn>(zGun(e)?2:0)+(b.p?1:0)&&b.dhp>25)return false;
+ if(!b)return false;const zs=Z.filter(z=>z.hp>0&&Math.hypot(z.x-b.x,z.y-b.y)<220),zn=zs.length;
+ // des zombies sur le coequipier a terre : on les combat d'abord (on defend), puis on le releve
+ if(zn&&(zn>(zGun(e)?2:0)+(b.p?1:0)||Math.hypot(b.x-e.x,b.y-e.y)>150)&&b.dhp>18){if(zn>6&&!zGun(e))return false;let t=null,td=1e9;for(const z of zs){const d=Math.hypot(z.x-e.x,z.y-e.y);if(d<td){td=d;t=z}}e.mode='fight';e.zt=t;e.zdef=b.id;return true}
  e.mode='revive';e.zrv=b.id;e.zg=[b.x,b.y];return true}
 // ----- etat reseau
 function zSnap4(){const F=ZS.fog;return{al:ZS.al,ab:ZS.ab?ZS.ab.map(v=>v?Math.max(0,Math.round((v-T)*10)):0):0,ap:ZS.ap?ZS.ap.filter(q=>q.e>T).map(q=>[q.f,q.t,Math.round((q.e-T)*10)]):[],dsp:ZS.dsp,
@@ -6072,7 +6146,8 @@ function zBubble(x,y,ic,col,badge,bc,a,pul,now){const s=pul?1+.09*Math.sin(now/1
 function zEmotes(c,hm,now){if(!E||!ZS.al)return;const me=hm&&hm.alive?hm:c;
  for(const e of E){if(!e.alive||e.down)continue;const d=Math.hypot(e.x-me.x,e.y-me.y);if(d>760)continue;const[sx,sy]=wscr(e.x,e.y,58);if(sx<-40||sy<-60||sx>W+40||sy>H+40)continue;
   const al=zAllied(e.team,MT),y=sy-(al&&e.team!==MT?22:14);let k=null;
-  if(e.emoT>T&&e.emo===4)k=['🗡️','#e0483a','!','#d23a2c',1,1];
+  if(e.emoT>T&&e.emo===5)k=['🎁','#3fcf6a',null,null,1,0];
+  else if(e.emoT>T&&e.emo===4)k=['🗡️','#e0483a','!','#d23a2c',1,1];
   else if(e.emoT>T&&e.emo===2)k=['🤝','#3fcf6a','✔','#2fa85a',1,0];
   else if(e.emoT>T&&e.emo===3)k=['✋','#e0483a','✖','#d23a2c',1,0];
   else{const pf=ZS.ap&&ZS.ap.find(q=>q.e>T&&q.f===e.team),pt=ZS.ap&&ZS.ap.find(q=>q.e>T&&q.t===e.team&&q.f===MT);
@@ -6150,11 +6225,11 @@ function zToastShow(q){const k=q.z,n=q.x,TX={8:ZI[k]&&ZI[k].w?zName(k)+LG(' en m
   23:LG('Un poisson !','A fish!')+(n>0?LG(' (canne : encore ',' (rod: ')+n+LG(n>1?' poissons)':' poisson)',n>1?' more fish)':' more fish)'):''),24:LG('Rien n’a mordu…','Nothing bit…'),25:LG('Tu saignes ! Bandage ','You are bleeding! Bandage ')+(IS_PC?'(B)':''),27:k===ZK.water?LG('Tu n’as pas soif','You are not thirsty'):LG('Tu n’as pas faim','You are not hungry'),
   28:LG('Coéquipier soigné','Teammate patched up'),29:LG('Briquet déjà plein','Lighter already full'),30:LG('Une torche brûle déjà','A torch is already burning'),31:LG('Il faut une flamme : briquet ou feu de camp','You need a flame: lighter or campfire'),
   32:k===ZK.molo?LG('Cocktail Molotov prêt ','Molotov ready ')+(IS_PC?'(V)':''):LG('Grenade prête ','Grenade ready ')+(IS_PC?'(V)':''),33:LG('La torche s’est éteinte','The torch burned out'),34:LG('Il faut une canne à pêche','You need a fishing rod'),
-  35:LG('Barricade démontée','Barricade dismantled'),36:LG('Pas assez de place ici','Not enough room here'),44:LG('Sac plein : laissé au sol','Bag full: left on the ground'),45:LG('Approche-toi du bord d’un étang','Get close to a pond edge'),46:LG('Pêche interrompue','Fishing interrupted'),47:LG('La canne à pêche s’est cassée','The fishing rod broke'),48:LG('Ton sac a déjà 4 emplacements','Your bag already has 4 slots'),49:LG('Sac en cuir : +1 emplacement','Leather bag: +1 slot'),50:LG('Tu pêches… ne bouge pas','Fishing… stay still'),100:LG('Brouillard toxique ! Rejoins la zone','Toxic fog! Get back in the zone'),101:LG('Aucune équipe assez proche pour une alliance','No team close enough for an alliance'),40:LG('Tu brûles !','You are burning!')}[q.k];
+  35:LG('Barricade démontée','Barricade dismantled'),36:LG('Pas assez de place ici','Not enough room here'),44:LG('Sac plein : laissé au sol','Bag full: left on the ground'),45:LG('Approche-toi du bord d’un étang','Get close to a pond edge'),46:LG('Pêche interrompue','Fishing interrupted'),47:LG('La canne à pêche s’est cassée','The fishing rod broke'),48:LG('Ton sac a déjà 4 emplacements','Your bag already has 4 slots'),49:LG('Sac en cuir : +1 emplacement','Leather bag: +1 slot'),50:LG('Tu pêches… ne bouge pas','Fishing… stay still'),100:LG('Brouillard toxique ! Rejoins la zone','Toxic fog! Get back in the zone'),105:LG('Remplis la bouteille au bord d’un étang','Fill the bottle at a pond edge'),107:n===2?LG('Cuisson interrompue','Cooking interrupted'):LG('Repas interrompu','Meal interrupted'),108:LG('Cuit : ','Cooked: ')+(ZI[k]?ZI[k].n:''),109:LG('Cuisson : 5 s par aliment, reste près du feu','Cooking: 5 s per item, stay by the fire'),111:(NM[n-1]||LG('Ton coéquipier','Your teammate'))+LG(' te donne : ',' gives you: ')+(ZI[k]?ZI[k].n:''),106:LG('Bouteille remplie','Bottle filled'),101:LG('Aucune équipe assez proche pour une alliance','No team close enough for an alliance'),40:LG('Tu brûles !','You are burning!'),112:LG('Briquet vide : recharge-le avec de l’essence','Lighter empty: refill it with fuel')}[q.k];
  if(!TX)return;const nw=performance.now(),dup=ZTO.find(m=>m.txt===TX&&nw-m.t<1500);if(dup){dup.t=Math.max(dup.t,nw-200);return}
- const bad=q.k===100||q.k===101||q.k===44||q.k===45||q.k===46||q.k===47||q.k===48||q.k===9||q.k===16||q.k===22||q.k===24||q.k===25||q.k===31||q.k===33||q.k===34||q.k===36||q.k===40;
- ZTO.push({t:nw,txt:TX,c:q.k===10||q.k===23?'#ffe28a':(q.k===12||q.k===17||q.k===18||q.k===19||q.k===21||q.k===28||q.k===49?'#7ef0a0':(bad?'#ff9a7a':'#fff')),k:q.k===8||q.k===10||q.k===17||q.k===23||q.k===32?k:(q.k===21&&ZRC[n]?zRIco(ZRC[n].id):(q.k===23?ZK.fish:0))});if(ZTO.length>4)ZTO.shift();
- if(q.k===8||q.k===10)zSnd('pick');else if(q.k===12||q.k===28)zSnd('heal');else if(q.k===21)zSnd('craft');else if(q.k===18)zSnd('splash');else if(q.k===19)zSnd('pick')}
+ const bad=q.k===112||q.k===107||q.k===100||q.k===101||q.k===44||q.k===45||q.k===46||q.k===47||q.k===48||q.k===9||q.k===16||q.k===22||q.k===24||q.k===25||q.k===31||q.k===33||q.k===34||q.k===36||q.k===40;
+ ZTO.push({t:nw,txt:TX,c:q.k===10||q.k===23?'#ffe28a':(q.k===12||q.k===17||q.k===18||q.k===19||q.k===21||q.k===28||q.k===49||q.k===108||q.k===111?'#7ef0a0':(bad?'#ff9a7a':'#fff')),k:q.k===8||q.k===10||q.k===17||q.k===23||q.k===32||q.k===108||q.k===111?k:(q.k===21&&ZRC[n]?zRIco(ZRC[n].id):(q.k===23?ZK.fish:0))});if(ZTO.length>4)ZTO.shift();
+ if(q.k===17)zSnd(k===ZK.water?'drink':'eat');else if(q.k===8||q.k===10)zSnd('pick');else if(q.k===12||q.k===28)zSnd('heal');else if(q.k===21)zSnd('craft');else if(q.k===18)zSnd('splash');else if(q.k===19)zSnd('pick')}
 // ---------- inventaire a l'ecran : arme (poignard / arme a feu) + 3 emplacements ; toucher = utiliser, appui long = lacher ----------
 function zInv(hm,narrow){ZBR.length=0;if(!hm||!hm.alive||hm.down||st.s==='end'||!hm.bag)return;const sc_=(W<420?.92:(W>=1100&&H>=650?1.12:1))*.8,ph=Z_ATH_H*sc_,baseY=H-ph-(narrow?26:14),S=Math.round(46*sc_*1.15),gap=6,ww=Math.round(S*(hm.b2?3.05:2.3)),cbw=Math.round(S*.92),nb=hm.bag.length,tot=ww+gap+nb*(S+gap)+cbw,x0=W/2-tot/2,y0=baseY-S-10,now=performance.now();
  const bx=(x,w,on,hl)=>{pill(x,y0,w,S,10,on?'rgba(30,42,60,.88)':'rgba(8,12,22,.78)');g.save();g.lineWidth=hl?2:1.2;g.strokeStyle=hl?'#ffd27a':'rgba(255,255,255,.16)';g.beginPath();g.roundRect?g.roundRect(x+.6,y0+.6,w-1.2,S-1.2,10):g.rect(x,y0,w,S);g.stroke();g.restore()};
@@ -6179,6 +6254,7 @@ function zInv(hm,narrow){ZBR.length=0;if(!hm||!hm.alive||hm.down||st.s==='end'||
   g.font='600 10px system-ui';const tw=g.measureText(t1).width,fs=Math.max(8,Math.min(10,10*(W-30)/tw));txt(t1,W/2,y0-9,fs,'rgba(255,255,255,.42)',null,600)}
  // progression : bandage, fouille, rechargement
  let pb=null;if(hm.bd>0)pb=[hm.bdT>=0?LG('Soin du coéquipier…','Patching up teammate…'):LG('Bandage…','Bandaging…'),1-hm.bd/(hm.bdT>=0?Z_BDG2:Z_BDG),'#7ef0a0'];
+ else if(hm.ta){const a=hm.ta;pb=a.k==='cook'?[LG('Cuisson ','Cooking ')+Math.min(a.tot||1,(a.n||0)+1)+' / '+(a.tot||1)+'…',(a.t||0)/Z_COOK_T,'#ffb060']:[a.k==='drink'?LG('Tu bois…','Drinking…'):LG('Tu manges…','Eating…'),(a.t||0)/Z_EAT_T,'#9ff0b0']}
  else if(hm.fsh>0)pb=[LG('Pêche… ne bouge pas','Fishing… stay still'),hm.fsh/Z_FISH,'#7ac8ff'];
  else if(hm.sr>0){const K_=hm.srK||1;pb=[[0,LG('Fouille…','Searching…'),LG('Démontage…','Dismantling…'),LG('Tu bois…','Drinking…'),LG('Pêche…','Fishing…'),LG('Tu le relèves…','Reviving…')][K_],hm.sr/[1,Z_SEARCH,1.5,2,5,Z_REV_T][K_],['','#ffe28a','#d8b08a','#7ac8ff','#7ac8ff','#7ef0a0'][K_]]}else if(hm.rl>0&&hm.wp)pb=[LG('Recharge…','Reloading…'),1-hm.rl/ZW[hm.wp].rl,'#ffc83c'];
  if(pb){const w=150,yy=y0-(IS_PC?40:26);pill(W/2-w/2,yy,w,6,3,'rgba(255,255,255,.18)');pill(W/2-w/2,yy,Math.max(6,w*Math.min(1,pb[1])),6,3,pb[2]);txt(pb[0],W/2,yy-10,11,pb[2],null,800)}
@@ -6194,8 +6270,10 @@ function zItemsHud(c,hm){const now=performance.now();
  for(const it of GI){const d=Math.hypot(it.x-c.x,it.y-c.y);if(d>340)continue;if(d<150||zLightAt(it.x,it.y)||FOREST.litAt(it.x,it.y)>.3)continue;
   const tw=.5+.5*Math.sin(now/260+it.id*1.7),a=(.25+.55*tw)*Math.min(1,(340-d)/120),[sx,sy]=wscr(it.x,it.y,6);g.fillStyle='rgba(255,245,200,'+a.toFixed(3)+')';g.beginPath();g.arc(sx,sy,1.2+tw*1.3,0,7);g.fill()}
  if(!hm||!hm.alive||st.s!=='live')return;
- const it=zNearItem(hm,90);if(it){const[sx,sy]=wscr(it.x,it.y,22),t1=zName(it.k,it.n),near=Math.hypot(it.x-hm.x,it.y-hm.y)<46;g.font='700 11px system-ui';const w=g.measureText(t1).width+(IS_PC&&near?34:16);
-  pill(sx-w/2,sy-30,w,20,10,near?'rgba(30,42,60,.9)':'rgba(8,12,22,.7)');txt(t1,sx-(IS_PC&&near?9:0),sy-20,11,near?'#ffe28a':'#fff',null,700);if(IS_PC&&near)keycapS(sx+w/2-16,sy-20,'E')}
+ const it=zNearItem(hm,90)||zNearFood(hm,90);if(it){const[sx,sy]=wscr(it.x,it.y,22),t1=zName(it.k,it.n),near=Math.hypot(it.x-hm.x,it.y-hm.y)<46;g.font='700 11px system-ui';const w=g.measureText(t1).width+(IS_PC&&near?34:16);
+  pill(sx-w/2,sy-30,w,20,10,near?'rgba(30,42,60,.9)':'rgba(8,12,22,.7)');txt(t1,sx-(IS_PC&&near?9:0),sy-20,11,near?'#ffe28a':'#fff',null,700);if(IS_PC&&near)keycapS(sx+w/2-16,sy-20,'E');
+  if(near&&zIsFood(it.k)){const full=zRoom(hm,it.k)<=0,wtr=it.k===ZK.water,t2=full?(wtr?LG('sac plein : appuie pour boire','bag full: press to drink'):LG('sac plein : appuie pour manger','bag full: press to eat')):(wtr?LG('maintenir : boire tout de suite','hold: drink now'):LG('maintenir : manger tout de suite','hold: eat now'));g.font='600 10px system-ui';const w2=g.measureText(t2).width+14;pill(sx-w2/2,sy-8,w2,16,8,'rgba(8,12,22,.75)');txt(t2,sx,sy,10,'#9ff0b0',null,600);
+   const p=hm.fhP!==undefined&&hm.id===localSlot&&netMode&&!isHost?hm.fhP:(hm.fdI===it.id&&!hm.fdDone?Math.min(1,(hm.fdH||0)/Z_EATH):0);if(p>0){g.save();g.strokeStyle='#7ef0a0';g.lineWidth=3;g.beginPath();g.arc(sx,sy+18,11,-Math.PI/2,-Math.PI/2+p*6.283);g.stroke();g.restore()}}}
   else{const ci=zNearCar(hm),bb=ci<0?zNearBar(hm,60):null,wt=ci<0&&!bb?zNearWater(hm):null;
   const tag=(x,y,t1,on,key)=>{const[sx,sy]=wscr(x,y,30);g.font='700 11px system-ui';const w=g.measureText(t1).width+(IS_PC&&key?34:16);pill(sx-w/2,sy-30,w,20,10,on?'rgba(30,42,60,.9)':'rgba(8,12,22,.6)');txt(t1,sx-(IS_PC&&key?9:0),sy-20,11,on?'#ffe28a':'rgba(255,255,255,.6)',null,700);if(IS_PC&&key)keycapS(sx+w/2-16,sy-20,'E')};
   if(bb&&IS_PC)tag(bb.x+bb.w/2,bb.y+bb.h/2,LG('Démonter (maintenir)','Dismantle (hold)')+' · '+Math.ceil(bb.hp)+LG(' PV',' HP'),true,1);
@@ -6205,7 +6283,7 @@ function zItemsHud(c,hm){const now=performance.now();
  const nf=zNearFire(hm,170);if(nf&&!ZCM){const[sx,sy]=wscr(nf.x,nf.y,IS_PC?40:-30),t1='🔥 '+zTime(nf.t)+(zCount(hm,ZK.meat)+zCount(hm,ZK.fish)?LG(' · cuisiner : ',' · cook: ')+(IS_PC?'C':'🔨'):'');g.font='700 11px system-ui';const w=g.measureText(t1).width+16;pill(sx-w/2,sy-34,w,20,10,'rgba(40,20,8,.75)');txt(t1,sx,sy-24,11,'#ffc080',null,700)}}
 function keycapS(x,y,t){pill(x-8,y-8,16,16,4,'rgba(255,255,255,.16)');g.save();g.strokeStyle='rgba(255,255,255,.6)';g.lineWidth=1;g.beginPath();g.roundRect?g.roundRect(x-7.5,y-7.5,15,15,4):g.rect(x-7.5,y-7.5,15,15);g.stroke();g.restore();txt(t,x,y+.5,10,'#fff',null,800)}
 // bouton d'action tactile : RAMASSER / FOUILLER selon ce qu'il y a autour
-function zActLabel(hm){if(!hm||!hm.alive||hm.down||st.s!=='live')return '';if(zNearDown(hm,56))return LG('RELEVER','REVIVE');const it=zNearItem(hm,46,1);if(it)return ZI[it.k].w&&hm.wp?LG('ÉCHANGER','SWAP'):LG('RAMASSER','PICK UP');const ci=zNearCar(hm);if(ci>=0&&!zSearched(ci))return LG('FOUILLER','SEARCH');if(ci<0&&zNearBar(hm,40))return LG('DÉMONTER','DISMANTLE');if(ci<0&&zNearWater(hm)&&!(hm.fsh>0)){if(hm.thi<92)return LG('BOIRE','DRINK');if(zCount(hm,ZK.rod))return LG('PÊCHER','FISH')}if(zNearItem(hm,46))return LG('SAC PLEIN','BAG FULL');return ''}
+function zActLabel(hm){if(!hm||!hm.alive||hm.down||st.s!=='live')return '';if(zNearDown(hm,56))return LG('RELEVER','REVIVE');const it=zNearItem(hm,46,1),fi=zNearFood(hm,46);if(fi&&(!it||it===fi||zIsFood(it.k)))return zRoom(hm,fi.k)<=0?(fi.k===ZK.water?LG('BOIRE','DRINK'):LG('MANGER','EAT')):(fi.k===ZK.water?LG('PRENDRE · MAINTENIR : BOIRE','TAKE · HOLD: DRINK'):LG('PRENDRE · MAINTENIR : MANGER','TAKE · HOLD: EAT'));if(it)return ZI[it.k].w&&hm.wp?LG('ÉCHANGER','SWAP'):LG('RAMASSER','PICK UP');const ci=zNearCar(hm);if(ci>=0&&!zSearched(ci))return LG('FOUILLER','SEARCH');if(ci<0&&zNearBar(hm,40))return LG('DÉMONTER','DISMANTLE');if(ci<0&&zNearWater(hm)&&!(hm.fsh>0)){if(hm.thi<92)return LG('BOIRE','DRINK');if(zCount(hm,ZK.rod))return LG('PÊCHER','FISH')}if(zNearItem(hm,46))return LG('SAC PLEIN','BAG FULL');return ''}
 
 // ---------- decor de la Foret : sol eclaire, arbres instancies par zones, chalets, voitures abandonnees, etangs ----------
 const FOREST=(()=>{
@@ -6477,7 +6555,7 @@ function zTable(y,live){const tw=Math.min(W-16,560),x0=W/2-tw/2,ord=[0,1,2,3,4].
    txt((NM[e.id]||'')+(!e.alive?'  ·  '+LG('mort','dead'):''),x0+18,y+rh/2,11.5,!e.alive?'rgba(255,255,255,.45)':(me?'#fff':'rgba(255,255,255,.85)'),'left',me?800:600);
    txt(String(stat(e.id).p||0),x0+tw-cw*3+cw/2,y+rh/2,11,'rgba(255,255,255,.85)',null,600);txt(String(stat(e.id).k||0),x0+tw-cw*2+cw/2,y+rh/2,11,'rgba(255,255,255,.85)',null,600);y+=rh+1}y+=6}
  return y}
-function zBoard(){const top=Math.max(14,H*.05);g.fillStyle='rgba(4,8,16,.8)';g.fillRect(0,0,W,H);txt(LG('ÉQUIPES','TEAMS'),W/2,top+12,Math.min(26,W*.06),'#fff',null,800);
+function zBoard(){const top=Math.max(14,H*.05);g.fillStyle='rgba(4,8,16,.92)';g.fillRect(0,0,W,H);txt(LG('ÉQUIPES','TEAMS'),W/2,top+12,Math.min(26,W*.06),'#fff',null,800);
  txt(LG('Mode Zombie · vague ','Zombie mode · wave ')+Math.max(1,ZS.wave)+' · '+zTime(ZS.t),W/2,top+36,12,'rgba(255,255,255,.65)',null,600);const y=zTable(top+70,true);
  txt(SBK?LG('Relâche TAB pour fermer','Release TAB to close'):(IS_PC?LG('Clique pour fermer','Click to close'):LG('Touche l’écran pour fermer','Tap anywhere to close')),W/2,Math.min(H-16,y+10),11,'rgba(255,255,255,.55)',null,600)}
 function zEnd(){g.fillStyle='rgba(4,8,16,.88)';g.fillRect(0,0,W,H);const w=st.w>=0?st.w:0,TT=TD(w),top=Math.max(18,H*.06),mine=w===MT;
@@ -6652,11 +6730,11 @@ const ZRN={fire:[LG('Feu de camp','Campfire'),LG('Lumière 1:30 · cuisson · at
  bdg:[LG('2 bandages','2 bandages'),LG('Soignent et arrêtent le saignement','Heal and stop bleeding')],bag:[LG('Sac en cuir','Leather bag'),LG('À utiliser : +1 emplacement dans le sac','Use it: +1 bag slot')]};
 const zRIco=id=>({fire:-3,torch:ZK.torch,stoke:-3,cook:ZK.cmeat,spear:ZK.spear,rod:ZK.rod,bar:-4,bar2:-5,molo:ZK.molo,bdg:ZK.bdg,bag:-6})[id];
 function zCraftWhy(e,ri){const R=ZRC[ri];if(!R||!e||!e.bag)return'…';if(!e.alive)return'';for(const[k,n]of R.c){const h=zCount(e,ZK[k]);if(h<n)return LG('Il manque : ','Missing: ')+(n-h)+' × '+ZI[ZK[k]].n.toLowerCase()}
- if(R.fire&&!zNearFire(e,130))return LG('Approche-toi d’un feu de camp','Get close to a campfire');if(R.id==='cook'&&!(zCount(e,ZK.meat)+zCount(e,ZK.fish)))return LG('Rien à cuire (viande ou poisson crus)','Nothing to cook (raw meat or fish)');
+ if(R.fire&&!zNearFire(e,130))return LG('Approche-toi d’un feu de camp','Get close to a campfire');if(R.id==='cook'&&!(zCount(e,ZK.meat)+zCount(e,ZK.fish)))return LG('Rien à cuire (viande ou poisson crus)','Nothing to cook (raw meat or fish)');if(R.id==='cook'&&e.ta)return e.ta.k==='cook'?LG('Cuisson déjà en cours','Already cooking'):LG('Finis d’abord de manger / boire','Finish eating / drinking first');
 if(R.id==='bag'&&e.bag.length>=4)return LG('Ton sac a déjà 4 emplacements','Your bag already has 4 slots');if(R.id==='fire'&&e.lf<=0&&!(e.tch>0))return LG('Briquet vide : il faut de l’essence','Lighter empty: you need fuel');return''}
-function zCraftMenu(hm){ZCR.length=0;ZCP=null;if(!ZCM)return;if(!hm||!hm.alive||st.s==='end'){ZCM=false;return}const now=performance.now(),n=ZRC.length,cols=W<540?1:2,rows=Math.ceil(n/cols),
+function zCraftMenu(hm){ZCR.length=0;ZCP=null;if(!ZCM)return;if(!hm||!hm.alive||hm.down||st.s==='end'){ZCM=false;return}const now=performance.now(),n=ZRC.length,cols=W<540?1:2,rows=Math.ceil(n/cols),
  avail=H-150,rh=Math.max(cols===1?30:28,Math.min(46,(avail-58)/rows)),pw=Math.min(W-16,cols===1?400:640),ph=50+rows*(rh+4)+6,px=W/2-pw/2,py=Math.max(6,Math.min(H*.12,(H-140-ph)/2)),cw=(pw-20-(cols-1)*8)/cols;ZCP=[px,py,pw,ph];
- pill(px,py,pw,ph,14,'rgba(6,10,18,.92)');g.save();g.strokeStyle='rgba(255,210,122,.35)';g.lineWidth=1.2;g.beginPath();g.roundRect?g.roundRect(px+.6,py+.6,pw-1.2,ph-1.2,14):g.rect(px,py,pw,ph);g.stroke();g.restore();
+ pill(px,py,pw,ph,14,'rgba(6,10,18,.97)');g.save();g.strokeStyle='rgba(255,210,122,.35)';g.lineWidth=1.2;g.beginPath();g.roundRect?g.roundRect(px+.6,py+.6,pw-1.2,ph-1.2,14):g.rect(px,py,pw,ph);g.stroke();g.restore();
  zIco(-2,px+22,py+22,20,0);txt(LG('ARTISANAT','CRAFTING'),px+40,py+22,15,'#ffd27a','left',800);
  const nf=zNearFire(hm,130);txt(nf?LG('🔥 près du feu ','🔥 by the fire ')+zTime(nf.t):(IS_PC?LG('C : fermer','C: close'):''),px+pw-50,py+22,10.5,nf?'#ffb060':'rgba(255,255,255,.45)','right',700);
  {const bx=px+pw-38,by=py+8;pill(bx,by,28,28,8,'rgba(255,255,255,.08)');txt('✕',bx+14,by+14,15,'#fff',null,800);ZCR.push([bx,by,28,28,-1])}
