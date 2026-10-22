@@ -5310,8 +5310,8 @@ function zHit(z,dmg,e,md){z.hp-=dmg;z.fl=T;z.stag=md===1?.07:(md===2?.5:.26);if(
  const a=Math.atan2(z.y-e.y,z.x-e.x),kb=(z.t===2?.3:1)*(md===1?3:(md===2?18:10));if(!hit(z.x+Math.cos(a)*kb,z.y+Math.sin(a)*kb,9)){z.x+=Math.cos(a)*kb;z.y+=Math.sin(a)*kb}
  if(z.hp>0){z.tgt=e.id;z.st='hunt';z.lost=0;zEv(1,z.x,z.y,e.id,z.id)}
  else{z.hp=0;z.dT=T;z.st='dead';if(e.team>=0&&e.team<5&&E[e.id]){stat(e.id).p++;ZS.kills[e.team]++}zEv(2,z.x,z.y,e.id,z.id);zDrop(z)}}
-// butin sur les zombies : 14 % munitions, 3 % bandage, 4 % snack, 2 % eau ; les brutes laissent souvent des munitions (70 %)
-function zDrop(z){if(GI.length>170)return;const r=Math.random(),[x,y]=zDropPos(z.x,z.y,6);if(z.t===2&&r<.7){zGAdd(ZK.ammo,14+(Math.random()*11|0),x,y);return}if(r<.14)zGAdd(ZK.ammo,8+(Math.random()*9|0),x,y);else if(r<.17)zGAdd(ZK.bdg,1,x,y);else if(r<.21)zGAdd(ZK.snack,1,x,y);else if(r<.23)zGAdd(ZK.water,1,x,y)}
+// butin sur les zombies : 21 % munitions (10 a 19), 3 % bandage, 4 % snack, 2 % eau ; les brutes laissent souvent des munitions (80 %, 18 a 30)
+function zDrop(z){if(GI.length>170)return;const r=Math.random(),[x,y]=zDropPos(z.x,z.y,6);if(z.t===2&&r<.8){zGAdd(ZK.ammo,18+(Math.random()*13|0),x,y);return}if(r<.21)zGAdd(ZK.ammo,10+(Math.random()*10|0),x,y);else if(r<.24)zGAdd(ZK.bdg,1,x,y);else if(r<.28)zGAdd(ZK.snack,1,x,y);else if(r<.30)zGAdd(ZK.water,1,x,y)}
 // ---------- vagues : 1 par minute ; (vague + 1) zombies par equipe en vie ; 60 zombies vivants au plus (le reste attend) ----------
 function zType(w){const r=Math.random();if(w>=15&&r<.08)return 3;if(w>=10&&r<.15)return 2;if(w>=5&&r<.42)return 1;return 0}
 function zTeamC(t){let x=0,y=0,n=0;for(const e of E)if(e.team===t&&e.alive){x+=e.x;y+=e.y;n++}return n?{x:x/n,y:y/n}:null}
@@ -5695,15 +5695,15 @@ const zShots=e=>!!(e&&e.wp&&(e.wp===4?e.ammo>0:(e.wp<3&&(e.ammo>0||zCount(e,ZK.a
 // armes : chargeur, cadence (s), degats, dispersion, rechargement (s), bruit (rayon ou les zombies entendent le tir)
 const ZW={1:{mag:12,cd:.26,dmg:28,sp:.035,rl:1.4,noise:600,v:980},2:{mag:30,cd:.11,dmg:22,sp:.07,rl:2.2,noise:900,v:1020},3:{melee:1,r:82,dmg:46,cd:.7,arc:.6},4:{mag:60,cd:.3,dmg:38,sp:.022,rl:0,noise:160,v:820,xb:1}};   // 4 : arbalete (60 carreaux, pas de rechargement, presque sans bruit)
 // tirage au sort selon le lieu : c chalet (plus d'armes), v voiture, f foret (plus de ressources)
-const ZLOOT={c:[['pistol',18],['ar',8],['ammo',30],['bdg',12],['gren',8],['water',10],['snack',10],['metal',6],['fuel',5],['bottle',4]],
- v:[['ammo',30],['metal',24],['fuel',16],['pistol',8],['water',10],['snack',10],['bdg',6],['gren',4],['bottle',6]],
- f:[['wood',30],['stone',30],['metal',6],['ammo',14],['water',7],['snack',7],['bdg',5],['pistol',4],['gren',2]]};
+const ZLOOT={c:[['pistol',18],['ar',8],['ammo',48],['bdg',12],['gren',8],['water',10],['snack',10],['metal',6],['fuel',5],['bottle',4]],
+ v:[['ammo',46],['metal',24],['fuel',16],['pistol',8],['water',10],['snack',10],['bdg',6],['gren',4],['bottle',6]],
+ f:[['wood',30],['stone',30],['metal',6],['ammo',24],['water',7],['snack',7],['bdg',5],['pistol',4],['gren',2]]};
 // fouille d'une voiture (4 s, une seule fois par voiture, bruyant)
-const ZCAR=[['ammo',26],['water',18],['snack',13],['bdg',10],['pistol',11],['fuel',9],['gren',8],['ar',5]];
+const ZCAR=[['ammo',36],['water',18],['snack',13],['bdg',10],['pistol',11],['fuel',9],['gren',8],['ar',5]];
 const Z_SEARCH=4,Z_BDG=3,Z_BDG_HP=35;
 let GI=[],ZGD=1;   // objets au sol ; ZGD : le rendu doit etre refait
 function zRoll(T_){let s=0;for(const q of T_)s+=q[1];let r=Math.random()*s;for(const q of T_)if((r-=q[1])<=0)return q[0];return T_[0][0]}
-function zQty(k){return k==='ammo'?18+(Math.random()*19|0):(k==='wood'||k==='stone')?1+(Math.random()*3|0):k==='metal'?1+(Math.random()*2|0):k==='pistol'?ZW[1].mag:k==='ar'?ZW[2].mag:1}
+function zQty(k){return k==='ammo'?24+(Math.random()*19|0):(k==='wood'||k==='stone')?1+(Math.random()*3|0):k==='metal'?1+(Math.random()*2|0):k==='pistol'?ZW[1].mag:k==='ar'?ZW[2].mag:1}
 function zGAdd(k,n,x,y){const it={id:++ZS.gid,k,n,x:Math.round(x),y:Math.round(y)};GI.push(it);ZS.gv++;ZGD=1;return it}
 function zGDel(it){const i=GI.indexOf(it);if(i>=0){GI.splice(i,1);ZS.gv++;ZGD=1}}
 // position libre pres d'un point (les objets ne tombent pas dans un tronc, un mur ou l'eau)
@@ -5768,7 +5768,7 @@ function zSwap(e){if(!e.wp&&!e.wp2)return;e.rl=0;if(!e.wk){if(!e.wp&&e.wp2){e.wp
 // ----- voitures : fouille (4 s en maintenant l'action, une fois par voiture ; le bruit attire les zombies)
 function zNearCar(e,uns){const C=(CUR.DECO&&CUR.DECO.cars)||[];let b=-1,bd=96;for(let i=0;i<C.length;i++){if(uns&&zSearched(i))continue;const d=Math.hypot(C[i][0]-e.x,C[i][1]-e.y);if(d<bd){bd=d;b=i}}return b}
 const zSearched=i=>!!((ZS.cs||0)&(1<<i));
-function zSearchDone(e,i){ZS.cs=(ZS.cs||0)|(1<<i);const C=CUR.DECO.cars[i],k=zRoll(ZCAR),n=k==='ammo'?24+(Math.random()*13|0):zQty(k),ki=ZK[k];zNoise(C[0],C[1],520,e);
+function zSearchDone(e,i){ZS.cs=(ZS.cs||0)|(1<<i);const C=CUR.DECO.cars[i],k=zRoll(ZCAR),n=k==='ammo'?30+(Math.random()*16|0):zQty(k),ki=ZK[k];zNoise(C[0],C[1],520,e);
  if(ZI[ki].w&&(!e.wp||(e.b2&&!e.wp2))){zTakeWeapon(e,ZI[ki].w,n);zToast(e,10,ki,1);return}
  const got=ZI[ki].w?0:zGive(e,ki,n);if(got<n){const[x,y]=zDropPos(e.x,e.y,20);zGAdd(ki,n-got,x,y)}zToast(e,10,ki,n)}
 // ----- bruit : tirs, explosions, fouilles -> les zombies qui l'entendent viennent voir (et chassent le tireur s'il est tout pres)
