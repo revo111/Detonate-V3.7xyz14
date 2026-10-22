@@ -1,9 +1,9 @@
-# fly.toml app configuration file generated for detonate-prototype on 2026-10-12T20:07:09Z
+# fly.toml app configuration file generated for detonate-v3-5 on 2026-10-22T03:01:08Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'detonate-prototype'
+app = 'detonate-v3-5'
 primary_region = 'iad'
 kill_signal = 'SIGINT'
 kill_timeout = '10s'
