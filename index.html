@@ -5270,7 +5270,7 @@ function zUpd(dt){
  const warm=st.s==='freeze';if(warm){st.t-=dt;if(st.t<=0){st.s='live';st.msg=''}}
  T+=warm?dt*.25:dt;if(!warm)ZS.t+=dt;ZS.fr=(ZS.fr||0)+1;
  const li=input();if(!HEADLESS)zHoldTick();
- for(const e of E){e.kcd-=dt;e.cd-=dt;if(e.ksw>0)e.ksw-=dt;e.rev-=dt;
+ for(const e of E){e.kcd-=dt;e.cd-=dt;if(e.fT>0)e.fT-=dt;if(e.ksw>0)e.ksw-=dt;e.rev-=dt;
   if(!e.alive){e.lit=0;e.zl=null;e.down=0;if(!e.zdrop){e.zdrop=1;zDropAll(e)}continue}   // mort : l'arme et tout le sac restent au sol
   if(e.down&&!warm){zDownTick(e,dt);if(!e.alive)continue}
   let mx=0,my=0,fire=0,act=0;
