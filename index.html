@@ -3435,7 +3435,7 @@ function pcard(x,y,cw,ch,e,ally,self){const dead=!e.alive,tc=TD(e.team);
 function icoGren(x,y,r,on){g.save();g.globalAlpha=on?1:.3;g.translate(x,y);g.fillStyle='#56652c';g.strokeStyle='#c8dca0';g.lineWidth=1.3;g.beginPath();g.ellipse(0,r*.2,r*.7,r*.85,0,0,7);g.fill();g.stroke();
  g.fillStyle='#9a9a92';g.fillRect(-r*.3,-r*.95,r*.6,r*.35);g.fillRect(r*.1,-r*.95,r*.55,r*.18);g.strokeStyle='#d8d8d0';g.lineWidth=1.2;g.beginPath();g.arc(-r*.55,-r*.85,r*.25,0,7);g.stroke();
  g.strokeStyle='rgba(0,0,0,.35)';g.lineWidth=1;g.beginPath();g.moveTo(-r*.6,r*.2);g.lineTo(r*.6,r*.2);g.stroke();g.restore();if(!on)txt('0',x+r+6,y,11,'rgba(255,255,255,.4)','left',600)}
-function drawGrenAim(hm){const touchA=typeof GA!=='undefined'&&GA;if(!(hm&&hm.alive&&!hm.moto&&hm.gren>0&&!(hm.frz>0)&&st.s==='live'&&((KC[ZMB()?'KeyX':'KeyQ']&&mouseMode)||touchA)))return;const t=touchA?gaTarget():grTarget();if(!t)return;
+function drawGrenAim(hm){const touchA=typeof GA!=='undefined'&&GA;if(!(hm&&hm.alive&&!hm.moto&&hm.gren>0&&!(hm.frz>0)&&st.s==='live'&&((KC[ZMB()?'KeyV':'KeyQ']&&mouseMode)||touchA)))return;const t=touchA?gaTarget():grTarget();if(!t)return;
  // couleur de la visee : orange (grenade classique) ou couleur de l'equipe (grenade IEM sur Neon Grid)
  const tcc=NEO()?new THREE.Color(TD(hm.team).hex):null,AR=tcc?Math.round(tcc.r*255):255,AG=tcc?Math.round(tcc.g*255):170,AB=tcc?Math.round(tcc.b*255):90,ac=a=>'rgba('+AR+','+AG+','+AB+','+a+')';
  if(touchA){const r=gb_.getBoundingClientRect(),bx=r.left+r.width/2,by=r.top+r.height/2,d=Math.hypot(GA.dx,GA.dy);g.save();g.strokeStyle=ac(.85);g.lineWidth=2;g.setLineDash([4,4]);g.beginPath();g.arc(bx,by,14+80,0,7);g.stroke();g.setLineDash([]);
@@ -5584,9 +5584,13 @@ function zSnd(k,x,y,ty){if(!AC||!WS||(typeof localSlot!=='undefined'&&localSlot<
  else if(k==='groan')zGroan(o,t,ty||0);
  else if(k==='step')zStepS(o,t,ty||0);
  else if(k==='scream'){const F=[[900,1],[1900,.7],[3000,.35]];zVox(o,t,{d:1.3,f0:520,fm:1080,tm:.22,f1:620,F,q:5,g:.46,br:.35,dist:2,vr:9,vd:.06,a:.05,s:.6});zVox(o,t+.02,{d:1.2,f0:780,fm:1600,tm:.25,f1:900,F,q:6,g:.18,br:.2,dist:1.5,vr:11,vd:.07,a:.06,s:.55});zSw(o,t,1.1,'highpass',2500,4000,.8,.12,.08)}
- else if(k==='horn'){impTone(o,t,'sawtooth',73,61,2.4,.3);impTone(o,t,'sawtooth',110,92,2.2,.16);impNz(o,t,1.6,'lowpass',220,1,.25,.4);
-  // la horde au loin repond
-  for(let i=0;i<5;i++){const f=60+r()*40;zVox(o,t+.6+r()*1.4,{d:1.2+r()*.8,f0:f,fm:f*1.15,tm:.4,f1:f*.75,F:zPick_([ZV.uh,ZV.oh,ZV.ah]),q:5,g:.12,br:.3,dist:1.2,tr:6,trd:.3,a:.2,s:.5})}}
+ else if(k==='horn'){
+  // nouvelle vague : deux coups d'une grosse cloche au loin (partiels inharmoniques, longue resonance), un battement sourd, la horde qui gemit au loin ; volume reduit
+  const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2200;lp.Q.value=.5;const bo=AC.createGain();bo.gain.value=.18;lp.connect(bo);bo.connect(o);
+  const P=[[.5,.5,4.2],[1,.34,3.4],[1.19,.2,2.6],[1.56,.14,2.2],[2,.1,1.8],[2.51,.07,1.4],[3.01,.05,1.1]],f=98+r()*6;
+  for(const tt of[0,1.7])for(const[m,gg,dd]of P){const ff=f*m*(1+(r()-.5)*.004);impTone(lp,t+tt,'sine',ff,ff*.998,dd,gg*(tt?.8:1))}
+  impNz(lp,t,.06,'lowpass',500,1,.35,.002);impNz(lp,t+1.7,.06,'lowpass',500,1,.3,.002);impTone(lp,t,'sine',55,40,.9,.25);
+  for(let i=0;i<3;i++){const fv=58+r()*30;zVox(lp,t+1+r()*1.6,{d:1.4+r()*.8,f0:fv,fm:fv*1.12,tm:.4,f1:fv*.75,F:zPick_([ZV.uh,ZV.oh]),q:5,g:.07,br:.3,dist:1,tr:6,trd:.3,a:.3,s:.5})}}
  else if(k==='out'){impTone(o,t,'triangle',330,165,.9,.2);impTone(o,t+.18,'triangle',247,123,.9,.16)}
  else if(k==='win'){[392,494,587,784].forEach((f,i)=>impTone(o,t+i*.12,'triangle',f,f,.5,.2))}
  else if(k==='pick'){zSw(o,t,.09,'bandpass',1100,2600,1.5,.22,.02);impNz(o,t+.03,.03,'bandpass',1900,2,.3,.001);impTone(o,t+.04,'triangle',700,920,.07,.07)}
@@ -5753,16 +5757,16 @@ const zBagSnap=e=>{const o=[];for(const s of e.bag||[null,null,null])o.push(s?s.
 function zBagApply(e,b){if(!b)return;const n=b.length/3|0;e.bag=e.bag||[];e.bag.length=n;for(let i=0;i<n;i++){e.bag[i]=b[i*3]?{k:b[i*3],n:b[i*3+1]}:null;if(e.bag[i]&&b[i*3+2]>=0)e.bag[i].u=b[i*3+2]}}
 // ----- commandes locales (clavier, toucher) envoyees dans la file numerotee
 const ZOQ={seq:0,L:[]};function zOp(op,sl){ZOQ.seq++;ZOQ.L.push([ZOQ.seq,op,sl||0]);if(ZOQ.L.length>6)ZOQ.L.shift()}
-// touches : é " ' (et ( pour le 4e emplacement) = utiliser (maintenir 0,6 s = lacher), A = arme / poignard (maintenir = lacher l'arme), X = grenade, G = briquet, B = bandage
+// touches : é " ' (et ( pour le 4e emplacement) = utiliser (maintenir 0,6 s = lacher), A = arme / poignard (maintenir = lacher l'arme), V = grenade, G = briquet, B = bandage, W = alliance, X = refuser
 const ZKH={},ZKS={Digit2:0,Digit3:1,Digit4:2,Digit5:3,Numpad1:0,Numpad2:1,Numpad3:2,Numpad4:3};
 // nom affiche d'une touche (selon la disposition du clavier quand le navigateur la donne ; sinon AZERTY)
 let ZKLM=null;try{if(typeof navigator!=='undefined'&&navigator.keyboard&&navigator.keyboard.getLayoutMap)navigator.keyboard.getLayoutMap().then(m=>{ZKLM=m}).catch(()=>{})}catch(x){}
-const ZKD={KeyQ:'A',KeyW:'Z',KeyA:'Q',Digit2:'é',Digit3:'"',Digit4:"'",Digit5:'('};
+const ZKD={KeyQ:'A',KeyW:'Z',KeyA:'Q',KeyZ:'W',Digit2:'é',Digit3:'"',Digit4:"'",Digit5:'('};
 function zKL(c){const v=ZKLM&&ZKLM.get&&ZKLM.get(c);if(v)return /^[a-z]$/.test(v)?v.toUpperCase():v;if(LANG==='en'&&!ZKLM)return c.replace('Key','').replace('Digit','');return ZKD[c]||c.replace('Key','').replace('Digit','')}
 const zSlotKey=i=>zKL(['Digit2','Digit3','Digit4','Digit5'][i]);
 addEventListener('keydown',e=>{if(!ZMB()||e.repeat||(e.target&&e.target.tagName==='INPUT'))return;const c=e.code,sl=ZKS[c]===undefined?-1:ZKS[c];
- if(sl>=0||c==='KeyQ'){ZKH[c]={t:performance.now(),sl,done:0}}else if(c==='KeyX'){ZXG=1}else if(c==='KeyB')zOp(5);else if(c==='KeyP')zOp(7);else if(c==='KeyO')zOp(8);else if(c==='KeyC'){ZCM=!ZCM;uiClick()}else if(c==='Escape')ZCM=false});
-let ZXG=0;addEventListener('keyup',e=>{if(e.code==='KeyX'&&ZXG){ZXG=0;if(ZMB())requestGren();return}const h=ZKH[e.code];if(!h)return;delete ZKH[e.code];if(h.done||!ZMB())return;if(e.code==='KeyQ')zOp(4);else zOp(1,h.sl)});
+ if(sl>=0||c==='KeyQ'){ZKH[c]={t:performance.now(),sl,done:0}}else if(c==='KeyV'){ZXG=1}else if(c==='KeyB')zOp(5);else if(c==='KeyZ')zOp(7);else if(c==='KeyX')zOp(8);else if(c==='KeyC'){ZCM=!ZCM;uiClick()}else if(c==='Escape')ZCM=false});
+let ZXG=0;addEventListener('keyup',e=>{if(e.code==='KeyV'&&ZXG){ZXG=0;if(ZMB())requestGren();return}const h=ZKH[e.code];if(!h)return;delete ZKH[e.code];if(h.done||!ZMB())return;if(e.code==='KeyQ')zOp(4);else zOp(1,h.sl)});
 // appui long (clavier ou toucher) : lacher
 function zHoldTick(){const now=performance.now();for(const c in ZKH){const h=ZKH[c];if(!h.done&&now-h.t>600){h.done=1;if(c==='KeyQ')zOp(3);else zOp(2,h.sl)}}
  if(ZTP&&!ZTP.done&&now-ZTP.t>600&&ZTP.sl>-2){ZTP.done=1;if(ZTP.sl<0)zOp(3);else zOp(2,ZTP.sl)}}
@@ -6028,8 +6032,8 @@ function zDownHud(hm,now){if(!hm||!hm.alive||!hm.down)return;const w=Math.min(W-
  pill(x+14,y+50,w-28,6,3,'rgba(255,255,255,.15)');pill(x+14,y+50,Math.max(6,(w-28)*(rv?hm.rvP:k)),6,3,rv?'#7ef0a0':'#ff5a46')}
 // bandeau : proposition d'alliance, alliance en cours, brouillard
 function zAllyHud(y,now){const out=[];const me=E[localSlot];
- if(ZS.ap)for(const q of ZS.ap){if(q.e<=T)continue;if(q.t===MT)out.push([TD(q.f).nom+LG(' proposent une alliance',' offer an alliance'),(IS_PC?LG('P : accepter · O : refuser','P: accept · O: decline'):LG('🤝 : accepter · ✖ : refuser','🤝: accept · ✖: decline'))+' · '+Math.ceil(q.e-T)+' s','#ffd27a']);else if(q.f===MT)out.push([LG('Alliance proposée aux ','Alliance offered to ')+TD(q.t).nom,LG('en attente…','waiting…'),'#fff'])}
- if(ZS.al&&ZS.al[MT]>=0){const u=ZS.al[MT],b=ZS.ab&&ZS.ab[MT];out.push([LG('Alliés : ','Allies: ')+TD(u).nom,b?LG('fin de l’alliance dans ','alliance ends in ')+Math.max(0,Math.ceil(b-T))+' s':(IS_PC?LG('P : rompre','P: break'):LG('🤝 maintenir : rompre','hold 🤝: break')),b?'#ff9a7a':TD(u).css])}
+ if(ZS.ap)for(const q of ZS.ap){if(q.e<=T)continue;if(q.t===MT)out.push([TD(q.f).nom+LG(' proposent une alliance',' offer an alliance'),(IS_PC?LG(zKL('KeyZ')+' : accepter · X : refuser',zKL('KeyZ')+': accept · X: decline'):LG('🤝 : accepter · ✖ : refuser','🤝: accept · ✖: decline'))+' · '+Math.ceil(q.e-T)+' s','#ffd27a']);else if(q.f===MT)out.push([LG('Alliance proposée aux ','Alliance offered to ')+TD(q.t).nom,LG('en attente…','waiting…'),'#fff'])}
+ if(ZS.al&&ZS.al[MT]>=0){const u=ZS.al[MT],b=ZS.ab&&ZS.ab[MT];out.push([LG('Alliés : ','Allies: ')+TD(u).nom,b?LG('fin de l’alliance dans ','alliance ends in ')+Math.max(0,Math.ceil(b-T))+' s':(IS_PC?LG(zKL('KeyZ')+' : rompre',zKL('KeyZ')+': break'):LG('🤝 maintenir : rompre','hold 🤝: break')),b?'#ff9a7a':TD(u).css])}
  const F=ZS.fog;if(F){const outF=me&&me.alive&&zInFog(me.x,me.y);out.push([outF?LG('☣ HORS DE LA ZONE !','☣ OUTSIDE THE ZONE!'):'☣ '+LG('Brouillard toxique','Toxic fog'),F.st===1?LG('la zone se resserre…','the zone is closing…'):(F.tr>0?LG('la zone se resserre dans ','zone closes in ')+zTime(F.t):LG('dernière zone','final zone')),outF?'#ff7a6a':'#a8ff8a'])}
  const cp=H<500;for(const[a,b,c]of out){if(cp){const t1=a+'  ·  '+b;g.font='700 11px system-ui';const w=g.measureText(t1).width+22;pill(W/2-w/2,y,w,20,9,'rgba(8,12,22,.8)');txt(t1,W/2,y+10,11,c,null,700);y+=23;continue}
   g.font='800 12px system-ui';const w=Math.max(g.measureText(a).width,(g.font='600 10px system-ui',g.measureText(b).width))+26;pill(W/2-w/2,y,w,34,10,'rgba(8,12,22,.8)');txt(a,W/2,y+11,12,c,null,800);txt(b,W/2,y+25,10,'rgba(255,255,255,.75)',null,600);y+=38}
@@ -6040,7 +6044,7 @@ function zFx4(q,now){const tn=t=>TD(t).nom;
  else if(q.k===53){const r=E[q.a],v=E[q.z];if(!r||!v)return;if(q.z===localSlot||q.a===localSlot||zFriend(v.team,MT)){ZMSG.push({t:now,k:99,t1:q.z===localSlot?(NM[r.id]||'')+LG(' t’a relevé',' revived you'):(q.a===localSlot?LG('Tu as relevé ','You revived ')+(NM[v.id]||''):(NM[r.id]||'')+LG(' a relevé ',' revived ')+(NM[v.id]||'')),c1:'#7ef0a0'});zSnd('revive',v.x,v.y)}}
  else if(q.k===54){ZMSG.push({t:now,k:99,t1:LG('BROUILLARD TOXIQUE','TOXIC FOG'),t2:LG('La zone sûre va se resserrer : restez à l’intérieur','The safe zone will shrink: stay inside'),c1:'#a8ff8a'});zSnd('horn')}
  else if(q.k===55)ZMSG.push({t:now,k:99,t1:LG('La zone se resserre !','The zone is closing!'),c1:'#a8ff8a'});
- else if(q.k===59){if(q.z===MT){ZMSG.push({t:now,k:99,t1:tn(q.a)+LG(' proposent une alliance',' offer an alliance'),t2:IS_PC?LG('Touche P pour accepter','Press P to accept'):LG('Touche 🤝 pour accepter','Tap 🤝 to accept'),c1:'#ffd27a'});zSnd('pick')}}
+ else if(q.k===59){if(q.z===MT){ZMSG.push({t:now,k:99,t1:tn(q.a)+LG(' proposent une alliance',' offer an alliance'),t2:IS_PC?LG('Touche '+zKL('KeyZ')+' pour accepter','Press '+zKL('KeyZ')+' to accept'):LG('Touche 🤝 pour accepter','Tap 🤝 to accept'),c1:'#ffd27a'});zSnd('pick')}}
  else if(q.k===60){if(q.a===MT||q.z===MT)ZMSG.push({t:now,k:99,t1:LG('L’alliance prend fin dans 5 s','The alliance ends in 5 s'),t2:tn(q.a)+LG(' rompent l’alliance',' break the alliance'),c1:'#ff9a7a'})}
  else if(q.k===61){const mine=q.a===MT||q.z===MT;ZMSG.push({t:now,k:99,t1:(mine?LG('ALLIANCE : ','ALLIANCE: '):'')+tn(q.a)+' 🤝 '+tn(q.z),t2:mine?LG('Vous pouvez vous relever · tirer sur un allié = trahison','You can revive each other · shooting an ally = betrayal'):'',c1:mine?'#ffd27a':'#fff'});if(mine)zSnd('ally')}
  else if(q.k===62){if(q.a===MT||q.z===MT)ZMSG.push({t:now,k:99,t1:LG('Fin de l’alliance','Alliance over'),t2:tn(q.a)+' / '+tn(q.z),c1:'#ff9a7a'})}
@@ -6140,12 +6144,12 @@ const zName=(k,n)=>ZI[k]?ZI[k].n+(ZI[k].w||!(n>1)?'':' ×'+n):'';
 let ZTO=[];
 function zToastShow(q){const k=q.z,n=q.x,TX={8:ZI[k]&&ZI[k].w?zName(k)+LG(' en main',' in hand'):'+'+n+' '+(ZI[k]?ZI[k].n:''),9:LG('Sac plein','Bag full'),10:LG('Fouille : ','Searched: ')+zName(k,n),11:LG('Voiture déjà fouillée','Car already searched'),
   12:'+'+Z_BDG_HP+LG(' PV',' HP'),13:LG('Vie déjà au maximum','Health already full'),15:LG('Pas de bandage','No bandage'),16:LG('Bandage interrompu','Bandage interrupted'),
-  14:k===ZK.gren?LG('Grenade : touche X ou bouton grenade','Grenade: X key or grenade button'):LG('Sert à l’artisanat ','Used for crafting ')+(IS_PC?'(C)':'(🔨)'),
+  14:k===ZK.gren?LG('Grenade : touche V ou bouton grenade','Grenade: V key or grenade button'):LG('Sert à l’artisanat ','Used for crafting ')+(IS_PC?'(C)':'(🔨)'),
   17:(ZI[k]?ZI[k].n:'')+' : +'+n+' '+(k===ZK.water?LG('soif','thirst'):LG('faim','hunger'))+(ZFOOD[ZI[k]&&ZI[k].k]&&ZFOOD[ZI[k].k].hp?'  ·  −'+ZFOOD[ZI[k].k].hp+LG(' PV',' HP'):''),18:LG('Tu as bu à l’étang : +','You drank from the pond: +')+n,
   19:LG('Briquet rechargé : +1:30','Lighter refilled: +1:30'),20:LG('Torche allumée : 2 min','Torch lit: 2 min'),21:LG('Fabriqué : ','Crafted: ')+(ZRC[n]?ZRN[ZRC[n].id][0]:''),22:zCraftWhy(E[localSlot],n)||LG('Impossible ici','Not possible here'),
   23:LG('Un poisson !','A fish!')+(n>0?LG(' (canne : encore ',' (rod: ')+n+LG(n>1?' poissons)':' poisson)',n>1?' more fish)':' more fish)'):''),24:LG('Rien n’a mordu…','Nothing bit…'),25:LG('Tu saignes ! Bandage ','You are bleeding! Bandage ')+(IS_PC?'(B)':''),27:k===ZK.water?LG('Tu n’as pas soif','You are not thirsty'):LG('Tu n’as pas faim','You are not hungry'),
   28:LG('Coéquipier soigné','Teammate patched up'),29:LG('Briquet déjà plein','Lighter already full'),30:LG('Une torche brûle déjà','A torch is already burning'),31:LG('Il faut une flamme : briquet ou feu de camp','You need a flame: lighter or campfire'),
-  32:k===ZK.molo?LG('Cocktail Molotov prêt ','Molotov ready ')+(IS_PC?'(X)':''):LG('Grenade prête ','Grenade ready ')+(IS_PC?'(X)':''),33:LG('La torche s’est éteinte','The torch burned out'),34:LG('Il faut une canne à pêche','You need a fishing rod'),
+  32:k===ZK.molo?LG('Cocktail Molotov prêt ','Molotov ready ')+(IS_PC?'(V)':''):LG('Grenade prête ','Grenade ready ')+(IS_PC?'(V)':''),33:LG('La torche s’est éteinte','The torch burned out'),34:LG('Il faut une canne à pêche','You need a fishing rod'),
   35:LG('Barricade démontée','Barricade dismantled'),36:LG('Pas assez de place ici','Not enough room here'),44:LG('Sac plein : laissé au sol','Bag full: left on the ground'),45:LG('Approche-toi du bord d’un étang','Get close to a pond edge'),46:LG('Pêche interrompue','Fishing interrupted'),47:LG('La canne à pêche s’est cassée','The fishing rod broke'),48:LG('Ton sac a déjà 4 emplacements','Your bag already has 4 slots'),49:LG('Sac en cuir : +1 emplacement','Leather bag: +1 slot'),50:LG('Tu pêches… ne bouge pas','Fishing… stay still'),100:LG('Brouillard toxique ! Rejoins la zone','Toxic fog! Get back in the zone'),101:LG('Aucune équipe assez proche pour une alliance','No team close enough for an alliance'),40:LG('Tu brûles !','You are burning!')}[q.k];
  if(!TX)return;const nw=performance.now(),dup=ZTO.find(m=>m.txt===TX&&nw-m.t<1500);if(dup){dup.t=Math.max(dup.t,nw-200);return}
  const bad=q.k===100||q.k===101||q.k===44||q.k===45||q.k===46||q.k===47||q.k===48||q.k===9||q.k===16||q.k===22||q.k===24||q.k===25||q.k===31||q.k===33||q.k===34||q.k===36||q.k===40;
@@ -6171,7 +6175,7 @@ function zInv(hm,narrow){ZBR.length=0;if(!hm||!hm.alive||hm.down||st.s==='end'||
   if(IS_PC)txt(zSlotKey(i),x+8,y0+9,9,'rgba(255,255,255,.55)',null,800);ZBR.push([x,y0,S,S,i])}
  // bouton d'artisanat (C)
  {const x=x0+ww+gap+nb*(S+gap),pr=ZTP&&ZTP.sl===-2;bx(x,cbw,ZCM,pr||ZCM);zIco(-2,x+cbw/2,y0+S*.42,S*.5,0);txt(LG('fabriquer','craft'),x+cbw/2,y0+S*.82,Math.round(8.5*sc_*1.15),'rgba(255,255,255,.7)',null,700);if(IS_PC)txt('C',x+8,y0+9,9,'rgba(255,255,255,.55)',null,800);ZBR.push([x,y0,cbw,S,-2])}
- if(IS_PC&&!(ZCTA>0.05)){const t1=[0,1,2].map(zSlotKey).join(' ')+LG(' : utiliser',' : use')+' · '+zKL('KeyQ')+LG(' : arme',' : weapon')+' · X : '+LG('grenade','grenade')+' · G : '+LG('briquet','lighter')+' · C : '+LG('artisanat','crafting')+' · H : '+LG('commandes','controls');
+ if(IS_PC&&!(ZCTA>0.05)){const t1=[0,1,2].map(zSlotKey).join(' ')+LG(' : utiliser',' : use')+' · '+zKL('KeyQ')+LG(' : arme',' : weapon')+' · V : '+LG('grenade','grenade')+' · '+zKL('KeyZ')+' : '+LG('alliance','alliance')+' · G : '+LG('briquet','lighter')+' · C : '+LG('artisanat','crafting')+' · H : '+LG('commandes','controls');
   g.font='600 10px system-ui';const tw=g.measureText(t1).width,fs=Math.max(8,Math.min(10,10*(W-30)/tw));txt(t1,W/2,y0-9,fs,'rgba(255,255,255,.42)',null,600)}
  // progression : bandage, fouille, rechargement
  let pb=null;if(hm.bd>0)pb=[hm.bdT>=0?LG('Soin du coéquipier…','Patching up teammate…'):LG('Bandage…','Bandaging…'),1-hm.bd/(hm.bdT>=0?Z_BDG2:Z_BDG),'#7ef0a0'];
@@ -6495,9 +6499,9 @@ function zElimClick(e){if(!ZMB()||!ZELR.length||st.s!=='live')return false;const
 // commandes (PC)
 function zControls(a){if(a<=0)return;const R_=[[['Z','Q','S','D','/','W','A','S','D'],LG('Se déplacer','Move')],[[LG('Souris','Mouse')],LG('Viser','Aim')],[[LG('Clic gauche','Left click'),'/','F'],LG('Tirer · coup de poignard / de lance','Shoot · knife / spear attack')],
   [['E','/',LG('Espace','Space')],LG('Ramasser · fouiller · boire · relever (maintenir)','Pick up · search · drink · revive (hold)')],[[0,1,2,3].map(zSlotKey),LG('Objets 1 à 4 : utiliser (maintenir : lâcher)','Items 1-4: use (hold: drop)')],
-  [[zKL('KeyQ')],LG('Arme ↔ poignard (maintenir : lâcher l’arme)','Weapon ↔ knife (hold: drop weapon)')],[['R'],LG('Recharger','Reload')],[['X'],LG('Grenade / Molotov (maintenir pour viser)','Grenade / Molotov (hold to aim)')],
+  [[zKL('KeyQ')],LG('Arme ↔ poignard (maintenir : lâcher l’arme)','Weapon ↔ knife (hold: drop weapon)')],[['R'],LG('Recharger','Reload')],[['V'],LG('Grenade / Molotov (maintenir pour viser)','Grenade / Molotov (hold to aim)')],
   [['G'],LG('Briquet : allumer / éteindre','Lighter: on / off')],[['B'],LG('Bandage (sur soi, ou un coéquipier proche)','Bandage (self or a nearby teammate)')],[['C','/',LG('Échap','Esc')],LG('Artisanat : ouvrir / fermer','Crafting: open / close')],
-  [['P'],LG('Alliance : proposer · accepter · rompre','Alliance: offer · accept · break')],[['O'],LG('Refuser une alliance','Decline an alliance')],[['TAB'],LG('Équipes (maintenir)','Teams (hold)')],[['M'],LG('Couper le son','Mute')],[['H'],LG('Afficher les commandes (maintenir)','Show controls (hold)')]];
+  [[zKL('KeyZ')],LG('Alliance : proposer · accepter · rompre','Alliance: offer · accept · break')],[['X'],LG('Refuser une alliance','Decline an alliance')],[['TAB'],LG('Équipes (maintenir)','Teams (hold)')],[['M'],LG('Couper le son','Mute')],[['H'],LG('Afficher les commandes (maintenir)','Show controls (hold)')]];
  g.save();g.globalAlpha=a;const bw=470,bh=40+R_.length*27,sc_=Math.max(.5,Math.min(1,(W/2-190)/bw,(H*.86-20)/bh,(H-MMH-40)/bh));g.translate(12,Math.max(8,H-12-bh*sc_));g.scale(sc_,sc_);
  pill(0,0,bw,bh,14,'rgba(6,10,18,.9)');g.lineWidth=1;g.strokeStyle='rgba(255,255,255,.18)';g.beginPath();g.roundRect?g.roundRect(.5,.5,bw-1,bh-1,14):g.rect(0,0,bw,bh);g.stroke();txt(LG('COMMANDES','CONTROLS'),bw/2,18,12,'rgba(255,255,255,.6)',null,800);
  const L=16,R=bw-16;let y=33;
