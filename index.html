@@ -7004,14 +7004,29 @@ function zRankTick(host){if(!ZS||!ZS.kills)return;if(!ZS.rk)ZS.rk=[0,0,0,0,0];
   if(e.rkA===undefined)e.rkA=0;if(e.rkA===r)continue;
   const o=ZRB[e.rkA][0],n=ZRB[r][0];if(e.mhB===undefined||Math.round(e.mhB*(1+o))!==e.maxhp)e.mhB=(e.maxhp||BASE_HP)/(1+o);   // vie max de base (sans bonus)
   e.maxhp=Math.round(e.mhB*(1+n));if(host&&e.alive&&!e.down)e.hp=Math.min(e.maxhp,e.hp+e.mhB*Math.max(0,n-o));else if(e.hp>e.maxhp&&host)e.hp=e.maxhp;e.rkA=r}}
-// insigne du rang : bouclier (I a III) ou diamant (IV), chiffre romain
-function zRankBadge(x,y,r,s,now){if(!(r>0))return;const C=ZRCOL[r];g.save();g.translate(x,y);const k=s/20;g.scale(k,k);
- if(r===4){const gl=.55+.45*Math.sin((now||0)/260);g.shadowColor='rgba(110,240,255,'+(.55+.4*gl).toFixed(2)+')';g.shadowBlur=10+6*gl}else{g.shadowColor='rgba(0,0,0,.6)';g.shadowBlur=4}
- const gr=g.createLinearGradient(0,-11,0,11);gr.addColorStop(0,C[0]);gr.addColorStop(.55,C[1]);gr.addColorStop(1,C[2]);g.fillStyle=gr;g.beginPath();
- if(r===4){g.moveTo(0,-12);g.lineTo(11,0);g.lineTo(0,12);g.lineTo(-11,0)}else{g.moveTo(-9,-10);g.lineTo(9,-10);g.lineTo(9,1);g.quadraticCurveTo(9,8,0,12);g.quadraticCurveTo(-9,8,-9,1)}
- g.closePath();g.fill();g.shadowBlur=0;g.lineWidth=1.6;g.strokeStyle='rgba(10,12,18,.85)';g.stroke();g.lineWidth=1;g.strokeStyle='rgba(255,255,255,.55)';g.beginPath();
- if(r===4){g.moveTo(0,-9);g.lineTo(8,0)}else{g.moveTo(-6.5,-7.5);g.lineTo(6.5,-7.5)}g.stroke();
- g.fillStyle=r===2?'#2a3038':'#1a1206';if(r===4)g.fillStyle='#062a38';g.font='900 '+(r===3?8.5:(r===4?8.5:9.5))+'px system-ui';g.textAlign='center';g.textBaseline='middle';g.fillText(ZRRO[r],0,r===4?.5:-.5);g.restore()}
+// insigne du rang : formes simples (I triangle, II ecusson, III hexagone, IV losange), qui brillent : halo de couleur qui pulse,
+// reflet en haut et un eclat lumineux qui traverse l'insigne de temps en temps ; chiffre romain au centre
+function zRankPath(r){g.beginPath();
+ if(r===1){g.moveTo(-9,-10);g.lineTo(9,-10);g.lineTo(9,1);g.quadraticCurveTo(9,8,0,12);g.quadraticCurveTo(-9,8,-9,1);g.closePath()}   // bouclier (forme de la toute premiere version)
+ else if(r===2){g.moveTo(-9.5,-10.5);g.lineTo(9.5,-10.5);g.lineTo(9.5,3);g.lineTo(0,12.5);g.lineTo(-9.5,3);g.closePath()}
+ else if(r===3){for(let i=0;i<6;i++){const a=Math.PI/6+i*Math.PI/3;i?g.lineTo(Math.cos(a)*11.2,Math.sin(a)*11.2):g.moveTo(Math.cos(a)*11.2,Math.sin(a)*11.2)}g.closePath()}
+ else{g.moveTo(0,-13);g.lineTo(12,0);g.lineTo(0,13);g.lineTo(-12,0);g.closePath()}}
+const ZRGLOW=[null,'255,150,80','225,235,255','255,205,60','110,235,255'];
+function zRankBadge(x,y,r,s,now){if(!(r>0))return;const C=ZRCOL[r],t=(now||0)/1000;g.save();g.translate(x,y);const k=s/20;g.scale(k,k);
+ if(r===1){   // bronze : comme la toute premiere version, sans brillance (degrade, contour sombre)
+  g.shadowColor='rgba(0,0,0,.6)';g.shadowBlur=4;const gr=g.createLinearGradient(0,-11,0,11);gr.addColorStop(0,C[0]);gr.addColorStop(.55,C[1]);gr.addColorStop(1,C[2]);g.fillStyle=gr;zRankPath(1);g.fill();g.shadowBlur=0;
+  g.lineWidth=1.6;g.strokeStyle='rgba(10,12,18,.85)';g.stroke();
+  g.fillStyle='#1a1206';g.font='900 9.5px system-ui';g.textAlign='center';g.textBaseline='middle';g.fillText('I',0,-.5);g.restore();return}
+ const pu=.5+.5*Math.sin(t*2.6+r);g.shadowColor='rgba('+ZRGLOW[r]+','+(.55+.35*pu).toFixed(2)+')';g.shadowBlur=(7+2*r)+5*pu;
+ g.fillStyle=C[1];zRankPath(r);g.fill();g.fill();g.shadowBlur=0;
+ g.save();zRankPath(r);g.clip();
+ // reflet : la moitie haute plus claire
+ const gl=g.createLinearGradient(0,-13,0,2);gl.addColorStop(0,'rgba(255,255,255,.55)');gl.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gl;g.fillRect(-14,-14,28,15);
+ // eclat qui traverse l'insigne (toutes les 2,6 s environ)
+ const ph=((t*.38+r*.21)%1)*2.6-.8;if(ph>-.6&&ph<1.6){const sx=-16+ph*22;const sg=g.createLinearGradient(sx-5,0,sx+5,0);sg.addColorStop(0,'rgba(255,255,255,0)');sg.addColorStop(.5,'rgba(255,255,255,.85)');sg.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=sg;g.save();g.transform(1,0,-.45,1,0,0);g.fillRect(sx-6,-14,12,28);g.restore()}
+ g.restore();
+ g.lineWidth=1.8;g.strokeStyle=C[2];zRankPath(r);g.stroke();g.lineWidth=.9;g.strokeStyle='rgba(255,255,255,.6)';g.save();g.scale(.82,.82);zRankPath(r);g.restore();g.stroke();
+ g.fillStyle=r===2?'#1f252c':(r===4?'#06303f':'#ffffff');g.shadowColor='rgba(0,0,0,.35)';g.shadowBlur=r===2||r===4?0:2;g.font='900 '+[0,8.5,9,9,8.5][r]+'px system-ui';g.textAlign='center';g.textBaseline='middle';g.fillText(ZRRO[r],0,[0,2.6,-.6,.5,.5][r]);g.restore()}
 // a cote de la petite barre de vie de chaque joueur (vu par tous) : a gauche de la barre, a l'ecran
 function zRankMarks(c,now){for(const e of E){if(!e.alive||e.sco===1||!(e.team>=0&&e.team<5)||(e.m&&e.m.grp&&!e.m.grp.visible))continue;const r=zRank(e.team);if(!r)continue;if(Math.abs(e.x-c.x)>1000||Math.abs(e.y-c.y)>800)continue;
  const A=wscr(e.x-21.25,e.y-27.5,2.5),B=wscr(e.x+21.25,e.y-27.5,2.5),L=A[0]<B[0]?A:B;if(L[0]<-20||L[1]<-20||L[0]>W+20||L[1]>H+20)continue;const sz=IS_PC?15:13;zRankBadge(L[0]-sz*.55-3,L[1],r,sz,now)}}
