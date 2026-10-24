@@ -3010,7 +3010,7 @@ function applyNetState(s){
  (s.players||[]).forEach(q=>{const e=E[q.id];if(!e)return;if(e.id===localSlot){if(q.alive&&e.alive&&e._shp!==undefined&&q.hp<e._shp)DMGP={t:performance.now()};e._shp=q.alive?q.hp:undefined}if(e.id!==localSlot){const dT=s.T-(e.lt??s.T);if(dT>.001&&dT<.5&&e.tx!==undefined){e.vx=(q.x-e.tx)/dT;e.vy=(q.y-e.ty)/dT}else if(dT>=.5){e.vx=e.vy=0}e.lt=s.T;e.rcv=performance.now()}
   const rsp=!e.alive&&q.alive;e.frz=(q.z||0)/10;e.rt=(q.rt||0)/10;
   {const nsc=q.sc||0,si=nsc?SC.findIndex(o=>o.drv===e.id||o.ps.includes(e.id)):-1;if(nsc&&!e.sco){e.bv=0;e.bw=0;e.vrv=0;e.bh=si>=0?(SC[si].na??SC[si].a):e.ang}e.sco=nsc;e.scI=si;e.zyv=q.zy||0;e.fu=q.fu||0}
-  e.tx=q.x;e.ty=q.y;e.tang=q.ang;e.hp=q.hp;e.alive=q.alive;e.ammo=q.ammo;e.rl=q.rl;e.act=q.act;e.can=q.can;e.vt=q.vt;e.p=q.p;e.body=q.b;e.gren=q.g;if(q.li!==undefined)zPApply(e,q);if(s.fb){e.boost=s.fb.includes(e.id)?1:0;e.maxhp=e.boost?BOOST_HP:BASE_HP}if(q.f)e.fT=.06;
+  e.tx=q.x;e.ty=q.y;e.tang=q.ang;e.hp=q.hp;e.alive=q.alive;e.ammo=q.ammo;e.rl=q.rl;e.act=q.act;e.can=q.can;e.vt=q.vt;e.p=q.p;e.body=q.b;e.gren=q.g;if(q.li!==undefined)zPApply(e,q);if(s.fb){e.boost=s.fb.includes(e.id)?1:0;e.maxhp=e.boost?BOOST_HP:(ZMB()?Math.round(BASE_HP*(1+zRB(e,0))):BASE_HP)}if(q.f)e.fT=.06;
   if(e.fresh||!e.alive||rsp){e.x=q.x;e.y=q.y;e.ang=q.ang;e.fresh=0;e.buf=[];e.vx=e.vy=0;if(e.id===localSlot)PHIST=[]}
   else if(e.id===localSlot&&q.q){const h=PHIST.find(p=>p.q===q.q);PHIST=PHIST.filter(p=>p.q>q.q);e.ackMode=1;
    if(h){const ex=q.x-h.x,ey=q.y-h.y,d=Math.hypot(ex,ey),f=d>220?1:(d<2?0:.25),ax=ex*f,ay=ey*f;e.x+=ax;e.y+=ay;for(const p of PHIST){p.x+=ax;p.y+=ay}}}});
@@ -3045,7 +3045,7 @@ function netSnapshot(){const r=v=>Math.round(v*10)/10;return{map:MAPID,T:Math.ro
 function netClientTick(dt){
  xfx(dt);
  localInpC=input();if(localInpC.rel)relPend=1;const li=localInpC,k=1-Math.exp(-dt*16);if(ZMB())zClientTick(dt,li);
- {const me=E[localSlot];cliCd-=dt;if(me&&me.alive&&!me.moto&&me.sco!==1&&!(me.frz>0)&&st.s==='live'&&li.fire&&cliCd<=0&&me.ammo>0&&!(me.rl>0)&&!(me.act&&me.can)&&(!ZMB()||(zGun(me)&&!(me.bd>0)&&!me.down))){cliCd=ZMB()?ZW[me.wp].cd:.2/(me.boost?1.3:1);const m=BP.find(w=>!w.visible);
+ {const me=E[localSlot];cliCd-=dt;if(me&&me.alive&&!me.moto&&me.sco!==1&&!(me.frz>0)&&st.s==='live'&&li.fire&&cliCd<=0&&me.ammo>0&&!(me.rl>0)&&!(me.act&&me.can)&&(!ZMB()||(zGun(me)&&!(me.bd>0)&&!me.down))){cliCd=ZMB()?zFireCd(me):.2/(me.boost?1.3:1);const m=BP.find(w=>!w.visible);
   if(m){m.visible=true;const a=aimAng;const xb_=ZMB()&&me.wp===4,sp_=xb_?ZW[4].v:960;B.push({loc:1,born:performance.now(),x:me.x+Math.cos(a)*14,y:me.y+Math.sin(a)*14,vx:Math.cos(a)*sp_,vy:Math.sin(a)*sp_,team:me.team,id:me.id,m,t:.9,xb:xb_?1:0});if(xb_)zSnd('xbow',me.x,me.y);else{me.fT=.06;shot(1,0,me.team)}}}}
  for(const e of E){if(e.tx===undefined)continue;const ox=e.x,oy=e.y;e.fT-=dt;
   if(e.id===localSlot&&e.alive&&st.s==='live'){let mx=li.mx,my=li.my;if((e.act&&e.can)||e.frz>0){mx=my=0;if(e.frz>0)e.bv=0}const len=Math.hypot(mx,my);if(len>1){mx/=len;my/=len}let ddx,ddy;if(e.moto){const d=bikeMove(e,mx,my,dt,MOTO_V*(e.boost?1.2:1));ddx=d[0];ddy=d[1]}else if(e.sco===1){const ox_=e.x,oy_=e.y;vanMove(e,mx,my,dt);ddx=e.x-ox_;ddy=e.y-oy_}else if(e.sco===2||e.zyv>0){ddx=ddy=0;e.x+=(e.tx-e.x)*.5;e.y+=(e.ty-e.y)*.5}else{const zk=ZMB()?zSpd(e):1;ddx=mx*152*(e.boost?1.2:1)*zk*dt;ddy=my*152*(e.boost?1.2:1)*zk*dt;mv(e,ddx,ddy)}e.pdx=(e.pdx||0)+ddx;e.pdy=(e.pdy||0)+ddy;
@@ -5207,7 +5207,7 @@ TEAMS.foret=[
  {nom:'COBRA',court:'COBRA',un:'Cobra',css:'#ffd84a',txt:'#ffe9a0',pill:'rgba(170,140,26,.5)',hex:0xe0ba22,dot:'#ffd23a',jk:0x9a7c16},
  {nom:'GHOST',court:'GHOST',un:'Ghost',css:'#7fe08a',txt:'#b8f0bf',pill:'rgba(44,140,64,.5)',hex:0x3fb256,dot:'#4fd06a',jk:0x2b7a3a}];
 let Z=[],ZQ=[],ZS={},LLQ={},ZLU=0,ZMSG=[],ZELR=[];const LQ={seq:0};
-function zReset(){Z=[];ZQ=[];LLQ={};ZLU=0;ZMSG=[];ZS={t:0,wave:0,next:0,zid:0,pl:[0,0,0,0,0],kills:[0,0,0,0,0],eT:[0,0,0,0,0],ev:[],evs:0,q:0,gid:0,gv:0,cs:0};zAllyInit()}
+function zReset(){Z=[];ZQ=[];LLQ={};ZLU=0;ZMSG=[];ZS={rk:[0,0,0,0,0],t:0,wave:0,next:0,zid:0,pl:[0,0,0,0,0],kills:[0,0,0,0,0],eT:[0,0,0,0,0],ev:[],evs:0,q:0,gid:0,gv:0,cs:0};zAllyInit()}
 zReset();
 function zChars(){if(!CHZ.length)for(let i=0;i<10;i++)CHZ.push(mkCharZ(i>>1));return CHZ}
 function zNames(){return Array.from({length:10},(_,i)=>i===0?LG('Vous','You'):(i===1?LG('Allié','Ally'):TEAMS.foret[i>>1].un+' '+(1+(i&1))))}
@@ -5301,6 +5301,7 @@ function zUpd(dt){
   // tir (arme en main et balles dans le chargeur) ou coup de poignard ; pas pendant un bandage
   if(fire&&!warm&&!(e.bd>0)&&!e.down){if(e.ta)zTaCancel(e,1);if(zGun(e)){if(e.ammo>0&&e.rl<=0&&e.cd<=0)zFire(e);else if(e.ammo<=0)zReload(e)}else if(e.kcd<=0){if(e.wp===3&&e.wk)zSpear(e);else zKnife(e)}}}
  if(!warm){zBullets(dt);updGren(dt);zWaves(dt);zZombies(dt);zAnimals(dt);zCampfires(dt);zFires(dt);zAllyTick(dt);zFogTick(dt)}
+ if(!warm)zRankTick(1);
  zCheckEnd()}
 // briquet : allume / eteint (3 min d'autonomie au total)
 function zLighter(e){if(e.down)return;if(e.lit)e.lit=0;else if(e.lf>0&&!(e.tch>0))e.lit=1;else if(e.tch>0)zToast(e,30);else{zToast(e,112);return}if(!HEADLESS&&e.id===localSlot)zSnd(e.lit?'lighter':'lid',e.x,e.y)}
@@ -5508,7 +5509,7 @@ function zApply(m){ZS.wave=m.w;ZS.t=m.t;ZS.next=m.t+m.nx;ZS.pl=m.pl;ZS.kills=m.k
   z.tx=q[2];z.ty=q[3];z.ta=q[4]/20;z.mhp=C0.hp;z.wind=q[6];if(q[7]>=0){if(z.hp!==0)z.dT=T-q[7]/10;z.hp=0}else z.hp=q[5]/20*C0.hp;nz.push(z)}
  Z=nz;if(m.ev.length&&m.ev[m.ev.length-1][0]<ZLU-5)ZLU=0;   // nouvelle partie sur le serveur : les numeros repartent de zero
  for(const q of m.ev){if(q[0]<=ZLU)continue;ZLU=q[0];zFx({u:q[0],k:q[1],x:q[2],y:q[3],a:q[4],z:q[5]})}}
-function zClientTick(dt,li){const me=E[localSlot];for(const e of E)if(e.ksw>0)e.ksw-=dt;zHoldTick();
+function zClientTick(dt,li){const me=E[localSlot];for(const e of E)if(e.ksw>0)e.ksw-=dt;zHoldTick();zRankTick(0);
  if(me&&me.alive&&st.s==='live'){me.kcd=(me.kcd||0)-dt;if(li.fire&&me.kcd<=0&&!zGun(me)&&!(me.bd>0)&&!me.down){const sp_=me.wp===3&&me.wk;me.kcd=sp_?ZW[3].cd:Z_KN.cd;me.ksw=sp_?.3:.24;zSnd(sp_?'swing2':'swing',me.x,me.y)}}   // coup de poignard affiche tout de suite (le serveur calcule le resultat)
  zAnClient(dt);const k=1-Math.exp(-dt*12);
  for(const z of Z){if(z.tx===undefined)continue;const ox=z.x,oy=z.y;if(Math.hypot(z.tx-z.x,z.ty-z.y)>160){z.x=z.tx;z.y=z.ty}else{z.x+=(z.tx-z.x)*k;z.y+=(z.ty-z.y)*k}z.ang+=zAng(z.ta,z.ang)*k;const v=Math.hypot(z.x-ox,z.y-oy)/Math.max(dt,.001);z.mvn=Math.min(1,v/40);z.ph+=dt*v/11}}
@@ -5536,6 +5537,7 @@ function zFx(q){if(HEADLESS)return;const now=performance.now();
  else if(q.k===51)zSnd('splash',q.x,q.y);
  else if(q.k===66)zSnd('sizzle',q.x,q.y);
  else if(q.k>=52&&q.k<=65)zFx4(q,now);
+ else if(q.k===70)zRankFx(q);
  else if(q.k>=100&&q.k<=120){if(q.a===localSlot){zToastShow(q);if(q.k===100)zSnd('cough')}}
  else if(q.k>=8&&q.k<=50){if(q.a===localSlot)zToastShow(q)}}
 PUFC.Z=[0x5a0a0a,0x2a0404];PUFC.F=[0xff8a2a,0x3a2a1a];
@@ -5816,7 +5818,8 @@ function zNoise(x,y,r,e){for(const z of Z){if(z.hp<=0)continue;const d=Math.hypo
  if(z.st==='hunt'&&z.tgt>=0&&E[z.tgt]&&E[z.tgt].alive)continue;if(e&&d<r*.45&&e.alive){z.st='hunt';z.tgt=e.id;z.lost=0;z.lx=e.x;z.ly=e.y;continue}
  z.st='go';z.gx=x+(Math.random()-.5)*120;z.gy=y+(Math.random()-.5)*120;z.gT=8;if(e)z.tm=e.team}}
 // ----- tir : une balle (degats selon l'arme), le bruit porte loin
-function zFire(e){const W_=ZW[e.wp];e.cd=W_.cd;e.ammo--;if(!W_.xb)e.fT=.06;const a=e.ang+(Math.random()-.5)*W_.sp*(e.p?1:1.15),m=BP.find(q=>!q.visible);
+function zFire(e){const W_=ZW[e.wp];e.cd=(e.cd<0&&e.cd>-.05?e.cd:0)+zFireCd(e);   // le reste de l'image precedente est garde : cadence exacte
+ e.ammo--;if(!W_.xb)e.fT=.06;const a=e.ang+(Math.random()-.5)*W_.sp*(e.p?1:1.15),m=BP.find(q=>!q.visible);
  if(m){m.visible=true;B.push({x:e.x+Math.cos(a)*16,y:e.y+Math.sin(a)*16,vx:Math.cos(a)*W_.v,vy:Math.sin(a)*W_.v,t:.85,team:e.team,id:e.id,u:++bseq,m,dm:W_.dmg,xb:W_.xb?1:0})}
  if(!HEADLESS&&!(netMode&&!isHost&&e.id===localSlot)){if(W_.xb)zSnd('xbow',e.x,e.y);else shot(Math.max(.15,1-Math.hypot(e.x-CP.x,e.y-CP.y)/1100),e.x-CP.x,e.team)}zNoise(e.x,e.y,W_.noise,e);if(W_.xb&&e.ammo<=0)zXbBreak(e)}
 // carreau d'arbalete (rendu) : fut en bois, pointe en metal, empennage rouge ; pris dans le pool des balles
@@ -5919,7 +5922,7 @@ function zSurvInit(){ZAN=[];ZCF=[];ZFI=[];ZBA=[];ZBC=null;ZS.sid=0;ZS.aid=0;
  if(OB.some(o=>o.zb)){OB=OB.filter(o=>!o.zb);buildGrid();buildNav();ZFT.fill(-9)}if(!HEADLESS&&typeof ZSR!=='undefined')ZSR.reset();zAnSpawn(16)}
 // degats « internes » (faim, soif, saignement, viande crue, feu) : sans marqueur de touche ; un bandage en cours n'est pas interrompu
 function zDmg(e,n){if(!e.alive||n<=0)return;if(e.bdHp!==undefined)e.bdHp-=n;if(e.ta)e.ta.hp0-=n;if(e.fsh>0)e.fshHp-=n;if(e.hp-n<=0){hurt(e,n,-1,0,e.x,e.y);if(!e.alive)e.body=1;return}e.hp-=n}
-const zSpd=e=>(e.down?.3:1)*(e.ta?.6:1)*(e.bd>0?.5:1)*((e.thi<20||e.hun<20)?.85:1);
+const zSpd=e=>(1+zRB(e,2))*(e.down?.3:1)*(e.ta?.6:1)*(e.bd>0?.5:1)*((e.thi<20||e.hun<20)?.85:1);
 function zSurvTick(e,dt){e.thi=Math.max(0,e.thi-100/Z_THI*dt);e.hun=Math.max(0,e.hun-100/Z_HUN*dt);
  const s_=(e.thi<=0?1:0)+(e.hun<=0?1:0);if(s_){e.stv=(e.stv||0)+dt*s_;while(e.stv>=2.5&&e.alive){e.stv-=2.5;zDmg(e,1)}}   // a zero : -1 PV toutes les 2,5 s (par jauge vide)
  if(e.bleed){e.blt=(e.blt||0)+dt;e.bld=(e.bld||0)+dt;while(e.blt>=1&&e.alive){e.blt-=1;zDmg(e,1)}if(e.bld>=25){e.bleed=0;e.bld=0}}   // la plaie finit par se refermer (25 s)   // saignement : -1 PV par seconde jusqu'au bandage
@@ -6751,12 +6754,12 @@ function zMateCard(mt,y){ZCARDB=0;const L=E.filter(e=>e.team===mt&&e.id!==localS
  ZCARDB=y}
 // ---------- ATH : vie + briquet ----------
 const Z_ATH_H=84;
-function zATH(hm,narrow){const sc_=(W<420?.92:(W>=1100&&H>=650?1.12:1))*.8*(IS_PC?1:.575),pw=Math.min(W-24,360*sc_),ph=Z_ATH_H*sc_,px=W/2-pw/2,py=H-ph-(narrow?26:14),mx=BASE_HP,hp=hm.down?0:Math.max(0,Math.min(mx,hm.hp)),fr=hp/mx;athX=px;athW=pw;athTop=py;
+function zATH(hm,narrow){const sc_=(W<420?.92:(W>=1100&&H>=650?1.12:1))*.8*(IS_PC?1:.575),pw=Math.min(W-24,360*sc_),ph=Z_ATH_H*sc_,px=W/2-pw/2,py=H-ph-(narrow?26:14),mx=hm.maxhp||BASE_HP,hp=hm.down?0:Math.max(0,Math.min(mx,hm.hp)),fr=hp/mx;athX=px;athW=pw;athTop=py;
  if(hp>athGhost)athGhost=hp;else athGhost=Math.max(hp,athGhost-mx*.9*(gdt||.016));const low=fr<=.3,hc=fr>.5?'#4fd37a':(fr>.3?'#ffc83c':'#ff5a4a'),now=performance.now();
  pill(px,py,pw,ph,12,'rgba(8,12,22,.8)');g.save();g.lineWidth=1.5;g.strokeStyle=low?'rgba(255,90,74,'+(.45+.4*Math.sin(now/180))+')':'rgba(255,255,255,.1)';g.beginPath();g.roundRect?g.roundRect(px+.75,py+.75,pw-1.5,ph-1.5,12):g.rect(px,py,pw,ph);g.stroke();g.restore();
  const lw=pw*.56,bx=px+12*sc_,bw=lw-22*sc_,bh=10*sc_,by=py+35*sc_,ty=py+19*sc_;
  icoCross(bx+8*sc_,ty,8*sc_,hc);g.font='800 '+zF(24*sc_,14)+'px system-ui';const hs_=String(Math.ceil(hp)),hw=g.measureText(hs_).width;
- txt(hs_,bx+22*sc_,ty+1,zF(24*sc_,14),low?'#ff7a6a':'#fff','left',800);txt('/ '+mx,bx+22*sc_+hw+5,ty+3,zF(12*sc_,9),'rgba(255,255,255,.55)','left',600);
+ txt(hs_,bx+22*sc_,ty+1,zF(24*sc_,14),low?'#ff7a6a':'#fff','left',800);txt('/ '+mx,bx+22*sc_+hw+5,ty+3,zF(12*sc_,9),'rgba(255,255,255,.55)','left',600);{const r_=zRank(hm.team);if(r_){g.font='600 '+zF(12*sc_,9)+'px system-ui';const w2=g.measureText('/ '+mx).width;zRankBadge(bx+22*sc_+hw+5+w2+zF(11*sc_,9),ty+1,r_,zF(17*sc_,12),now)}}
  pill(bx,by,bw,bh,bh/2,'rgba(255,255,255,.1)');g.save();g.beginPath();g.roundRect?g.roundRect(bx,by,bw,bh,bh/2):g.rect(bx,by,bw,bh);g.clip();g.fillStyle='rgba(255,255,255,.4)';g.fillRect(bx,by,bw*athGhost/mx,bh);
  const gr=g.createLinearGradient(0,by,0,by+bh);gr.addColorStop(0,hc);gr.addColorStop(1,low?'#c0392b':(fr>.5?'#2fa85a':'#d99a1e'));g.fillStyle=gr;g.fillRect(bx,by,bw*fr,bh);g.fillStyle='rgba(8,12,22,.45)';for(let v=30;v<mx;v+=30)g.fillRect(bx+bw*v/mx-.5,by,1,bh);g.restore();
  g.fillStyle='rgba(255,255,255,.1)';g.fillRect(px+lw,py+8*sc_,1,40*sc_);
@@ -6781,7 +6784,7 @@ function zTable(y,live){const tw=Math.min(W-16,560),x0=W/2-tw/2,ord=[0,1,2,3,4].
  const cols=[[LG('Zombies','Zombies'),e=>stat(e.id).p||0],[LG('Joueurs','Players'),e=>stat(e.id).k||0],[LG('Survie','Survival'),null]];
  for(const t of ord){const TT=TD(t),pl=zPlaceOf(t),mine=t===MT,aliveT=!pl||(pl===1&&st.s!=='live');
   pill(x0,y,tw,rh,6,TT.pill);if(mine){g.save();g.strokeStyle='rgba(255,255,255,.7)';g.lineWidth=1.5;g.beginPath();g.roundRect?g.roundRect(x0+.75,y+.75,tw-1.5,rh-1.5,6):g.rect(x0,y,tw,rh);g.stroke();g.restore()}
-  txt((pl?pl+(pl===1?(LANG==='en'?'st':'er'):(LANG==='en'?['','','nd','rd','th','th'][pl]:'e'))+'  ':'')+TT.nom,x0+10,y+rh/2,12,'#fff','left',800);
+  txt((pl?pl+(pl===1?(LANG==='en'?'st':'er'):(LANG==='en'?['','','nd','rd','th','th'][pl]:'e'))+'  ':'')+TT.nom,x0+10,y+rh/2,12,'#fff','left',800);{const r_=zRank(t);if(r_){g.font='800 12px system-ui';const tw2=g.measureText((pl?pl+'e  ':'')+TT.nom).width;zRankBadge(x0+tw2+30,y+rh/2,r_,Math.min(16,rh-2),performance.now());txt(zRankName(r_),x0+tw2+42,y+rh/2,10,ZRCOL[r_][0],'left',800)}}
   txt(String(ZS.kills[t]||0),x0+tw-cw*3+cw/2,y+rh/2,11,'#fff',null,800);txt(zTime(pl?(ZS.eT[t]||0):ZS.t),x0+tw-cw/2,y+rh/2,11,'#fff',null,700);
   cols.forEach(([l],j)=>{if(t===ord[0])txt(l,x0+tw-cw*(3-j)+cw/2,y-8,10,'rgba(255,255,255,.65)',null,700)});y+=rh+2;
   for(const e of E.filter(e=>e.team===t)){const me=e.id===localSlot;pill(x0,y,tw,rh,5,me?'rgba(255,255,255,.12)':'rgba(255,255,255,.04)');
@@ -6824,7 +6827,7 @@ function zControls(a){if(a<=0)return;const R_=[[['Z','Q','S','D','/','W','A','S'
 // ---------- HUD complet du mode Zombie ----------
 let zCtrlT=0,ZCTA=0;
 function zHud(){const mt=MT,now=performance.now(),me=E.find(e=>e.id===localSlot)||E[0],hm=me,c=(me&&me.alive)?me:(specTarget(mt)||me);
- g.clearRect(0,0,W,H);if(st.s!=='end'){zDark(c,now);zFogScreen(c,now);zEyes(c,now);zItemsHud(c,hm);zDownMarks(c,hm,now);zEmotes(c,hm,now)}
+ g.clearRect(0,0,W,H);if(st.s!=='end'){zDark(c,now);zFogScreen(c,now);zEyes(c,now);zItemsHud(c,hm);zDownMarks(c,hm,now);zRankMarks(c,now);zEmotes(c,hm,now)}
  {const nw=performance.now();NETD.fr.push(nw);while(NETD.fr.length&&nw-NETD.fr[0]>1000)NETD.fr.shift()}
  if(netMode&&netStarted&&!isHost&&NETD.arr.length&&performance.now()/1000-NETD.arr[NETD.arr.length-1]>.6&&st.s!=='end'){pill(W/2-90,H*.3-14,180,28,14,'rgba(140,30,20,.85)');txt('Connexion instable…',W/2,H*.3,12,'#fff',null,700)}
  if(netMode&&netStarted&&!isHost){const nw=performance.now(),old=NETQ.sent.filter(x=>nw-x>1500),lost=old.filter(x=>!NETQ.ok.has(x)).length,loss=old.length?Math.round(lost/old.length*100):0,jit=Math.round(NETQ.jit),bad=netPing>150||jit>30||loss>2;
@@ -6832,20 +6835,10 @@ function zHud(){const mt=MT,now=performance.now(),me=E.find(e=>e.id===localSlot)
  HUDR.length=0;if(!HUDH){zMini();HUDR.push([10,10,MMW,MMH])}else drawHudGhost();
  if(st.s!=='end')zMateCard(mt,HUDH?56:18+MMH);else ZCARDB=0;
  const narrow=W<640||W/2-130<MMW+22,SH=SBH&&st.s!=='end';
- // ---- panneau du haut : vague + minuteur, equipes en vie (2 points par equipe), zombies en vie
- const pw=narrow?Math.max(170,W-MMW-34):260,px=narrow?MMW+22:W/2-pw/2,py=10,pcx=px+pw/2,ph=36,wv=Math.max(1,ZS.wave),nx=Math.max(0,Math.ceil(ZS.next-ZS.t)),za=Z.filter(z=>z.hp>0).length;
- let HB=py+ph;
- if(SH){pill(pcx-62,py,124,26,10,'rgba(8,12,22,.66)');txt(LG('V','W')+wv+'  ·  '+zTime(nx),pcx,py+13,13,'#fff',null,800);HB=py+26;SBR=[pcx-62,py-4,124,34]}
- else{pill(px,py,pw,ph,12,'rgba(8,12,22,.76)');
-  {const sx=px+20,sy=py+ph/2;g.save();g.fillStyle='#c9d6b0';g.beginPath();g.arc(sx,sy-2,7,0,7);g.fill();g.fillRect(sx-4.5,sy+2,9,5);g.fillStyle='#0b0f18';g.beginPath();g.arc(sx-2.6,sy-2.5,1.8,0,7);g.arc(sx+2.6,sy-2.5,1.8,0,7);g.fill();g.restore()}
-  txt(LG('VAGUE ','WAVE ')+wv+(wv<=Z_WAVES?' / '+Z_WAVES:''),px+34,py+ph/2+1,15,'#fff','left',800);
-  txt(st.s==='freeze'||nx>999?'—':(LG('suivante ','next ')+zTime(nx)),px+pw-12,py+ph/2+1,12,nx<=10&&st.s==='live'?'#ffb04a':'rgba(255,255,255,.8)','right',700);
-  // equipes
-  const cw=28,gap=6,tw_=5*cw+4*gap,x0=pcx-tw_/2,y0=py+ph+5;
-  for(let t=0;t<5;t++){const x=x0+t*(cw+gap),out=!!ZS.pl[t]&&!(ZS.pl[t]===1&&st.s!=='live'),TT=TD(t);pill(x,y0,cw,15,7,out?'rgba(40,40,46,.8)':TT.pill);
-   if(t===mt){g.save();g.strokeStyle='#fff';g.lineWidth=1.4;g.beginPath();g.roundRect?g.roundRect(x+.7,y0+.7,cw-1.4,13.6,7):g.rect(x,y0,cw,15);g.stroke();g.restore()}
-   E.filter(e=>e.team===t).forEach((e,j)=>{g.fillStyle=out?'rgba(255,255,255,.18)':(e.alive?TT.css:'rgba(20,20,24,.9)');g.beginPath();g.arc(x+9+j*10,y0+7.5,3.6,0,7);g.fill();if(!e.alive&&!out){g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=1;g.stroke()}})}
-  txt('🧟 '+za+(ZS.q>0||ZQ.length?' (+'+(ZS.q||ZQ.length)+')':''),pcx,y0+26,11,'rgba(220,235,200,.8)',null,700);HB=y0+34;SBR=[px,py-4,pw,HB-py+8]}
+ // ---- panneau du haut : vague, minuteur, zombies, equipes ; dessous : rang de mon equipe, progression et bonus
+ let HB=10,px=0,pw=0;
+ if(SH){const wv=Math.max(1,ZS.wave),nx=Math.max(0,Math.ceil(ZS.next-ZS.t)),pcx=narrow?MMW+22+(W-MMW-34)/2:W/2,py=10;pill(pcx-62,py,124,26,10,'rgba(8,12,22,.66)');txt(LG('V','W')+wv+'  ·  '+zTime(nx),pcx,py+13,13,'#fff',null,800);HB=py+26;SBR=[pcx-62,py-4,124,34];px=pcx-62;pw=124}
+ else{const r_=zTopHud(mt,now,narrow);HB=r_[0];px=r_[1];pw=r_[2];SBR=[px,6,pw,HB-2]}
  HUDTOPR=[px,0,px+pw,HB];
  const ABY=st.s==='end'?HB:zAllyHud(HB+(narrow&&!SH?58:(SH?6:8)),now);
  // boutons en haut a droite (quitter, son, tableau, plein ecran)
@@ -6993,6 +6986,76 @@ function zLobby(){const row=slot=>{const p=netPlayers.find(x=>x.slot===slot),TT=
   [0,1,2,3,4].map(t=>'<div class="small" style="margin-top:7px;color:'+TEAMS.foret[t].css+';opacity:.95">'+TEAMS.foret[t].nom+'</div>'+row(2*t)+row(2*t+1)).join('');
  const me=netPlayers.find(p=>p.id===netPlayerId);$('teamBtn').classList.toggle('hidden',!me);$('startBtn').classList.toggle('hidden',!(isHost&&netPlayers.length>=1));
  menuMessage(isHost?LG('Les places libres seront jouées par l’IA. Lance quand tu veux.','Free slots will be played by AI. Start when ready.'):LG('En attente du lancement par l’hôte…','Waiting for the host…'),'ok')}
+
+// ---------- rangs d'equipe : zombies tues par l'equipe -> I Bronze, II Argent, III Or, IV Diamant ----------
+// chaque palier demande plus de zombies que le precedent (+20, +40, +60, +90) ; le rang se calcule a partir de ZS.kills (serveur et joueurs)
+const ZRK=[0,20,60,120,210];
+const ZRB=[[0,0,0],[.08,.05,.05],[.12,.08,.08],[.15,.15,.15],[.20,.20,.20]];   // bonus : vie, cadence de tir, vitesse
+const ZRNM=[['',''],['BRONZE','BRONZE'],['ARGENT','SILVER'],['OR','GOLD'],['DIAMANT','DIAMOND']],ZRRO=['','I','II','III','IV'];
+const ZRCOL=[null,['#e0a06a','#8a4f22','#5a2e10'],['#eef2f7','#a6b0bd','#5d6673'],['#ffe27a','#d9a316','#7a5806'],['#c9fbff','#46d6f0','#0e6a8a']];   // clair, moyen, sombre
+const zRankName=r=>ZRNM[r]?LG(ZRNM[r][0],ZRNM[r][1]):'';
+function zRank(tm){const k=(ZS&&ZS.kills&&ZS.kills[tm])||0;let r=0;for(let i=1;i<5;i++)if(k>=ZRK[i])r=i;return r}
+const zRB=(e,i)=>e&&e.team>=0&&e.team<5&&ZS&&ZS.kills?ZRB[zRank(e.team)][i]:0;
+const zFireCd=e=>ZW[e.wp].cd/(1+zRB(e,1));
+// a chaque image : vie max selon le rang (on gagne aussi la vie ajoutee), annonce quand une equipe monte de rang (serveur / partie solo)
+function zRankTick(host){if(!ZS||!ZS.kills)return;if(!ZS.rk)ZS.rk=[0,0,0,0,0];
+ for(let tm=0;tm<5;tm++){const r=zRank(tm);if(r>ZS.rk[tm]){ZS.rk[tm]=r;if(host)zEv(70,0,0,tm,r)}else if(r<ZS.rk[tm])ZS.rk[tm]=r}
+ for(const e of E){if(!(e.team>=0&&e.team<5))continue;const r=zRank(e.team);if(!host){e.maxhp=Math.round(BASE_HP*(1+ZRB[r][0]));e.rkA=r;continue}   // joueur en ligne : la vie max suit toujours le rang (l'etat recu peut la remettre a 120)
+  if(e.rkA===undefined)e.rkA=0;if(e.rkA===r)continue;
+  const o=ZRB[e.rkA][0],n=ZRB[r][0];if(e.mhB===undefined||Math.round(e.mhB*(1+o))!==e.maxhp)e.mhB=(e.maxhp||BASE_HP)/(1+o);   // vie max de base (sans bonus)
+  e.maxhp=Math.round(e.mhB*(1+n));if(host&&e.alive&&!e.down)e.hp=Math.min(e.maxhp,e.hp+e.mhB*Math.max(0,n-o));else if(e.hp>e.maxhp&&host)e.hp=e.maxhp;e.rkA=r}}
+// insigne du rang : bouclier (I a III) ou diamant (IV), chiffre romain
+function zRankBadge(x,y,r,s,now){if(!(r>0))return;const C=ZRCOL[r];g.save();g.translate(x,y);const k=s/20;g.scale(k,k);
+ if(r===4){const gl=.55+.45*Math.sin((now||0)/260);g.shadowColor='rgba(110,240,255,'+(.55+.4*gl).toFixed(2)+')';g.shadowBlur=10+6*gl}else{g.shadowColor='rgba(0,0,0,.6)';g.shadowBlur=4}
+ const gr=g.createLinearGradient(0,-11,0,11);gr.addColorStop(0,C[0]);gr.addColorStop(.55,C[1]);gr.addColorStop(1,C[2]);g.fillStyle=gr;g.beginPath();
+ if(r===4){g.moveTo(0,-12);g.lineTo(11,0);g.lineTo(0,12);g.lineTo(-11,0)}else{g.moveTo(-9,-10);g.lineTo(9,-10);g.lineTo(9,1);g.quadraticCurveTo(9,8,0,12);g.quadraticCurveTo(-9,8,-9,1)}
+ g.closePath();g.fill();g.shadowBlur=0;g.lineWidth=1.6;g.strokeStyle='rgba(10,12,18,.85)';g.stroke();g.lineWidth=1;g.strokeStyle='rgba(255,255,255,.55)';g.beginPath();
+ if(r===4){g.moveTo(0,-9);g.lineTo(8,0)}else{g.moveTo(-6.5,-7.5);g.lineTo(6.5,-7.5)}g.stroke();
+ g.fillStyle=r===2?'#2a3038':'#1a1206';if(r===4)g.fillStyle='#062a38';g.font='900 '+(r===3?8.5:(r===4?8.5:9.5))+'px system-ui';g.textAlign='center';g.textBaseline='middle';g.fillText(ZRRO[r],0,r===4?.5:-.5);g.restore()}
+// a cote de la petite barre de vie de chaque joueur (vu par tous) : a gauche de la barre, a l'ecran
+function zRankMarks(c,now){for(const e of E){if(!e.alive||e.sco===1||!(e.team>=0&&e.team<5)||(e.m&&e.m.grp&&!e.m.grp.visible))continue;const r=zRank(e.team);if(!r)continue;if(Math.abs(e.x-c.x)>1000||Math.abs(e.y-c.y)>800)continue;
+ const A=wscr(e.x-21.25,e.y-27.5,2.5),B=wscr(e.x+21.25,e.y-27.5,2.5),L=A[0]<B[0]?A:B;if(L[0]<-20||L[1]<-20||L[0]>W+20||L[1]>H+20)continue;const sz=IS_PC?15:13;zRankBadge(L[0]-sz*.55-3,L[1],r,sz,now)}}
+// petites icones des bonus : vie (coeur), cadence de tir (eclair), vitesse (chevrons)
+function zIcB(k,x,y,s,col){g.save();g.translate(x,y);g.scale(s/12,s/12);g.fillStyle=col;g.strokeStyle=col;g.beginPath();
+ if(k===0){g.moveTo(0,4.5);g.bezierCurveTo(-7,-.5,-5,-6.5,0,-2.8);g.bezierCurveTo(5,-6.5,7,-.5,0,4.5);g.fill()}
+ else if(k===1){g.moveTo(1.5,-6);g.lineTo(-4,1);g.lineTo(-.4,1);g.lineTo(-1.5,6);g.lineTo(4,-1);g.lineTo(.4,-1);g.closePath();g.fill()}
+ else{g.lineWidth=2;g.lineCap='round';g.lineJoin='round';for(const o of[-3,2]){g.moveTo(o-2,-4);g.lineTo(o+2,0);g.lineTo(o-2,4)}g.stroke()}g.restore()}
+// panneau du haut (centre) : carte 1 = vague, zombies, minuteur + les 5 equipes ; carte 2 = rang de mon equipe, progression, bonus
+function zTopHud(mt,now,narrow){const mob=!IS_PC,k=mob?.74:1,pw=narrow?Math.max(mob?200:210,Math.min(W-MMW-34,mob?240:330)):(mob?236:330),px=narrow?MMW+22:Math.round(W/2-pw/2),pcx=px+pw/2,py=10;
+ const wv=Math.max(1,ZS.wave),nx=Math.max(0,Math.ceil(ZS.next-ZS.t)),za=Z.filter(z=>z.hp>0).length,zq=ZS.q||ZQ.length||0;
+ const card=(x,y,w,h)=>{pill(x,y,w,h,12,'rgba(8,12,22,.8)');g.save();g.lineWidth=1;g.strokeStyle='rgba(255,255,255,.09)';g.beginPath();g.roundRect?g.roundRect(x+.5,y+.5,w-1,h-1,12):g.rect(x,y,w,h);g.stroke();g.restore()};
+ const r1=Math.round(30*k),r2=Math.round(26*k),H1=r1+r2;   // mobile : environ 25 % plus petitcard(px,py,pw,H1);
+ // ligne 1 : tete de mort + VAGUE a gauche, zombies au centre, minuteur a droite
+ {const cy=py+r1/2+1,sx=px+18;g.save();g.fillStyle='#c9d6b0';g.beginPath();g.arc(sx,cy-2,6.5*k,0,7);g.fill();g.fillRect(sx-4*k,cy+2,8*k,4.5*k);g.fillStyle='#0b0f18';g.beginPath();g.arc(sx-2.4*k,cy-2.5,1.7*k,0,7);g.arc(sx+2.4*k,cy-2.5,1.7*k,0,7);g.fill();g.restore();
+  const fs=Math.max(10,Math.round(14*k));txt(LG('VAGUE ','WAVE ')+wv+(wv<=Z_WAVES?' / '+Z_WAVES:''),px+31,cy,fs,'#fff','left',800);
+  const tm=st.s==='freeze'||nx>999?'—':zTime(nx),warn=nx<=10&&st.s==='live',tfs=Math.max(10,Math.round(13*k));g.font='800 '+tfs+'px system-ui';const tw=g.measureText(tm).width;txt(tm,px+pw-(mob?10:14),cy,tfs,warn?'#ffb04a':'#fff','right',800);
+  if(!mob||pw>270)txt(LG('suivante','next'),px+pw-20-tw,cy+.5,Math.round(10*k),'rgba(255,255,255,.5)','right',600);
+  const zt=String(za)+(zq?' +'+zq:''),zfs=Math.max(9,Math.round(12*k));g.font='800 '+zfs+'px system-ui';const zw=g.measureText(zt).width+(mob?20:26),zx=Math.round(pcx-zw/2);pill(zx,cy-9*k,zw,18*k,9*k,'rgba(120,150,90,.18)');
+  {const ix=zx+(mob?8:10),iy=cy;g.save();g.fillStyle='#b8d88a';g.beginPath();g.arc(ix,iy-1.5,4.2*k,0,7);g.fill();g.fillRect(ix-2.6*k,iy+1.5,5.2*k,3*k);g.fillStyle='#0b0f18';g.beginPath();g.arc(ix-1.5*k,iy-1.8,1.1*k,0,7);g.arc(ix+1.5*k,iy-1.8,1.1*k,0,7);g.fill();g.restore()}
+  txt(zt,zx+(mob?15:18),cy+.5,zfs,'#dfeccc','left',800)}
+ g.fillStyle='rgba(255,255,255,.08)';g.fillRect(px+12,py+r1,pw-24,1);
+ // ligne 2 : les 5 equipes (couleur, joueurs en vie, insigne de rang) ; mon equipe entouree
+ {const gap=6,cw=(pw-24-4*gap)/5,ch=Math.round(17*k),y0=py+r1+(r2-ch)/2;
+  for(let t=0;t<5;t++){const x=px+12+t*(cw+gap),out=!!ZS.pl[t]&&!(ZS.pl[t]===1&&st.s!=='live'),TT=TD(t),rk=zRank(t);pill(x,y0,cw,ch,ch/2,out?'rgba(40,40,46,.85)':TT.pill);
+   if(t===mt){g.save();g.strokeStyle='rgba(255,255,255,.9)';g.lineWidth=1.4;g.beginPath();g.roundRect?g.roundRect(x+.7,y0+.7,cw-1.4,ch-1.4,ch/2):g.rect(x,y0,cw,ch);g.stroke();g.restore()}
+   const ms=E.filter(e=>e.team===t),dx=rk&&!out?x+cw/2-6:x+cw/2;ms.forEach((e,j)=>{g.fillStyle=out?'rgba(255,255,255,.18)':(e.alive?TT.css:'rgba(20,20,24,.9)');g.beginPath();g.arc(dx+(j-(ms.length-1)/2)*9*k,y0+ch/2,3.4*k,0,7);g.fill();if(!e.alive&&!out){g.strokeStyle='rgba(255,255,255,.35)';g.lineWidth=1;g.stroke()}});
+   if(rk&&!out)zRankBadge(x+cw-9*k,y0+ch/2,rk,Math.round(13*k),now);if(out){g.strokeStyle='rgba(255,255,255,.3)';g.lineWidth=1.2;g.beginPath();g.moveTo(x+cw/2-4,y0+ch/2-4);g.lineTo(x+cw/2+4,y0+ch/2+4);g.moveTo(x+cw/2+4,y0+ch/2-4);g.lineTo(x+cw/2-4,y0+ch/2+4);g.stroke()}}}
+ // carte 2 : rang de mon equipe
+ const y2=py+H1+(mob?4:5),H2=mob?34:50,r=zRank(mt),kl=ZS.kills[mt]||0,nxk=r<4?ZRK[r+1]:ZRK[4],pr=r<4?(kl-ZRK[r])/(nxk-ZRK[r]):1,C=ZRCOL[r||1];card(px,y2,pw,H2);
+ {const cy=y2+(mob?10:13),bs=mob?13:17,lx=mob?28:33;if(r)zRankBadge(px+(mob?15:19),cy+1,r,bs,now);else{g.save();g.globalAlpha=.3;zRankBadge(px+(mob?15:19),cy+1,1,bs,0);g.restore()}
+  txt(r?LG('RANG ','RANK ')+ZRRO[r]+' · '+zRankName(r):LG('SANS RANG','NO RANK'),px+lx,cy,mob?9.5:12,r?C[0]:'rgba(255,255,255,.6)','left',800);
+  txt(r<4?kl+' / '+nxk+'  ›  '+zRankName(r+1):LG('RANG MAXIMAL','MAX RANK'),px+pw-(mob?10:12),cy,mob?8.5:10.5,'rgba(255,255,255,.62)','right',700);
+  const bm=mob?9:12,bh=mob?4:5,by=y2+(mob?17:24),bw=pw-2*bm;pill(px+bm,by,bw,bh,bh/2,'rgba(255,255,255,.12)');if(pr>0){const gr=g.createLinearGradient(px+bm,0,px+bm+bw,0);gr.addColorStop(0,C[1]);gr.addColorStop(1,C[0]);pill(px+bm,by,Math.max(bh,bw*Math.min(1,pr)),bh,bh/2,gr)}
+  // bonus (au rang 0 : ceux du rang I, en gris)
+  const Bn=ZRB[r||1],dim=!r,cy3=y2+H2-(mob?8:10),items=[[0,'#ff6a6a',Bn[0],LG('vie','health')],[1,'#ffd25a',Bn[1],LG('cadence','fire rate')],[2,'#6ad8ff',Bn[2],LG('vitesse','speed')]],fs=mob?8.5:10.5;
+  g.font='800 '+fs+'px system-ui';const parts=items.map(([ic,col,v,l])=>{const t1='+'+Math.round(v*100)+' %',t2=' '+l;const w1=g.measureText(t1).width;g.font='600 '+fs+'px system-ui';const w2=g.measureText(t2).width;g.font='800 '+fs+'px system-ui';return[ic,col,t1,t2,w1,w2,(mob?12:14)+w1+w2]});
+  const sp=mob?9:16,tot=parts.reduce((a,p)=>a+p[6],0)+sp*2;let x=pcx-tot/2;g.save();if(dim)g.globalAlpha=.42;
+  for(const[ic,col,t1,t2,w1,w2,w]of parts){const io=mob?11:13;zIcB(ic,x+(mob?4:5),cy3,mob?9:11,col);txt(t1,x+io,cy3+.5,fs,'#fff','left',800);txt(t2,x+io+w1,cy3+.5,fs,'rgba(255,255,255,.62)','left',600);x+=w+sp}g.restore()}
+ return[y2+H2,px,pw]}
+// annonce (evenement 70 : a = equipe, z = rang)
+function zRankFx(q){const r=q.z,tm=q.a,B=ZRB[r];if(!(r>0))return;const now=performance.now(),C=ZRCOL[r][0];
+ if(tm===MT){ZMSG.push({t:now,k:99,t1:LG('RANG ','RANK ')+ZRRO[r]+' · '+zRankName(r),t2:'+'+Math.round(B[0]*100)+LG(' % vie  ·  +',' % health  ·  +')+Math.round(B[1]*100)+LG(' % cadence de tir  ·  +',' % fire rate  ·  +')+Math.round(B[2]*100)+LG(' % vitesse',' % speed'),c1:C});zSnd('ally')}
+ else ZMSG.push({t:now,k:99,t1:TD(tm).nom+LG(' · rang ',' · rank ')+ZRRO[r]+' '+zRankName(r),c1:TD(tm).css})}
 
 function draw(){tickSparks(Math.min(.05,gdt||.016));const mt=netMode&&E&&E[localSlot]?E[localSlot].team:0;MT=mt;{const me0=E[localSlot]||E[0];FLIP=!ZMB()&&me0&&spawnGroup(me0.team)===1?1:0}
 const me_=E.find(e=>e.id===localSlot),c=(me_&&me_.alive)?me_:(specTarget(mt)||E.find(e=>e.team==mt&&e.alive)||E[localSlot]||E[0]),anyB=E.some(e=>e.team==mt&&e.alive),now=performance.now();
