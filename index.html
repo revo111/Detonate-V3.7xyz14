@@ -3019,8 +3019,8 @@ function applyNetState(s){
    if(q[0]<=lu&&q[6]!==localSlot)continue;
    // une balle de notre propre tir : on reprend le trait deja affiche au moment du clic
    if(q[6]===localSlot){const li=B.findIndex(x=>x.loc&&!x.mt);if(li>=0){const lb=B[li];lb.mt=1;lb.u=q[0];lb.loc=0;nb.push(lb);lastU=Math.max(lastU,q[0]);continue}if(q[0]<=lu)continue}
-   const m=BP.find(w=>!w.visible);if(!m)break;m.visible=true;nb.push({u:q[0],x:q[1],y:q[2],vx:q[3],vy:q[4],team:q[5],id:q[6],m,t:.9,xb:q[7]||0});
-   if(q[0]>lu){lastU=Math.max(lastU,q[0]);if(q[6]!==localSlot){if(q[7])zSnd('xbow',q[1],q[2]);else shot(Math.max(.15,1-Math.hypot(q[1]-CP.x,q[2]-CP.y)/1100),q[1]-CP.x,q[5])}}}
+   const m=BP.find(w=>!w.visible);if(!m)break;m.visible=true;nb.push({u:q[0],x:q[1],y:q[2],vx:q[3],vy:q[4],team:q[5],id:q[6],m,t:.9,xb:q[7]===1?1:0,ar:q[7]===2?1:0});
+   if(q[0]>lu){lastU=Math.max(lastU,q[0]);if(q[6]!==localSlot){if(q[7]===1)zSnd('xbow',q[1],q[2]);else shot(Math.max(.15,1-Math.hypot(q[1]-CP.x,q[2]-CP.y)/1100),q[1]-CP.x,q[5])}}}
   for(const b of B)if(b.loc&&!b.mt&&now-b.born<450)nb.push(b);
   for(const b of B)if(!nb.includes(b))b.m.visible=false;
   B=nb}
@@ -3040,13 +3040,13 @@ function netSnapshot(){const r=v=>Math.round(v*10)/10;return{map:MAPID,T:Math.ro
  gr:GR.map(g0=>[Math.round(g0.x),Math.round(g0.y),Math.round(g0.h),g0.t>=g0.T&&!g0.molo?Math.round(Math.min(1,(g0.t-g0.T)/GR_FUSE)*100):-1,g0.team,g0.u,g0.molo?1:0]),gx:GRX.filter(q=>T-q.t<1.5).map(q=>[q.u,q.x,q.y,q.tm||0]),
  fl:[Math.round(FLG.p*10)/10,FLG.tm,FLG.cap,FLG.fast&&FLG.rt>=0?1:0,Math.round((FLG.ct||0)*10)/10],fb:FB,
  hv:HITEV.filter(q=>T-q.t<.6).map(q=>[q.u,q.k,q.v,Math.round(q.x),Math.round(q.y),Math.round(q.sx),Math.round(q.sy),q.kill,q.g||0]),ss:(netSnapN=(netSnapN||0)+1)%20===1||st.s!=='live'?E.map(e=>{const q=stat(e.id);return[q.k,q.d,q.p,q.df,q.fl,Math.round(q.zc||0)]}):undefined,
- bl:B.map(b=>[b.u,Math.round(b.x),Math.round(b.y),Math.round(b.vx),Math.round(b.vy),b.team,b.id,b.xb?1:0])}}
+ bl:B.map(b=>[b.u,Math.round(b.x),Math.round(b.y),Math.round(b.vx),Math.round(b.vy),b.team,b.id,b.xb?1:(b.ar?2:0)])}}
 // ---- client : interpolation des autres, prediction de son propre deplacement
 function netClientTick(dt){
  xfx(dt);
  localInpC=input();if(localInpC.rel)relPend=1;const li=localInpC,k=1-Math.exp(-dt*16);if(ZMB())zClientTick(dt,li);
  {const me=E[localSlot];cliCd-=dt;if(me&&me.alive&&!me.moto&&me.sco!==1&&!(me.frz>0)&&st.s==='live'&&li.fire&&cliCd<=0&&me.ammo>0&&!(me.rl>0)&&!(me.act&&me.can)&&(!ZMB()||(zGun(me)&&!(me.bd>0)&&!me.down))){cliCd=ZMB()?zFireCd(me):.2/(me.boost?1.3:1);const m=BP.find(w=>!w.visible);
-  if(m){m.visible=true;const a=aimAng;const xb_=ZMB()&&me.wp===4,sp_=xb_?ZW[4].v:960;B.push({loc:1,born:performance.now(),x:me.x+Math.cos(a)*14,y:me.y+Math.sin(a)*14,vx:Math.cos(a)*sp_,vy:Math.sin(a)*sp_,team:me.team,id:me.id,m,t:.9,xb:xb_?1:0});if(xb_)zSnd('xbow',me.x,me.y);else{me.fT=.06;shot(1,0,me.team)}}}}
+  if(m){m.visible=true;const a=aimAng;const xb_=ZMB()&&me.wp===4,sp_=xb_?ZW[4].v:960;B.push({loc:1,born:performance.now(),x:me.x+Math.cos(a)*14,y:me.y+Math.sin(a)*14,vx:Math.cos(a)*sp_,vy:Math.sin(a)*sp_,team:me.team,id:me.id,m,t:.9,xb:xb_?1:0,ar:ZMB()&&me.wp===2?1:0});if(xb_)zSnd('xbow',me.x,me.y);else{me.fT=.06;shot(1,0,me.team)}}}}
  for(const e of E){if(e.tx===undefined)continue;const ox=e.x,oy=e.y;e.fT-=dt;
   if(e.id===localSlot&&e.alive&&st.s==='live'){let mx=li.mx,my=li.my;if((e.act&&e.can)||e.frz>0){mx=my=0;if(e.frz>0)e.bv=0}const len=Math.hypot(mx,my);if(len>1){mx/=len;my/=len}let ddx,ddy;if(e.moto){const d=bikeMove(e,mx,my,dt,MOTO_V*(e.boost?1.2:1));ddx=d[0];ddy=d[1]}else if(e.sco===1){const ox_=e.x,oy_=e.y;vanMove(e,mx,my,dt);ddx=e.x-ox_;ddy=e.y-oy_}else if(e.sco===2||e.zyv>0){ddx=ddy=0;e.x+=(e.tx-e.x)*.5;e.y+=(e.ty-e.y)*.5}else{const zk=ZMB()?zSpd(e):1;ddx=mx*152*(e.boost?1.2:1)*zk*dt;ddy=my*152*(e.boost?1.2:1)*zk*dt;mv(e,ddx,ddy)}e.pdx=(e.pdx||0)+ddx;e.pdy=(e.pdy||0)+ddy;
    if(!e.ackMode){const ex=e.tx-e.x,ey=e.ty-e.y;if(Math.hypot(ex,ey)>90){e.x=e.tx;e.y=e.ty}else{e.x+=ex*.1;e.y+=ey*.1}}e.ang=e.frz>0?e.ang:aimAng}
@@ -5028,7 +5028,7 @@ let SBOLT=null;function snowBolts(){if(SBOLT||HEADLESS)return;const c=document.c
  x.fillStyle='#ffd9a0';x.beginPath();x.ellipse(214,32,8,3.5,0,0,7);x.fill();
  const t=new THREE.CanvasTexture(c),mat=new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false,side:THREE.DoubleSide}),pg=new THREE.PlaneGeometry(58,13),cg=new THREE.CylinderGeometry(1.1,1.1,24,6),cm=new THREE.MeshBasicMaterial({color:0xd8701e});
  SBOLT={mat};for(const m of BP){const g=new THREE.Group(),p1=new THREE.Mesh(pg,mat);p1.rotation.x=-Math.PI/2;p1.position.x=-10;p1.renderOrder=3;g.add(p1);const co=new THREE.Mesh(cg,cm);co.rotation.z=Math.PI/2;g.add(co);g.visible=false;m.add(g);m.userData.s=g}}
-function boltLook(b){const m=b.m,k=ZMB()&&b.xb?'x':(NEO()?(b.team?'w':'r'):(CUR&&CUR.theme==='neige'?'s':'c'));if(m.userData.k===k)return;m.userData.k=k;if(k==='x'&&!m.userData.x)m.userData.x=zBoltMesh(m);if(m.userData.x)m.userData.x.visible=k==='x';if(k==='r'||k==='w')boltKids();if(k==='s')snowBolts();m.children[0].visible=k==='c';if(m.userData.r){m.userData.r.visible=k==='r';m.userData.w.visible=k==='w'}if(m.userData.s)m.userData.s.visible=k==='s'}
+function boltLook(b){const m=b.m,k=ZMB()&&b.xb?'x':(ZMB()&&b.ar?'s':(NEO()?(b.team?'w':'r'):(CUR&&CUR.theme==='neige'?'s':'c')));if(m.userData.k===k)return;m.userData.k=k;if(k==='x'&&!m.userData.x)m.userData.x=zBoltMesh(m);if(m.userData.x)m.userData.x.visible=k==='x';if(k==='r'||k==='w')boltKids();if(k==='s')snowBolts();m.children[0].visible=k==='c';if(m.userData.r){m.userData.r.visible=k==='r';m.userData.w.visible=k==='w'}if(m.userData.s)m.userData.s.visible=k==='s'}
 // ===================== SONS (Neon Grid) =====================
 function blasterSnd(v,dx,team){if(!AC||!WS||v<.05)return;try{const bq=shotBudget(v);if(!bq||!avOk(AC.currentTime+.3))return;if(!IMPN)impNoise();const t=AC.currentTime+.003,r=Math.random,s=1+(r()-.5)*.12,far=v<.35;
  const o=AC.createGain();o.gain.value=v*.55*bq;const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2500+14000*v*v;o.connect(lp);sndPan(lp,dx,600);
@@ -5175,7 +5175,7 @@ function vanBlocks(a,b){if(!SC.length)return false;for(const s of SC){if(s.sunk)
   for(const[p,d,lo,hi]of[[u0,du,VAN_U0,VAN_U1],[v0,dv,-VAN_V,VAN_V]]){if(Math.abs(d)<1e-9){if(p<lo||p>hi){ok=false;break}continue}let q0=(lo-p)/d,q1=(hi-p)/d;if(q0>q1){const z=q0;q0=q1;q1=z}t0=Math.max(t0,q0);t1=Math.min(t1,q1);if(t0>t1){ok=false;break}}
   if(ok)return true}return false}
 function vanImpact(b,glass){const l=Math.hypot(b.vx,b.vy)||1,ix=b.x-b.vx/l*3,iy=b.y-b.vy/l*3;if(!HEADLESS){sparkAt(ix,iy,b.vx,b.vy,glass?0xdff2ff:undefined);impactSnd('c',ix,iy)}}
-function bulletImpact(b){if(NEO()){const l=Math.hypot(b.vx,b.vy)||1,ix=b.x-b.vx/l*3,iy=b.y-b.vy/l*3;sparkAt(ix,iy,b.vx,b.vy,b.team?0xdfeaff:0xff3030);neonImpactSnd(ix,iy,0);return}const t=hitType(b.x,b.y),l=Math.hypot(b.vx,b.vy)||1,ix=b.x-b.vx/l*3,iy=b.y-b.vy/l*3;if(t&&METAL[t])sparkAt(ix,iy,b.vx,b.vy);else if(CUR&&CUR.theme==='neige')puffAt(ix,iy,b.vx,b.vy,t);impactSnd(t,ix,iy)}
+function bulletImpact(b){if(NEO()){const l=Math.hypot(b.vx,b.vy)||1,ix=b.x-b.vx/l*3,iy=b.y-b.vy/l*3;sparkAt(ix,iy,b.vx,b.vy,b.team?0xdfeaff:0xff3030);neonImpactSnd(ix,iy,0);return}const t=hitType(b.x,b.y),l=Math.hypot(b.vx,b.vy)||1,ix=b.x-b.vx/l*3,iy=b.y-b.vy/l*3;if(t&&METAL[t])sparkAt(ix,iy,b.vx,b.vy);else if(CUR&&(CUR.theme==='neige'||(ZMB()&&b.ar)))puffAt(ix,iy,b.vx,b.vy,t);impactSnd(t,ix,iy)}
 // impacts non metalliques (Base Polaire) : petit nuage + eclats de la matiere touchee (toile, neige, pierre, bois, beton, aiguilles)
 let PUF=null;const PUFC={E:[0xd8d4c0,0x6a7048],P:[0x2e4a34,0xeef3f8],N:[0x6b7078,0xeef3f8],B:[0x8a5a3a,0xe9e6de],w:[0x9aa2ab,0xeef3f8],s:[0x9a8a62,0xeef3f8],k:[0x8a6a3a,0xeef3f8],L:[0x5c3d26,0xeef3f8],F:[0x6a4a30,0xeef3f8],W:[0x6a4a30,0xeef3f8],U:[0x6f6a52,0xeef3f8],A:[0x4b5320,0xeef3f8],K:[0x2a2e34,0xeef3f8]};
 function puffAt(x,y,vx,vy,t){if(HEADLESS||(typeof localSlot!=='undefined'&&localSlot<0))return;if(Math.hypot(x-CP.x,y-CP.y)>1300)return;
@@ -5230,7 +5230,7 @@ function mkCharZ(team){const TT=TEAMS.foret[team],grp=new THREE.Group(),b=new TH
  // armes a feu (dans la main droite) : pistolet et fusil d'assaut
  const gm=L(0x1b1d21),gm2=L(0x3a3d42),gw=L(0x5a4330);
  const pis=new THREE.Group();ka.add(pis);box(10,3.2,2.4,gm,17.5,1.8,0,pis);box(3.2,5.2,2.2,gm2,14,-1.2,0,pis);pis.visible=false;
- const rif=new THREE.Group();ka.add(rif);box(28,3.6,3,gm,23,1.2,0,rif);box(9,5,3,gw,8,0,0,rif);box(3,6.5,2.6,gm2,20,-3,0,rif);box(7,2,2,gm2,38,1.6,0,rif);box(6,2.4,3.4,gm2,25,3.6,0,rif);rif.visible=false;
+ const rif=new THREE.Group();ka.add(rif);{const ar=L(0x22262b),arR=L(0xc8302a);box(17,5,4,ar,18.5,1.2,0,rif);box(4,7.5,3,ar,16,-4,0,rif);box(7,5,4,ar,7,.6,0,rif);box(4.5,2,2,arR,21.5,4.2,0,rif);const brl=new THREE.Mesh(new THREE.CylinderGeometry(1,1,6,6),ar);brl.rotation.z=Math.PI/2;brl.position.set(30,2.2,0);rif.add(brl)}rif.visible=false;   // AR de la carte Neige
  const fl=new THREE.Mesh(new THREE.SphereGeometry(3.6,6,5),new THREE.MeshBasicMaterial({color:0xffe08a}));fl.position.set(23,1.8,0);fl.visible=false;ka.add(fl);
  const xbw=new THREE.Group();ka.add(xbw);{const mt=L(0x4a4e54);box(24,3.2,3,gw,21,0,0,xbw);box(4,5.4,2.6,L(0x3a2a1a),12,-3.4,0,xbw);box(13,1,1,L(0xe0d0a8),27,2.2,0,xbw);
   for(const s of[-1,1]){const l=box(2.4,2.2,12.4,mt,29.6,.8,6*s,xbw);if(l)l.rotation.y=-.25*s;const c=box(.7,.7,12.6,L(0xd8d0b8),26,.9,6*s,xbw);if(c)c.rotation.y=.31*s}}xbw.visible=false;
@@ -5696,7 +5696,7 @@ function zSndTick(now,fx,fy){if(!AC||!WS)return;zAmbTick(now,fx,fy);
 // ---------- mode Zombie, etape 2 : sac (3 emplacements), butin aleatoire, fouille des voitures, armes a feu, sac laisse au sol a la mort ----------
 // objets : 1 pistolet, 2 fusil d'assaut (dans la main, hors du sac), les autres vont dans le sac (piles)
 const ZI=[null,
- {k:'pistol',n:LG('Pistolet','Pistol'),w:1},{k:'ar',n:LG('Fusil d’assaut','Assault rifle'),w:2},
+ {k:'pistol',n:LG('Pistolet','Pistol'),w:1},{k:'ar',n:LG('AR','AR'),w:2},
  {k:'ammo',n:LG('Munitions','Ammo'),max:60},{k:'gren',n:LG('Grenade','Grenade'),max:3},{k:'bdg',n:LG('Bandage','Bandage'),max:3},
  {k:'water',n:LG('Eau','Water'),max:3},{k:'snack',n:LG('Snack','Snack'),max:3},{k:'fuel',n:LG('Essence','Fuel'),max:2},
  {k:'wood',n:LG('Bois','Wood'),max:5},{k:'stone',n:LG('Pierre','Stone'),max:5},{k:'metal',n:LG('Métal','Metal'),max:5}];
@@ -5713,7 +5713,7 @@ const zWK=w=>w===3?ZK.spear:(w===4?ZK.xbow:w),zGun=e=>!!(e&&e.wp&&(e.wp<3||e.wp=
 // arme de tir utilisable : arme a feu avec des balles (chargeur ou sac), arbalete avec des carreaux
 const zShots=e=>!!(e&&e.wp&&(e.wp===4?e.ammo>0:(e.wp<3&&(e.ammo>0||zCount(e,ZK.ammo)>0))));   // type d'objet d'une arme ; arme a feu en main
 // armes : chargeur, cadence (s), degats, dispersion, rechargement (s), bruit (rayon ou les zombies entendent le tir)
-const ZW={1:{mag:12,cd:.26,dmg:28,sp:.035,rl:1.4,noise:600,v:980},2:{mag:30,cd:.11,dmg:22,sp:.07,rl:2.2,noise:900,v:1020},3:{melee:1,r:82,dmg:46,cd:.7,arc:.6},4:{mag:60,cd:.3,dmg:38,sp:.022,rl:0,noise:160,v:820,xb:1}};   // 4 : arbalete (60 carreaux, pas de rechargement, presque sans bruit)
+const ZW={1:{mag:12,cd:.26,dmg:28,sp:.035,rl:1.4,noise:600,v:980},2:{mag:30,cd:.11,dmg:32,sp:.07,rl:2.2,noise:900,v:1020},3:{melee:1,r:82,dmg:46,cd:.7,arc:.6},4:{mag:60,cd:.3,dmg:38,sp:.022,rl:0,noise:160,v:820,xb:1}};   // 4 : arbalete (60 carreaux, pas de rechargement, presque sans bruit)
 // tirage au sort selon le lieu : c chalet (plus d'armes), v voiture, f foret (plus de ressources)
 const ZLOOT={c:[['pistol',18],['ar',8],['ammo',36],['bdg',12],['gren',8],['water',10],['snack',10],['metal',6],['fuel',5],['bottle',4]],
  v:[['ammo',36],['metal',24],['fuel',16],['pistol',8],['water',10],['snack',10],['bdg',6],['gren',4],['bottle',6]],
@@ -5820,7 +5820,7 @@ function zNoise(x,y,r,e){for(const z of Z){if(z.hp<=0)continue;const d=Math.hypo
 // ----- tir : une balle (degats selon l'arme), le bruit porte loin
 function zFire(e){const W_=ZW[e.wp];e.cd=(e.cd<0&&e.cd>-.05?e.cd:0)+zFireCd(e);   // le reste de l'image precedente est garde : cadence exacte
  e.ammo--;if(!W_.xb)e.fT=.06;const a=e.ang+(Math.random()-.5)*W_.sp*(e.p?1:1.15),m=BP.find(q=>!q.visible);
- if(m){m.visible=true;B.push({x:e.x+Math.cos(a)*16,y:e.y+Math.sin(a)*16,vx:Math.cos(a)*W_.v,vy:Math.sin(a)*W_.v,t:.85,team:e.team,id:e.id,u:++bseq,m,dm:W_.dmg,xb:W_.xb?1:0})}
+ if(m){m.visible=true;B.push({x:e.x+Math.cos(a)*16,y:e.y+Math.sin(a)*16,vx:Math.cos(a)*W_.v,vy:Math.sin(a)*W_.v,t:.85,team:e.team,id:e.id,u:++bseq,m,dm:W_.dmg,xb:W_.xb?1:0,ar:e.wp===2?1:0})}
  if(!HEADLESS&&!(netMode&&!isHost&&e.id===localSlot)){if(W_.xb)zSnd('xbow',e.x,e.y);else shot(Math.max(.15,1-Math.hypot(e.x-CP.x,e.y-CP.y)/1100),e.x-CP.x,e.team)}zNoise(e.x,e.y,W_.noise,e);if(W_.xb&&e.ammo<=0)zXbBreak(e)}
 // carreau d'arbalete (rendu) : fut en bois, pointe en metal, empennage rouge ; pris dans le pool des balles
 function zBoltMesh(m){const q=new THREE.Group(),B_=(w,h,d,c,x)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({color:c}));o.position.x=x;q.add(o)};B_(20,1.5,1.5,0xc8965a,0);B_(4,2.4,2.4,0xe0e4e8,11);B_(5,.5,4.4,0xe04a3a,-8.5);B_(5,4.4,.5,0xe04a3a,-8.5);m.add(q);return q}
@@ -6289,9 +6289,8 @@ function zDownHud(hm,now){if(!hm||!hm.alive||!hm.down)return;const w=Math.min(W-
  pill(x+14,y+50,w-28,6,3,'rgba(255,255,255,.15)');pill(x+14,y+50,Math.max(6,(w-28)*(rv?hm.rvP:k)),6,3,rv?'#7ef0a0':'#ff5a46')}
 // bandeau : proposition d'alliance, alliance en cours, brouillard
 function zAllyHud(y,now){const out=[];const me=E[localSlot];
- if(ZS.ap)for(const q of ZS.ap){if(q.e<=T)continue;if(q.t===MT)out.push([TD(q.f).nom+LG(' proposent une alliance',' offer an alliance'),(IS_PC?LG(zKL('KeyZ')+' : accepter · X : refuser',zKL('KeyZ')+': accept · X: decline'):LG('🤝 : accepter · ✖ : refuser','🤝: accept · ✖: decline'))+' · '+Math.ceil(q.e-T)+' s','#ffd27a']);else if(q.f===MT)out.push([LG('Alliance proposée aux ','Alliance offered to ')+TD(q.t).nom,LG('en attente…','waiting…'),'#fff'])}
- if(ZS.al&&ZS.al[MT]>=0){const u=ZS.al[MT],b=ZS.ab&&ZS.ab[MT];out.push([LG('Alliés : ','Allies: ')+TD(u).nom,b?LG('fin de l’alliance dans ','alliance ends in ')+Math.max(0,Math.ceil(b-T))+' s':(IS_PC?LG(zKL('KeyZ')+' : rompre',zKL('KeyZ')+': break'):LG('🤝 maintenir : rompre','hold 🤝: break')),b?'#ff9a7a':TD(u).css])}
- const F=ZS.fog;if(F){const outF=me&&me.alive&&zInFog(me.x,me.y);out.push([outF?LG('☣ HORS DE LA ZONE !','☣ OUTSIDE THE ZONE!'):'☣ '+LG('Brouillard toxique','Toxic fog'),F.st===1?LG('la zone se resserre…','the zone is closing…'):(F.tr>0?LG('la zone se resserre dans ','zone closes in ')+zTime(F.t):LG('dernière zone','final zone')),outF?'#ff7a6a':'#a8ff8a'])}
+ // plus de texte pour les alliances ni pour la zone qui se resserre (ca cachait la vue) ; seul l'avertissement « hors de la zone » reste
+ const F=ZS.fog;if(F&&me&&me.alive&&zInFog(me.x,me.y))out.push([LG('☣ HORS DE LA ZONE !','☣ OUTSIDE THE ZONE!'),LG('rejoins la zone sûre','get back to the safe zone'),'#ff7a6a']);
  const cp=H<500;for(const[a,b,c]of out){if(cp){const t1=a+'  ·  '+b;g.font='700 11px system-ui';const w=g.measureText(t1).width+22;pill(W/2-w/2,y,w,20,9,'rgba(8,12,22,.8)');txt(t1,W/2,y+10,11,c,null,700);y+=23;continue}
   g.font='800 12px system-ui';const w=Math.max(g.measureText(a).width,(g.font='600 10px system-ui',g.measureText(b).width))+26;pill(W/2-w/2,y,w,34,10,'rgba(8,12,22,.8)');txt(a,W/2,y+11,12,c,null,800);txt(b,W/2,y+25,10,'rgba(255,255,255,.75)',null,600);y+=38}
  return y}
@@ -6299,15 +6298,9 @@ function zAllyHud(y,now){const out=[];const me=E[localSlot];
 function zFx4(q,now){const tn=t=>TD(t).nom;
  if(q.k===52){const v=E[q.a];if(!v)return;if(q.a===localSlot){zSnd('down');return}if(zFriend(v.team,MT)){ZMSG.push({t:now,k:99,t1:(NM[v.id]||'')+LG(' est à terre !',' is down!'),t2:LG('Va le relever (maintenir E)','Go revive them (hold E)'),c1:'#ff7a6a'});zSnd('down',v.x,v.y)}}
  else if(q.k===53){const r=E[q.a],v=E[q.z];if(!r||!v)return;if(q.z===localSlot||q.a===localSlot||zFriend(v.team,MT)){ZMSG.push({t:now,k:99,t1:q.z===localSlot?(NM[r.id]||'')+LG(' t’a relevé',' revived you'):(q.a===localSlot?LG('Tu as relevé ','You revived ')+(NM[v.id]||''):(NM[r.id]||'')+LG(' a relevé ',' revived ')+(NM[v.id]||'')),c1:'#7ef0a0'});zSnd('revive',v.x,v.y)}}
- else if(q.k===54){ZMSG.push({t:now,k:99,t1:LG('BROUILLARD TOXIQUE','TOXIC FOG'),t2:LG('La zone sûre va se resserrer : restez à l’intérieur','The safe zone will shrink: stay inside'),c1:'#a8ff8a'});zSnd('horn')}
- else if(q.k===55)ZMSG.push({t:now,k:99,t1:LG('La zone se resserre !','The zone is closing!'),c1:'#a8ff8a'});
- else if(q.k===59){if(q.z===MT){ZMSG.push({t:now,k:99,t1:tn(q.a)+LG(' proposent une alliance',' offer an alliance'),t2:IS_PC?LG('Touche '+zKL('KeyZ')+' pour accepter','Press '+zKL('KeyZ')+' to accept'):LG('Touche 🤝 pour accepter','Tap 🤝 to accept'),c1:'#ffd27a'});zSnd('pick')}}
- else if(q.k===60){if(q.a===MT||q.z===MT)ZMSG.push({t:now,k:99,t1:LG('L’alliance prend fin dans 5 s','The alliance ends in 5 s'),t2:tn(q.a)+LG(' rompent l’alliance',' break the alliance'),c1:'#ff9a7a'})}
- else if(q.k===61){const mine=q.a===MT||q.z===MT;ZMSG.push({t:now,k:99,t1:(mine?LG('ALLIANCE : ','ALLIANCE: '):'')+tn(q.a)+' 🤝 '+tn(q.z),t2:mine?LG('Vous pouvez vous relever · tirer sur un allié = trahison','You can revive each other · shooting an ally = betrayal'):'',c1:mine?'#ffd27a':'#fff'});if(mine)zSnd('ally')}
- else if(q.k===62){if(q.a===MT||q.z===MT)ZMSG.push({t:now,k:99,t1:LG('Fin de l’alliance','Alliance over'),t2:tn(q.a)+' / '+tn(q.z),c1:'#ff9a7a'})}
- else if(q.k===63){if(q.a===MT||q.z===MT)ZMSG.push({t:now,k:99,t1:LG('Il ne reste que vous deux !','Only your two teams remain!'),t2:LG('L’alliance prend fin dans 10 s','The alliance ends in 10 s'),c1:'#ff9a7a'})}
- else if(q.k===65){const vict=q.z===MT,tr=q.a===MT;ZMSG.push({t:now,k:99,t1:vict?LG('TRAHISON ! ','BETRAYAL! ')+tn(q.a)+LG(' vous attaquent',' attack you'):(tr?LG('Tu as trahi les ','You betrayed the ')+tn(q.z):LG('Trahison : ','Betrayal: ')+tn(q.a)+' → '+tn(q.z)),t2:vict||tr?LG('L’alliance est rompue','The alliance is broken'):'',c1:'#ff5a46'});if(vict||tr)zSnd('out')}
- else if(q.k===64){if(q.a===MT)ZMSG.push({t:now,k:99,t1:tn(q.z)+LG(' refusent l’alliance',' decline the alliance'),c1:'#ff9a7a'})}}
+ else if(q.k===54){zSnd('horn')}
+ else if(q.k===55){}
+ else if(q.k>=59&&q.k<=65){if(q.k===59&&q.z===MT)zSnd('pick');else if(q.k===61&&(q.a===MT||q.z===MT))zSnd('ally');else if(q.k===65&&(q.z===MT||q.a===MT))zSnd('out')}}   // alliances : plus de texte a l'ecran
 // bouton tactile d'alliance : proposer / accepter (toucher), rompre (maintenir)
 let ZABH=null;
 function zAllyBtn(hm){const b=document.getElementById('allyBtn');if(!b||!b.style)return;let v='none',pend=false,on=false;
@@ -6346,7 +6339,7 @@ const ZG=(()=>{let M=null;const N=70,m4=new THREE.Matrix4(),q=new THREE.Quaterni
  function geo(k){const P=[],B=(w,h,d)=>new THREE.BoxGeometry(w,h,d),add=(g,c,x,y,z,ry,rz)=>{g=g.index?g.toNonIndexed():g;if(rz)g.rotateZ(rz);if(ry)g.rotateY(ry);g.translate(x,y,z);
    const n=g.attributes.position.count,a=new Float32Array(n*3),C=new THREE.Color(c);for(let i=0;i<n;i++){a[i*3]=C.r;a[i*3+1]=C.g;a[i*3+2]=C.b}g.setAttribute('color',new THREE.BufferAttribute(a,3));P.push(g)};
   if(k===1){add(B(14,3.5,4),0x26282d,3,2,0);add(B(5,3,7),0x3a3d42,-2.5,2,-3.5);add(B(3,2,2),0x111214,10.5,2.6,0)}
-  else if(k===2){add(B(32,3.6,4),0x26282d,2,2.2,0);add(B(10,4,5.4),0x6a4e34,-18,2.2,0);add(B(4,3,8),0x3a3d42,3,2,-5);add(B(7,2.2,2.2),0x111214,21,2.6,0);add(B(7,2.6,4.4),0x3a3d42,6,4.6,0)}
+  else if(k===2){add(B(17,5,4),0x22262b,0,2.6,0);add(B(4,3,7.5),0x22262b,-2,1.6,-4.3);add(B(7,5,4),0x22262b,-11.5,2.8,0);add(B(4.5,2,2),0xc8302a,4,5.6,0);add(new THREE.CylinderGeometry(1,1,6,6),0x22262b,11.5,3,0,0,Math.PI/2)}   // AR de la carte Neige
   else if(k===3){add(B(15,8,10),0x4d5e2c,0,4,0);add(B(15.2,1,3),0xe0b020,0,8.3,0);add(B(3,1,2),0x2a2f1a,-5,8.4,3)}
   else if(k===4){add(new THREE.IcosahedronGeometry(4.6,1),0x4d5e2c,0,4.6,0);add(B(2.6,3,2.6),0x9a9a92,0,9.6,0);add(B(1.2,1.2,6),0x9a9a92,1.6,8.6,1.8)}
   else if(k===5){add(new THREE.CylinderGeometry(5,5,5,14),0xeeeee6,0,2.5,0);add(B(6.4,1,1.9),0xd02a2a,0,5.2,0);add(B(1.9,1,6.4),0xd02a2a,0,5.2,0)}
@@ -6378,7 +6371,7 @@ const ZG=(()=>{let M=null;const N=70,m4=new THREE.Matrix4(),q=new THREE.Quaterni
 // ---------- icones 2D (inventaire, etiquettes) ----------
 function zIco(k,x,y,s,dim){g.save();g.translate(x,y);g.scale(s/20,s/20);g.globalAlpha*=dim?.45:1;const R=(a,b,w,h,c)=>{g.fillStyle=c;g.fillRect(a,b,w,h)};
  if(k===1){R(-8,-4,15,5,'#d8dce2');R(-7,0,5,8,'#aab0b8');R(5,-4,3,2,'#ffffff')}
- else if(k===2){R(-13,-3,24,4,'#d8dce2');R(-15,-2,5,5,'#c48a5a');R(-2,1,4,7,'#aab0b8');R(10,-2,5,2,'#ffffff');R(0,-5,6,2,'#aab0b8')}
+ else if(k===2){R(-12,-3,22,5,'#d8dce2');R(-16,-2.5,5,5,'#aab0b8');R(-3,2,3.4,6,'#aab0b8');R(10,-1.6,6,2,'#ffffff');R(1,-5,4.5,2,'#e0403a')}   // AR de la carte Neige (repere rouge)
  else if(k===-1){g.fillStyle='#e8ecf0';g.beginPath();g.moveTo(-2,-2);g.lineTo(12,0);g.lineTo(-2,2);g.closePath();g.fill();R(-10,-2,8,4,'#7a5a3a');R(-3,-4,2,8,'#7a5a3a')}
  else if(k===3){for(let i=-1;i<=1;i++){R(i*5-2,-5,4,10,'#e0b020');g.fillStyle='#c88a2a';g.beginPath();g.arc(i*5,-5,2,Math.PI,0);g.fill()}}
  else if(k===4){g.fillStyle='#7a8c4a';g.beginPath();g.arc(0,2,6,0,7);g.fill();R(-2,-8,4,4,'#c8c8c0');R(1,-7,6,2,'#c8c8c0')}
@@ -6673,7 +6666,7 @@ function zLights(){const src=[];for(const e of E){if(!e.alive||!(e.lit||e.tch>0)
 // ---------- rendu 3D propre au mode (appele chaque image apres les personnages) ----------
 let ZGRN=0;
 function zDraw3D(now,fx,fy){const dt=Math.min(.05,gdt||.016),tt=now/1000;
- for(const e of E){const m=e.m;if(!m||!m.ka)continue;const gun=zGun(e),spr=e.wp===3&&!!e.wk,sw=e.ksw>0&&!gun?1-e.ksw/(spr?.3:.24):-1;m.kn.visible=!gun&&!spr;m.pis.visible=gun&&e.wp===1;m.rif.visible=gun&&e.wp===2;if(m.xbw)m.xbw.visible=gun&&e.wp===4;if(m.spr)m.spr.visible=spr;m.ka.position.x=1;
+ for(const e of E){const m=e.m;if(!m||!m.ka)continue;const gun=zGun(e),spr=e.wp===3&&!!e.wk,sw=e.ksw>0&&!gun?1-e.ksw/(spr?.3:.24):-1;m.kn.visible=!gun&&!spr;m.pis.visible=gun&&e.wp===1;m.rif.visible=gun&&e.wp===2;if(m.fl)m.fl.position.x=gun&&e.wp===2?34:23;if(m.xbw)m.xbw.visible=gun&&e.wp===4;if(m.spr)m.spr.visible=spr;m.ka.position.x=1;
   if(gun){m.ka.rotation.y=.12;m.ka.rotation.z=0;m.fl.position.set(e.wp===2?43:24,e.wp===2?1.4:1.8,0);m.la.rotation.y=e.wp===2||e.wp===4?-.78:.3}
   else if(spr){m.ka.rotation.y=.18-(sw<0?0:Math.sin(sw*Math.PI)*.12);m.ka.rotation.z=0;m.ka.position.x=1+(sw<0?0:Math.sin(sw*Math.PI)*11);m.la.rotation.y=.3}
   else{m.ka.rotation.y=sw<0?-.35:(-1.1+sw*2);m.ka.rotation.z=sw<0?0:Math.sin(sw*Math.PI)*.3;m.la.rotation.y=.3}
@@ -7017,7 +7010,7 @@ function zRankBadge(x,y,r,s,now){if(!(r>0))return;const C=ZRCOL[r],t=(now||0)/10
   g.shadowColor='rgba(0,0,0,.6)';g.shadowBlur=4;const gr=g.createLinearGradient(0,-11,0,11);gr.addColorStop(0,C[0]);gr.addColorStop(.55,C[1]);gr.addColorStop(1,C[2]);g.fillStyle=gr;zRankPath(1);g.fill();g.shadowBlur=0;
   g.lineWidth=1.6;g.strokeStyle='rgba(10,12,18,.85)';g.stroke();
   g.fillStyle='#1a1206';g.font='900 9.5px system-ui';g.textAlign='center';g.textBaseline='middle';g.fillText('I',0,-.5);g.restore();return}
- const pu=.5+.5*Math.sin(t*2.6+r);g.shadowColor='rgba('+ZRGLOW[r]+','+(.55+.35*pu).toFixed(2)+')';g.shadowBlur=(7+2*r)+5*pu;
+ g.shadowColor='rgba(0,0,0,.55)';g.shadowBlur=3;   // plus de halo lumineux autour (le reflet et l'eclat restent)
  g.fillStyle=C[1];zRankPath(r);g.fill();g.fill();g.shadowBlur=0;
  g.save();zRankPath(r);g.clip();
  // reflet : la moitie haute plus claire
