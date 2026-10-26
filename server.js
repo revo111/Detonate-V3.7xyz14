@@ -22,13 +22,13 @@ const INDEX = path.join(__dirname, 'index.html');
 // nuit = 3v3
 // desert = 4v4
 // neon = 4v4 (mode Zones)
-// neige = 5v5 (mode Code Rouge)
+// neige = 6v6 (mode Code Rouge)
 const MAP_SIZE = {
   nuit: 3,
   desert: 4,
   neon: 4,  // Neon Grid : 4v4, mode Zones
-  neige: 5,  // Base Polaire : 5v5, mode Code Rouge
-  neigeN: 5,  // Base Polaire de nuit (meme carte, ambiance nocturne)
+  neige: 6,  // Base Polaire : 6v6, mode Code Rouge
+  neigeN: 6,  // Base Polaire de nuit (meme carte, ambiance nocturne)
   foret: 5    // Foret : mode Zombie, 5 equipes de 2 (10 places)
 };
 // nombre d'equipes : 2 partout, 5 sur la Foret (mode Zombie)
