@@ -1,32 +1,26 @@
-# fly.toml app configuration file generated for detonate-prototype on 2026-10-12T20:07:09Z
+# fly.toml app configuration file generated for detonate-v3-7xyz14 on 2026-11-09T16:08:36Z
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'detonate-prototype'
+app = 'detonate-v3-7xyz14'
 primary_region = 'iad'
 kill_signal = 'SIGINT'
 kill_timeout = '10s'
 
 [build]
-
 [env]
   PORT = '8080'
-  REGIONS = 'cdg,lax,iad,sin'
-  # region qui garde les profils des joueurs (XP, niveaux) sur son volume /data ; les autres regions lui envoient l'XP
   PROFILE_REGION = 'iad'
+  REGIONS = 'cdg,lax,iad,sin'
 
-# volume de 1 Go monte sur /data (un par machine : fly volumes create detonate_data -r <region> -s 1)
-# seul celui de la region PROFILE_REGION sert ; il garde profiles.json entre les deploiements
-[mounts]
+[[mounts]]
   source = 'detonate_data'
   destination = '/data'
 
 [http_service]
   internal_port = 8080
   force_https = true
-  # 'suspend' (et non 'stop') : une machine sans joueur est mise en pause avec sa mémoire,
-  # les salons survivent donc jusqu'à 15 minutes sans joueur avant de disparaître
   auto_stop_machines = 'suspend'
   auto_start_machines = true
   min_machines_running = 0
