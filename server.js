@@ -285,7 +285,7 @@ const repOf = (g, slot) => { try { return g.report(slot); } catch (e) { return n
 const repAdd = (a, b, sign) => { const o = Object.assign({}, a || {}); if (b) for (const f of REP_F) o[f] = (o[f] || 0) + sign * (b[f] || 0); return o; };
 
 // fin de partie en ligne : le serveur calcule l'XP de chaque joueur connecte a partir de sa simulation
-// (le joueur n'envoie rien). Moins de 2 joueurs humains : partie contre l'IA, XP divisee par deux.
+// (le joueur n'envoie rien). Moins de 2 joueurs humains : partie face aux bots, comptee dans la limite de 3 000 XP par jour.
 const XP_MIN_MS = process.env.DETONATE_XP_MIN_MS !== undefined ? +process.env.DETONATE_XP_MIN_MS : 60 * 1000;   // arrive moins d'une minute avant la fin : pas d'XP
 const XP_AWAY_MAX = 0.25;   // deconnecte plus d'un quart de la partie : pas d'XP
 function awardXP(room) {
