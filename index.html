@@ -10907,16 +10907,17 @@ const MENU=(()=>{
 //   ouvert ailleurs, il peut etre repris (« Jouer ici »), l'autre appareil passe alors en invite
 // - une partie quittee ou non terminee ne rapporte pas d'XP
 // - parties en ligne : le serveur calcule l'XP a partir de sa simulation et l'envoie a chaque joueur (message « xp »)
-// - parties solo contre l'IA : le jeu envoie le resume de la partie, le serveur le verifie et le borne (3 000 XP par jour face aux bots)
+// - parties solo contre l'IA : le jeu annonce le debut de la partie (le serveur mesure sa duree), puis envoie son resume ; pas de limite par jour
 // Niveau maximum : 30 (montee de plus en plus longue). PROF.report sert aussi au serveur (meme code, dans la simulation).
 const PROF=(()=>{
- const LMAX=30,need=n=>Math.round(250+120*(n-1)+4*(n-1)*(n-1));
+ const LMAX=30,need=n=>Math.round(300+200*(n-1)+6*(n-1)*(n-1));   // 136 184 XP pour le niveau 30 (meme courbe que le serveur, profiles.js)
  const TOT=[0,0];for(let n=1;n<LMAX;n++)TOT[n+1]=TOT[n]+need(n);
  const XMAX=TOT[LMAX],lvlOf=xp=>{let n=1;while(n<LMAX&&xp>=TOT[n+1])n++;return n};
  const prog=xp=>{xp=Math.min(XMAX,Math.max(0,xp));const n=lvlOf(xp);return n>=LMAX?[n,0,0]:[n,xp-TOT[n],need(n)]};
  // ---------- resume de la partie d'un joueur (client en solo, serveur en ligne) ----------
+ const modeOf=()=>ZMB()?'zombie':CRM()?'cristal':ZONEMODE()?'zones':WARM()?'war':HACKM()?'hack':TDM()?'tdm':'bomb';
  function report(slot){const e=E&&E.find(x=>x.id===slot);if(!e)return null;const q=stat(slot),t=e.team;
-  const mode=ZMB()?'zombie':CRM()?'cristal':ZONEMODE()?'zones':WARM()?'war':HACKM()?'hack':TDM()?'tdm':'bomb';
+  const mode=modeOf();
   const win=ZMB()||CRM()?st.w===t:(score[0]!==score[1]&&(score[0]>score[1]?0:1)===t);
   let mvp=false;if(!ZMB()){const ZM=ZONEMODE(),val=i=>{const s=stat(i);return s.k*2+s.p*2+s.df*3+s.fl*2-s.d*.5+(ZM?(s.zc||0)*.15:0)+(CRM()?(s.cr||0)*5:0)};let b=0;E.forEach(x=>{if(val(x.id)>val(b))b=x.id});mvp=b===slot&&val(slot)>0}
   const r={mode,k:q.k||0,d:q.d||0,p:q.p||0,df:q.df||0,fl:q.fl||0,zc:Math.round(q.zc||0),cr:q.cr||0,win:win?1:0,mvp:mvp?1:0};
@@ -10961,7 +10962,7 @@ const PROF=(()=>{
  const code=()=>I?'DTN2.'+I.id+'.'+I.s:'';
  const parse=c=>{const m=/^DTN2\.([A-Za-z0-9_-]{4,20})\.([A-Za-z0-9_-]{10,40})$/.exec(String(c||'').trim().replace(/\s+/g,''));return m?{id:m[1],s:m[2]}:null};
  // ---------- XP de fin de partie ----------
- let ARM=1,LAST=null,PLAY=0,WAIT0=0;
+ let ARM=1,LAST=null,PLAY=0,WAIT0=0,SS=0;
  function award(){if(HEADLESS)return null;if(typeof st==='undefined'||st.s!=='end'||!E||!E[localSlot])return null;
   if(!ARM)return LAST||(netMode&&performance.now()-WAIT0>30000?{err:'remote'}:{wait:1});
   ARM=0;WAIT0=performance.now();
@@ -10979,7 +10980,7 @@ const PROF=(()=>{
  function hexBadge(cx,cy,r,n,dim){g.save();g.beginPath();for(let i=0;i<6;i++){const a=Math.PI/6+i*Math.PI/3;i?g.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r):g.moveTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r)}g.closePath();
   const gr=g.createLinearGradient(cx,cy-r,cx,cy+r);gr.addColorStop(0,dim?'#5a6170':'#ffe08a');gr.addColorStop(1,dim?'#3a404c':'#d9a316');g.fillStyle=gr;g.fill();g.lineWidth=Math.max(1,r*.08);g.strokeStyle='rgba(255,255,255,.35)';g.stroke();g.restore();
   HUI.T(String(n),cx,cy+.5,Math.max(7,Math.round(r*.95)),'#1a1206','center',700,1)}
- const NOTE={short:()=>LG('partie trop courte (90 s minimum)','game too short (90 s minimum)'),fast:()=>LG('attends 90 s entre deux parties solo','wait 90 s between solo games'),cap:()=>LG('limite de 3 000 XP par jour face aux bots atteinte','3,000 XP daily limit against bots reached')};
+ const NOTE={short:()=>LG('partie trop courte (90 s minimum)','game too short (90 s minimum)'),nostart:()=>LG('début de partie non reçu par le serveur','game start not received by the server'),rate:()=>LG('XP plafonnée : 60 XP par minute en solo','XP capped: 60 XP per minute in solo')};
  const ERR={offline:()=>LG('XP non comptée : serveur du jeu injoignable','XP not counted: game server unreachable'),remote:()=>LG('XP non reçue du serveur','XP not received from the server'),late:()=>LG('XP non comptée : arrivé moins d’une minute avant la fin','XP not counted: joined less than a minute before the end'),
   session:()=>LG('XP non comptée : ton profil est ouvert sur un autre appareil','XP not counted: your profile is open on another device'),left:()=>LG('XP non comptée : partie quittée','XP not counted: you left the game')};
  ERR.profile=()=>LG('Partie en invité : XP non sauvegardée · crée ton profil dans le menu','Guest game: XP not saved · create your profile in the menu');
@@ -11006,9 +11007,10 @@ const PROF=(()=>{
   if($('profBox')&&$('profBox').classList.contains('on'))fill()}
  // bareme affiche par le bouton « Calcul de l'XP » (le serveur compte avec le meme, profiles.js)
  const XPT=()=>[
-  [LG('Chaque partie terminée','Every finished game'),[[LG('Partie terminée','Game completed'),'+25'],[LG('Victoire','Victory'),'+50'],[LG('Élimination','Elimination'),'+5'],[LG('MVP (sauf Zombie)','MVP (except Zombie)'),'+25'],[LG('1re victoire du jour','First win of the day'),'+75']]],
-  [LG('Objectifs du mode','Mode objectives'),[[LG('Bombe : posée · désamorcée · drapeau','Bomb: planted · defused · flag'),LG('+12,5 · +15 · +10','+12.5 · +15 · +10')],[LG('Code Rouge : antenne · missile · retour','Code Red: antenna · missile · return'),LG('+12,5 · +20 · +10','+12.5 · +20 · +10')],[LG('Escorte : C4 · obus au but','Escort: C4 · shell hit'),LG('+10 · +7,5','+10 · +7.5')],[LG('Zones : seconde dans la zone','Zones: second in the zone'),LG('+0,25 (75 max)','+0.25 (75 max)')],[LG('Cristal : cristal déposé','Crystal: crystal delivered'),'+15'],[LG('Zombie : zombie · vague survécue','Zombie: zombie · wave survived'),'+1 · +5'],[LG('Match à mort : drapeau','Deathmatch: flag'),'+10']]],
-  [LG('Règles','Rules'),[[LG('Partie quittée ou non terminée','Game left or not finished'),'0 XP'],[LG('Face aux bots, par jour','Against bots, per day'),LG('3 000 XP max','3,000 XP max')],[LG('Profil','Profile'),LG('1 appareil à la fois','1 device at a time')],[LG('Niveau maximum','Max level'),LG('30 (86 826 XP)','30 (86,826 XP)')]]]];
+  [LG('Fin de partie (terminée · victoire)','End of game (finished · victory)'),[[LG('Bombe','Bomb'),'+30 · +60'],[LG('Match à mort','Deathmatch'),'+15 · +30'],['Zones','+15 · +30'],[LG('Cristal','Crystal'),'+10 · +40'],[LG('Code Rouge','Code Red'),'+100 · +200'],['Zombie','+40 · +120'],[LG('Escorte','Escort'),'+50 · +100']]],
+  [LG('Pendant la partie','During the game'),[[LG('Élimination','Elimination'),'+5'],[LG('MVP (sauf Zombie)','MVP (except Zombie)'),'+25'],[LG('1re victoire du jour','First win of the day'),'+75']]],
+  [LG('Objectifs du mode','Mode objectives'),[[LG('Bombe : posée · désamorcée · drapeau','Bomb: planted · defused · flag'),LG('+12,5 · +15 · +10','+12.5 · +15 · +10')],[LG('Code Rouge : antenne · missile · retour','Code Red: antenna · missile · return'),LG('+12,5 · +20 · +10','+12.5 · +20 · +10')],[LG('Escorte : C4 · obus au but','Escort: C4 · shell hit'),LG('+10 · +7,5','+10 · +7.5')],[LG('Zones : seconde dans la zone','Zones: second in the zone'),LG('+0,25 (75 max)','+0.25 (75 max)')],[LG('Cristal : cristal déposé','Crystal: crystal delivered'),'+10'],[LG('Zombie : zombie · vague survécue','Zombie: zombie · wave survived'),'+1 · +5'],[LG('Match à mort : drapeau','Deathmatch: flag'),'+10']]],
+  [LG('Règles','Rules'),[[LG('Partie quittée ou non terminée','Game left or not finished'),'0 XP'],[LG('Profil','Profile'),LG('1 appareil à la fois','1 device at a time')],[LG('Niveau maximum','Max level'),LG('30 (136 184 XP)','30 (136,184 XP)')]]]];
  function fill(){const[lv,cur,nd]=prog(P.xp),b=$('profBox'),st=!I?'guest':ST==='busy'?'busy':ST==='off'?'off':'on';b.dataset.st=st;
   b.querySelector('.ppTitle').textContent=b.dataset.v==='info'?LG('Calcul de l’XP','How XP is counted'):st==='guest'?LG('Mode invité','Guest mode'):LG('Mon profil','My profile');
   b.querySelector('.ppBadge b').textContent=lv;const ni=$('profName');if(document.activeElement!==ni)ni.value=P.n;
@@ -11075,7 +11077,10 @@ const PROF=(()=>{
   {const sn=sendNet;sendNet=function(o){if(o&&(o.type==='create'||o.type==='join')&&isOn()){o.pid=I.id;o.ps=I.s;o.psid=SID}return sn.apply(this,arguments)}}
   {const nmsg=netMessage;netMessage=function(m){if(m&&m.type==='xp')return onXP(m);return nmsg.apply(this,arguments)}}
   // temps de jeu reel (parties solo) ; une nouvelle partie peut redonner de l'XP des que l'ecran de fin est quitte
-  setInterval(()=>{if(menu.classList.contains('hidden')&&b.classList.contains('on'))close();if(typeof st==='undefined')return;if(st.s!=='end'){if(!ARM){ARM=1;LAST=null;PLAY=0}if(st.s==='live'&&menu.classList.contains('hidden')&&!netMode)PLAY+=.4}},400);
+  setInterval(()=>{if(menu.classList.contains('hidden')&&b.classList.contains('on'))close();if(typeof st==='undefined')return;if(!menu.classList.contains('hidden'))SS=0;
+   if(st.s!=='end'){if(!ARM){ARM=1;LAST=null;PLAY=0;SS=0}if(st.s==='live'&&menu.classList.contains('hidden')&&!netMode)PLAY+=.4;
+    // debut d'une partie solo : annonce au serveur (il mesure lui-meme la duree de la partie)
+    if(!SS&&!netMode&&menu.classList.contains('hidden')&&(st.s==='freeze'||st.s==='live')){SS=1;if(isOn())api('start',idb({mode:modeOf()})).catch(()=>{})}}},400);
   // session : signal toutes les 20 s ; ouvert ailleurs ou serveur injoignable : nouvel essai (sans reprendre une session active)
   setInterval(()=>{if(isOn())api('ping',idb()).then(j=>{if(j.ok)keep(j.prof);else if(j._st===409)setSt('busy');else if(j._st===404)lost()}).catch(()=>{});else if(I&&(ST==='busy'||ST==='off'))sync()},20000);
   ui();sync()}
