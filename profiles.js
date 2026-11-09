@@ -8,7 +8,7 @@
 // - Chaque profil a un identifiant et un secret (le « code de sauvegarde » du joueur). Le serveur n'en garde que l'empreinte.
 // - XP des parties en ligne : calculee par le serveur a partir de la simulation (le joueur n'envoie rien).
 // - XP des parties solo contre l'IA (elles tournent dans le navigateur) : le joueur envoie le resume de sa partie,
-//   le serveur le borne (valeurs plausibles, 90 s de jeu, 90 s entre deux parties, 3 000 XP par jour face aux bots).
+//   le serveur le borne (valeurs plausibles, duree mesuree par le serveur, 90 s au moins, 40 XP par minute au plus).
 
 const fs = require('fs');
 const path = require('path');
@@ -25,8 +25,9 @@ const DATA_DIR = process.env.DATA_DIR || (fs.existsSync('/data') ? '/data' : pat
 const FILE = path.join(DATA_DIR, 'profiles.json');
 
 // ---------- niveaux : 1 a 30, de plus en plus longs (meme courbe que le jeu, index.html) ----------
+// 136 184 XP pour le niveau 30 : environ 13 h de jeu pour le niveau 10, 62 h pour le 20, 160 h pour le 30 (joueur moyen)
 const LMAX = 30;
-const need = n => Math.round(250 + 120 * (n - 1) + 4 * (n - 1) * (n - 1));
+const need = n => Math.round(300 + 200 * (n - 1) + 6 * (n - 1) * (n - 1));
 const TOT = [0, 0]; for (let n = 1; n < LMAX; n++) TOT[n + 1] = TOT[n] + need(n);
 const XMAX = TOT[LMAX];
 const lvlOf = xp => { let n = 1; while (n < LMAX && xp >= TOT[n + 1]) n++; return n; };
@@ -109,22 +110,25 @@ function sessOk(id, sid) {
 
 // ---------- calcul de l'XP d'une partie (meme bareme pour les parties en ligne et solo) ----------
 // r : { mode, k, d, p, df, fl, zc, cr, zk, wv, win, mvp } ; lignes [cle, xp, nombre] (le jeu traduit les cles)
+// fin de partie par mode : [partie terminee, victoire]. Les parties longues rapportent plus, pour une XP par heure
+// proche dans tous les modes (environ 850 XP/h pour un joueur moyen, mesure sur des parties simulees).
+const FIN = { bomb: [30, 60], tdm: [15, 30], zones: [15, 30], cristal: [10, 40], hack: [100, 200], zombie: [40, 120], war: [50, 100] };
 function xpFrom(r, first) {
-  // bareme (V3.7) : tous les points divises par deux, plus de division par deux contre l'IA
-  // (le meme bareme est affiche dans le jeu : bouton « Calcul de l'XP » de la fenetre du profil)
+  // le meme bareme est affiche dans le jeu : bouton « Calcul de l'XP » de la fenetre du profil
   const L = [], add = (k, v, n) => { v = Math.round(v); if (v > 0) L.push([k, v, n || 0]); };
+  const F = FIN[r.mode] || FIN.bomb;
   add('kills', r.k * 5, r.k);
   switch (r.mode) {
     case 'zombie': add('zombies', r.zk * 1, r.zk); add('waves', r.wv * 5, r.wv); break;
-    case 'cristal': add('crystals', r.cr * 15, r.cr); break;
+    case 'cristal': add('crystals', r.cr * 10, r.cr); break;
     case 'zones': add('zone', Math.min(75, r.zc * 0.25), r.zc); break;
     case 'war': add('war', r.p * 10 + r.df * 7.5); break;
     case 'hack': add('hack', r.p * 12.5 + r.fl * 20 + r.df * 10); break;
     case 'tdm': add('flags', r.fl * 10, r.fl); break;
     default: add('bomb', r.p * 12.5 + r.df * 15 + r.fl * 10);
   }
-  add('done', 25);
-  if (r.win) add('win', 50);
+  add('done', F[0]);
+  if (r.win) add('win', F[1]);
   if (r.mvp && r.mode !== 'zombie') add('mvp', 25);
   if (first) add('daily', 75);
   return { L, tot: L.reduce((s, l) => s + l[1], 0) };
@@ -138,30 +142,33 @@ function cleanReport(r, solo) {
   for (const k in c) o[k] = num(r[k], c[k]);
   return o;
 }
-// applique une partie a un profil ; renvoie le resultat affiche par le jeu
-// bots : partie face aux bots (solo, ou salon prive avec moins de 2 joueurs humains) -> 3 000 XP par jour au plus
-const BOT_CAP = 3000;
-function apply(P, r, bots, opt) {
+// applique une partie a un profil ; renvoie le resultat affiche par le jeu. Pas de limite d'XP par jour.
+// Parties solo (elles tournent dans le navigateur) : le serveur mesure lui-meme leur duree (debut annonce par le jeu,
+// operation « start ») ; 90 s au moins, et pas plus de 60 XP par minute de jeu, hors premiere victoire du jour
+// (un joueur moyen en gagne environ 14, un tres bon joueur une quarantaine : seul un jeu modifie atteint ce plafond).
+const SOLO = new Map();   // identifiant du profil -> { t, mode } : partie solo en cours
+const SOLO_RATE = 60;
+function apply(P, r, opt) {
   opt = opt || {};
   const d = day(), first = !!r.win && P.day !== d;
-  let { L, tot } = xpFrom(r, first);
   let note = '';
-  if (P.sd !== d) { P.sd = d; P.sx = 0; }
+  const none = n => ({ L: [], tot: 0, x0: P.xp, x1: P.xp, l0: lvlOf(P.xp), l1: lvlOf(P.xp), note: n });
+  let sec = 0;
   if (opt.solo) {
-    // parties solo : 90 s de jeu au moins, 90 s entre deux parties
-    const now = Date.now();
-    if (num(opt.dur, 1e6) < 90) note = 'short';
-    else if (now - (P.st || 0) < 90000) note = 'fast';
-    // partie trop courte ou trop rapprochee : ni XP ni statistiques
-    if (note) return { L, tot: 0, x0: P.xp, x1: P.xp, l0: lvlOf(P.xp), l1: lvlOf(P.xp), ai: !!bots, note };
-    P.st = now;
+    const S = SOLO.get(P.id);
+    SOLO.delete(P.id);
+    if (!S) return none('nostart');                 // debut de partie jamais recu : ni XP ni statistiques
+    sec = (Date.now() - S.t) / 1000;
+    if (sec < 90) return none('short');             // partie trop courte : ni XP ni statistiques
+    r.mode = S.mode;                                // le mode annonce au debut fait foi
   }
-  if (bots) { if (P.sx + tot > BOT_CAP) { tot = Math.max(0, BOT_CAP - P.sx); note = 'cap'; } P.sx += tot; }
+  let { L, tot } = xpFrom(r, first);
+  if (opt.solo) { const dl = first ? 75 : 0, max = Math.ceil(sec / 60 * SOLO_RATE) + dl; if (tot > max) { tot = max; note = 'rate'; } }
   const x0 = P.xp, x1 = Math.min(XMAX, x0 + tot);
   P.xp = x1; P.g++; if (r.win) P.w++; P.k += r.k; P.d += r.d; if (r.mvp && r.mode !== 'zombie') P.mvp++;
   if (first && tot > 0) P.day = d;
   save();
-  return { L, tot: x1 - x0, x0, x1, l0: lvlOf(x0), l1: lvlOf(x1), ai: !!bots, note };
+  return { L, tot: x1 - x0, x0, x1, l0: lvlOf(x0), l1: lvlOf(x1), note };
 }
 
 // ---------- creation (avec reprise du profil local de l'etape 1, plafonnee) ----------
@@ -232,10 +239,12 @@ async function http(req, res, url) {
   // toutes les autres operations : seulement pour la session en cours (sinon 409 kicked : le profil est ouvert ailleurs)
   if (!sessOk(P.id, m.sid)) return out(res, 409, { err: 'kicked' });
   if (op === 'ping') return out(res, 200, { ok: 1, prof: pub(P) });
+  // debut d'une partie solo : le serveur note l'heure et le mode (la duree de la partie est mesuree par lui)
+  if (op === 'start') { SOLO.set(P.id, { t: Date.now(), mode: MODES.has(m.mode) ? m.mode : 'bomb' }); return out(res, 200, { ok: 1 }); }
   if (op === 'name') { const n = cleanName(m.n); if (n !== P.n) { P.n = n; save(); } return out(res, 200, { prof: pub(P) }); }
   if (op === 'solo') {
     const r = cleanReport(m.r, true);
-    const res_ = apply(P, r, true, { solo: true, dur: m.dur });
+    const res_ = apply(P, r, { solo: true });
     return out(res, 200, { res: res_, prof: pub(P) });
   }
   return out(res, 404, { err: 'op' });
@@ -249,7 +258,7 @@ function awardLocal(list) {
     if (!P) return { id: a && a.id, err: 'profile' };
     if (!sessOk(P.id, a.sid)) return { id: P.id, err: 'session' };   // profil ouvert sur un autre appareil pendant la partie
     const r = cleanReport(a.r, false);
-    return { id: P.id, res: apply(P, r, !!a.ai), prof: pub(P) };
+    return { id: P.id, res: apply(P, r), prof: pub(P) };
   });
 }
 async function remote(op, o) {
