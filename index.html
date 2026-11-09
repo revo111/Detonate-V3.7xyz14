@@ -266,47 +266,63 @@ body.inmenu #muteBtn svg,body.inmenu #fsBtn svg{width:20px;height:20px}
 @media (max-width:700px) and (min-height:561px),(max-width:599px){#menu #profChip{order:1;align-self:flex-start;height:42px;margin:-4px 0 0;max-width:100%}#profChip .pbg{width:33px;height:33px}}
 #profBox{--fd:'Chakra Petch','Bahnschrift','DIN Alternate',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,7,13,.74);font:400 14px/1.45 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#eef2f8}
 #profBox.on{display:flex}
-#profBox .ppPanel{position:relative;box-sizing:border-box;width:min(100%,470px);max-height:100%;overflow-y:auto;padding:22px 22px 18px;border-radius:16px;border:1px solid rgba(255,255,255,.11);background:rgba(9,12,20,.97);box-shadow:0 24px 70px rgba(0,0,0,.6)}
-#profBox .ppX{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.11);background:none;color:#9aa6b9;font-size:15px;cursor:pointer}
-#profBox .ppX:hover{color:#fff;border-color:rgba(255,255,255,.3)}
-#profBox .ppHead{display:flex;align-items:center;gap:16px;padding-right:36px}
-#profBox .ppBadge{width:64px;height:64px}#profBox .ppBadge b{font:700 27px/1 var(--fd);color:#1a1206}
+#profBox .ppPanel{position:relative;box-sizing:border-box;width:min(100%,440px);max-height:100%;overflow-y:auto;padding:0 20px 18px;border-radius:16px;border:1px solid rgba(255,255,255,.11);background:rgba(9,12,20,.97);box-shadow:0 24px 70px rgba(0,0,0,.6)}
+/* barre du haut : retour (vue « Calcul de l'XP »), titre, fermer, alignes sur une ligne */
+#profBox .ppTop{position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:8px;height:54px;margin:0 -20px 4px;padding:0 12px 0 20px;background:rgba(9,12,20,.97);border-bottom:1px solid rgba(255,255,255,.07)}
+#profBox .ppTitle{flex:1;min-width:0;font:700 13px/1 var(--fd);letter-spacing:.12em;text-transform:uppercase;color:#c8d0dd;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#profBox .ppX,#profBox .ppBack{flex:none;display:grid;place-items:center;width:34px;height:34px;padding:0;border-radius:50%;border:1px solid rgba(255,255,255,.11);background:none;color:#9aa6b9;font:600 15px/1 system-ui,sans-serif;cursor:pointer}
+#profBox .ppBack{display:none;margin-left:-8px;font-size:24px;line-height:30px}
+#profBox[data-v=info] .ppBack{display:grid}
+#profBox .ppX:hover,#profBox .ppBack:hover{color:#fff;border-color:rgba(255,255,255,.3)}
+#profBox .ppInfo{display:none}#profBox[data-v=info] .ppInfo{display:block}#profBox[data-v=info] .ppHome{display:none}
+/* profil */
+#profBox .ppHead{display:flex;align-items:center;gap:16px;margin-top:14px}
+#profBox .ppBadge{width:60px;height:60px}#profBox .ppBadge b{font:700 26px/1 var(--fd);color:#1a1206}
 #profBox .ppId{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
 #profBox .ppId label{font:600 11px/1 system-ui,sans-serif;color:#9aa6b9}
 #profBox #profName{width:100%;box-sizing:border-box;margin:2px 0;padding:2px 0 4px;border:0;border-bottom:1px solid rgba(255,255,255,.18);background:none;color:#eef2f8;font:700 22px/1.1 var(--fd);outline:none}
 #profBox #profName:focus{border-bottom-color:#ffcf5a}
 #profBox .ppLv{font:600 13px/1 var(--fd);color:#ffcf5a;letter-spacing:.04em}
-#profBox .ppBar{height:10px;border-radius:5px;margin:18px 0 7px}
+#profBox .ppBar{height:10px;border-radius:5px;margin:16px 0 7px}
 #profBox .ppXp{font-size:12.5px;color:#c8d0dd}
-#profBox .ppStats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0 12px}
+#profBox .ppStats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
 #profBox .ppStats div{padding:10px 6px;border-radius:10px;background:rgba(255,255,255,.045);text-align:center}
 #profBox .ppStats b{display:block;font:700 19px/1.1 var(--fd)}#profBox .ppStats span{display:block;margin-top:3px;font-size:11px;color:#9aa6b9}
-#profBox .ppHow{margin:0 0 14px;font-size:12px;line-height:1.5;color:#9aa6b9}
-#profBox .ppSave{border-top:1px solid rgba(255,255,255,.11);padding-top:14px}
-#profBox .ppT{font:600 12px/1 var(--fd);letter-spacing:.08em;text-transform:uppercase;color:#9aa6b9;margin:2px 0 6px}
-#profBox .ppSave p{margin:0 0 8px;font-size:12px;color:#c8d0dd}
-#profBox .ppRow{display:flex;gap:8px;margin:0 0 14px}
-#profBox .ppRow input{flex:1;min-width:0;height:40px;box-sizing:border-box;padding:0 11px;border-radius:9px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#eef2f8;font:500 12px/1 ui-monospace,Menlo,Consolas,monospace;outline:none}
+#profBox .ppCodeBox{border-top:1px solid rgba(255,255,255,.08);padding-top:12px}
+#profBox .ppT{font:600 11.5px/1 var(--fd);letter-spacing:.1em;text-transform:uppercase;color:#9aa6b9;margin:2px 0 8px}
+#profBox .ppHint{margin:6px 0 0;font-size:11.5px;color:#9aa6b9}
+#profBox .ppRow{display:flex;gap:8px}
+#profBox .ppRow input{flex:1;min-width:0;height:42px;box-sizing:border-box;padding:0 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#eef2f8;font:500 12px/1 ui-monospace,Menlo,Consolas,monospace;outline:none}
 #profBox .ppRow input:focus{border-color:#ffcf5a}
-#profBox .ppB{flex:none;height:40px;padding:0 16px;border:0;border-radius:9px;background:#ffcf5a;color:#1a1206;font:700 13.5px/1 var(--fd);cursor:pointer}
+#profBox .ppB{flex:none;height:42px;padding:0 18px;border:0;border-radius:10px;background:#ffcf5a;color:#1a1206;font:700 14px/1 var(--fd);cursor:pointer}
 #profBox .ppB:hover{filter:brightness(1.08)}
-#profBox .ppWarn{display:none;margin:-4px 0 10px;font-size:12px;color:#ff8a7a}
-#profBox .ppMsg{min-height:16px;font-size:12.5px}
-/* invite (pas encore de profil) et profil ouvert sur un autre appareil */
-#profBox .ppGuest,#profBox .ppBusyBox{display:none;margin:30px 0 14px;padding:14px;border-radius:12px;border:1px solid rgba(255,207,90,.35);background:rgba(255,207,90,.06)}
-#profBox[data-st=guest] .ppGuest,#profBox[data-st=busy] .ppBusyBox{display:block}
-#profBox[data-st=guest] .ppMain,#profBox[data-st=guest] .ppCodeBox{display:none}
-#profBox[data-st=off] .ppWarn{display:block}
-#profBox .ppGT{font:700 18px/1.2 var(--fd);color:#ffcf5a;margin:0 0 6px}
-#profBox .ppBusyBox{border-color:rgba(255,138,122,.4);background:rgba(255,138,122,.06)}#profBox .ppBusyBox .ppGT{color:#ff8a7a}
-#profBox .ppGuest p,#profBox .ppBusyBox p{margin:0 0 10px;font-size:12.5px;color:#c8d0dd}
-#profBox .ppGuest .ppRow{margin:0}
-#profBox #profNew{font:600 15px/1 var(--fd)}
-#profBox .ppGuest .ppMig{display:none;margin:8px 0 0;color:#ffcf5a}
 #profBox .ppWide{width:100%}
-#profBox .ppBusyBox .ppSmall{margin:6px 0 0;font-size:11.5px;color:#9aa6b9}
-#profChip.guest .pbg{background:linear-gradient(#5a6170,#3a404c)}#profChip.guest .pbg b{color:#eef2f8;font-size:20px}#profChip.guest .pbar{display:none}#profChip.guest .pl{color:#ffcf5a}#profChip.busy .pl{color:#ff8a7a}
+/* invite : carte courte, centree */
+#profBox .ppGuest,#profBox .ppBusyBox{display:none;margin:14px 0 4px;text-align:center}
+#profBox[data-st=guest] .ppGuest,#profBox[data-st=busy] .ppBusyBox{display:block}
+#profBox[data-st=guest] .ppMain{display:none}
+#profBox .ppGBadge{display:inline-grid;place-items:center;width:58px;height:58px;clip-path:polygon(50% 0,93.3% 25%,93.3% 75%,50% 100%,6.7% 75%,6.7% 25%);background:linear-gradient(#5a6170,#3a404c)}
+#profBox .ppGBadge b{font:700 28px/1 var(--fd);color:#eef2f8}
+#profBox .ppGuest p,#profBox .ppBusyBox p{margin:10px 0 14px;font:600 15px/1.35 var(--fd);color:#eef2f8}
+#profBox #profNew{font:600 15px/1 var(--fd)}
+#profBox .ppGuest .ppMig{display:none;margin:10px 0 0;font:500 12px/1.4 system-ui,sans-serif;color:#ffcf5a}
+#profBox .ppBusyBox{padding:14px;border-radius:12px;border:1px solid rgba(255,138,122,.4);background:rgba(255,138,122,.06)}
+#profBox .ppBusyBox p{margin:0 0 12px;color:#ff8a7a}
 #profBox[data-st=busy] #profName{pointer-events:none;opacity:.75}
+/* liens : calcul de l'XP, code / changer de profil */
+#profBox .ppLinks{display:flex;gap:8px;margin:16px 0 0}
+#profBox .ppL{flex:1;height:38px;padding:0 10px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);color:#c8d0dd;font:600 13px/1 var(--fd);cursor:pointer}
+#profBox .ppL:hover{border-color:rgba(255,207,90,.6);color:#fff}
+#profBox .ppImp{display:none;margin-top:10px}#profBox.imp .ppImp{display:block}
+#profBox .ppWarn{display:none;margin:10px 0 0;font-size:12px;color:#ff8a7a}#profBox[data-st=off] .ppWarn{display:block}
+#profBox .ppMsg{min-height:16px;margin-top:8px;font-size:12.5px}
+/* vue « Calcul de l'XP » */
+#profBox .ppIT{margin:16px 0 6px;font:600 11.5px/1 var(--fd);letter-spacing:.1em;text-transform:uppercase;color:#ffcf5a}
+#profBox .ppIL{border-radius:10px;background:rgba(255,255,255,.035);overflow:hidden}
+#profBox .ppIL div{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:8px 12px;border-top:1px solid rgba(255,255,255,.05);font-size:12.5px;color:#c8d0dd}
+#profBox .ppIL div:first-child{border-top:0}
+#profBox .ppIL b{flex:none;font:700 13px/1.2 var(--fd);color:#eef2f8;text-align:right}
+#profChip.guest .pbg{background:linear-gradient(#5a6170,#3a404c)}#profChip.guest .pbg b{color:#eef2f8;font-size:20px}#profChip.guest .pbar{display:none}#profChip.guest .pl{color:#ffcf5a}#profChip.busy .pl{color:#ff8a7a}
 </style></head><body>
 <div id="menu" data-v="mainMenu"><div id="mfade"></div><div class="panel">
 <header class="mtop"><h1 class="logo">DETONATE<span class="ver">V3.7</span></h1><div class="mtopR"><a id="founder" href="https://x.com/Revo_YHWH" target="_blank" rel="noopener noreferrer" aria-label="Revo sur X (@Revo_YHWH)"><span class="av"><img alt="Revo" width="40" height="40" src="data:image/webp;base64,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"></span><span class="who"><span class="role">Fondateur</span><span class="nm">Revo</span></span><span class="xl"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Suivre</span></a><div id="langSel"><button data-lang="fr">FR</button><button data-lang="en">EN</button></div></div></header>
@@ -10891,7 +10907,7 @@ const MENU=(()=>{
 //   ouvert ailleurs, il peut etre repris (« Jouer ici »), l'autre appareil passe alors en invite
 // - une partie quittee ou non terminee ne rapporte pas d'XP
 // - parties en ligne : le serveur calcule l'XP a partir de sa simulation et l'envoie a chaque joueur (message « xp »)
-// - parties solo contre l'IA : le jeu envoie le resume de la partie, le serveur le verifie, le borne et divise l'XP par deux
+// - parties solo contre l'IA : le jeu envoie le resume de la partie, le serveur le verifie et le borne (3 000 XP par jour face aux bots)
 // Niveau maximum : 30 (montee de plus en plus longue). PROF.report sert aussi au serveur (meme code, dans la simulation).
 const PROF=(()=>{
  const LMAX=30,need=n=>Math.round(250+120*(n-1)+4*(n-1)*(n-1));
@@ -10963,7 +10979,7 @@ const PROF=(()=>{
  function hexBadge(cx,cy,r,n,dim){g.save();g.beginPath();for(let i=0;i<6;i++){const a=Math.PI/6+i*Math.PI/3;i?g.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r):g.moveTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r)}g.closePath();
   const gr=g.createLinearGradient(cx,cy-r,cx,cy+r);gr.addColorStop(0,dim?'#5a6170':'#ffe08a');gr.addColorStop(1,dim?'#3a404c':'#d9a316');g.fillStyle=gr;g.fill();g.lineWidth=Math.max(1,r*.08);g.strokeStyle='rgba(255,255,255,.35)';g.stroke();g.restore();
   HUI.T(String(n),cx,cy+.5,Math.max(7,Math.round(r*.95)),'#1a1206','center',700,1)}
- const NOTE={short:()=>LG('partie trop courte (90 s minimum)','game too short (90 s minimum)'),fast:()=>LG('attends 90 s entre deux parties solo','wait 90 s between solo games'),cap:()=>LG('limite de 3 000 XP par jour en solo atteinte','3,000 XP daily solo limit reached')};
+ const NOTE={short:()=>LG('partie trop courte (90 s minimum)','game too short (90 s minimum)'),fast:()=>LG('attends 90 s entre deux parties solo','wait 90 s between solo games'),cap:()=>LG('limite de 3 000 XP par jour face aux bots atteinte','3,000 XP daily limit against bots reached')};
  const ERR={offline:()=>LG('XP non comptée : serveur du jeu injoignable','XP not counted: game server unreachable'),remote:()=>LG('XP non reçue du serveur','XP not received from the server'),late:()=>LG('XP non comptée : arrivé moins d’une minute avant la fin','XP not counted: joined less than a minute before the end'),
   session:()=>LG('XP non comptée : ton profil est ouvert sur un autre appareil','XP not counted: your profile is open on another device'),left:()=>LG('XP non comptée : partie quittée','XP not counted: you left the game')};
  ERR.profile=()=>LG('Partie en invité : XP non sauvegardée · crée ton profil dans le menu','Guest game: XP not saved · create your profile in the menu');
@@ -10988,27 +11004,35 @@ const PROF=(()=>{
   c.querySelector('.pl').textContent=gs?LG('Créer un profil','Create a profile'):ST==='busy'?LG('Ouvert sur un autre appareil','Open on another device'):lv>=LMAX?LG('Niveau max','Max level'):LG('Niv. ','Lv. ')+lv+' · '+cur+' / '+nd;
   c.querySelector('.pbar i').style.width=(gs?0:nd?Math.round(cur/nd*1000)/10:100)+'%';
   if($('profBox')&&$('profBox').classList.contains('on'))fill()}
- function fill(){const[lv,cur,nd]=prog(P.xp),b=$('profBox');b.dataset.st=!I?'guest':ST==='busy'?'busy':ST==='off'?'off':'on';
+ // bareme affiche par le bouton « Calcul de l'XP » (le serveur compte avec le meme, profiles.js)
+ const XPT=()=>[
+  [LG('Chaque partie terminée','Every finished game'),[[LG('Partie terminée','Game completed'),'+25'],[LG('Victoire','Victory'),'+50'],[LG('Élimination','Elimination'),'+5'],[LG('MVP (sauf Zombie)','MVP (except Zombie)'),'+25'],[LG('1re victoire du jour','First win of the day'),'+75']]],
+  [LG('Objectifs du mode','Mode objectives'),[[LG('Bombe : posée · désamorcée · drapeau','Bomb: planted · defused · flag'),LG('+12,5 · +15 · +10','+12.5 · +15 · +10')],[LG('Code Rouge : antenne · missile · retour','Code Red: antenna · missile · return'),LG('+12,5 · +20 · +10','+12.5 · +20 · +10')],[LG('Escorte : C4 · obus au but','Escort: C4 · shell hit'),LG('+10 · +7,5','+10 · +7.5')],[LG('Zones : seconde dans la zone','Zones: second in the zone'),LG('+0,25 (75 max)','+0.25 (75 max)')],[LG('Cristal : cristal déposé','Crystal: crystal delivered'),'+15'],[LG('Zombie : zombie · vague survécue','Zombie: zombie · wave survived'),'+1 · +5'],[LG('Match à mort : drapeau','Deathmatch: flag'),'+10']]],
+  [LG('Règles','Rules'),[[LG('Partie quittée ou non terminée','Game left or not finished'),'0 XP'],[LG('Face aux bots, par jour','Against bots, per day'),LG('3 000 XP max','3,000 XP max')],[LG('Profil','Profile'),LG('1 appareil à la fois','1 device at a time')],[LG('Niveau maximum','Max level'),LG('30 (86 826 XP)','30 (86,826 XP)')]]]];
+ function fill(){const[lv,cur,nd]=prog(P.xp),b=$('profBox'),st=!I?'guest':ST==='busy'?'busy':ST==='off'?'off':'on';b.dataset.st=st;
+  b.querySelector('.ppTitle').textContent=b.dataset.v==='info'?LG('Calcul de l’XP','How XP is counted'):st==='guest'?LG('Mode invité','Guest mode'):LG('Mon profil','My profile');
   b.querySelector('.ppBadge b').textContent=lv;const ni=$('profName');if(document.activeElement!==ni)ni.value=P.n;
   b.querySelector('.ppLv').textContent=LG('Niveau ','Level ')+lv+' / '+LMAX;b.querySelector('.ppBar i').style.width=(nd?cur/nd*100:100)+'%';
   b.querySelector('.ppXp').textContent=lv>=LMAX?LG('Niveau maximum atteint · ','Max level reached · ')+fr(P.xp)+' XP':fr(cur)+' / '+fr(nd)+' XP · '+LG('encore ','')+fr(nd-cur)+LG(' XP pour le niveau ',' XP to level ')+(lv+1);
   const S=[[LG('Parties','Games'),fr(P.g)],[LG('Victoires','Wins'),fr(P.w)],[LG('Éliminations','Eliminations'),fr(P.k)],[LG('Ratio K/D','K/D ratio'),kd()],['MVP',fr(P.mvp)],[LG('XP totale','Total XP'),fr(P.xp)]];
   b.querySelector('.ppStats').innerHTML=S.map(s=>'<div><b>'+esc(s[1])+'</b><span>'+esc(s[0])+'</span></div>').join('');
   $('profCode').value=code();const nn=$('profNew');if(nn&&!nn.value&&document.activeElement!==nn)nn.value=gname();
-  const mg=b.querySelector('.ppMig');mg.style.display=MIG?'block':'none';if(MIG)mg.textContent=LG('Ta progression précédente sur cet appareil sera reprise (niveau ','Your previous progress on this device will be carried over (level ')+lvlOf(Math.min(3000,+MIG.xp||0))+LG(', 3 000 XP au plus).',', 3,000 XP at most).');
-  b.querySelector('.ppImpT').textContent=I?LG('Récupérer un autre profil','Restore another profile'):LG('J’ai déjà un profil','I already have a profile')}
+  const mg=b.querySelector('.ppMig');mg.style.display=MIG?'block':'none';if(MIG)mg.textContent=LG('Ta progression précédente sera reprise (niveau ','Your previous progress will be carried over (level ')+lvlOf(Math.min(3000,+MIG.xp||0))+').';
+  $('profImpB').textContent=I?LG('Changer de profil','Switch profile'):LG('J’ai déjà un code','I have a code')}
+ function info(){const b=$('profBox');b.querySelector('.ppInfo').innerHTML=XPT().map(([t,rows])=>'<div class="ppIT">'+esc(t)+'</div><div class="ppIL">'+rows.map(r=>'<div><span>'+esc(r[0])+'</span><b>'+esc(r[1])+'</b></div>').join('')+'</div>').join('');
+  b.dataset.v='info';fill();b.querySelector('.ppPanel').scrollTop=0;try{uiClick()}catch(e){}}
+ function home(){const b=$('profBox');b.dataset.v='home';fill()}
  const msg=(t,ok)=>{const m=$('profMsg');m.textContent=t;m.className='ppMsg '+(ok?'ok':'danger')};
  const UNR=()=>LG('Serveur du jeu injoignable, réessaie dans un instant.','Game server unreachable, try again in a moment.');
- function open(){fill();msg('',1);$('profImp').value='';$('profBox').classList.add('on');try{uiClick()}catch(e){}if(I&&ST!=='on')sync().then(fill)}
+ function open(){const b=$('profBox');b.dataset.v='home';b.classList.remove('imp');fill();msg('',1);$('profImp').value='';b.classList.add('on');try{uiClick()}catch(e){}if(I&&ST!=='on')sync().then(fill)}
  function close(){$('profBox').classList.remove('on')}
  let NT=0;const setName=v=>{try{localStorage.setItem('detonate_name',v)}catch(e){}const ip=$('nameInput');if(ip&&ip.value!==v)ip.value=v;if(!I)return;
   P.n=v;put(KC,Object.assign({v:2},P));ui();clearTimeout(NT);NT=setTimeout(()=>{if(isOn())api('name',idb({n:v})).then(j=>{if(j.prof)keep(j.prof)}).catch(()=>{})},800)};
- // nouveau profil (seulement a la demande du joueur : aucun profil n'est cree pour un simple visiteur)
  async function make(){const n=$('profNew').value.trim().slice(0,14);if(!n)return msg(LG('Choisis d’abord un pseudo.','Choose a name first.'),0);
   msg(LG('Création…','Creating…'),1);try{const j=await api('new',{n,mig:MIG});
    if(!(j.id&&j.s&&j.sid))return msg(j._st===429?LG('Trop de profils créés depuis ta connexion : réessaie dans une heure.','Too many profiles created from your connection: try again in an hour.'):UNR(),0);
    I={id:j.id,s:j.s};put(KI,I);SID=j.sid;sput(KS,SID);if(MIG){MIG=null;const c0=get(KC0);if(c0&&c0.v===1)put(KC0,Object.assign(c0,{v:0}))}
-   keep(j.prof);setName(P.n);setSt('on');fill();msg(LG('Profil créé ! Copie ton code de sauvegarde ci-dessous et garde-le : il te permet de retrouver ton profil sur un autre appareil.','Profile created! Copy your save code below and keep it: it lets you get your profile back on another device.'),1)}catch(e){msg(UNR(),0)}}
+   keep(j.prof);setName(P.n);setSt('on');$('profBox').classList.remove('imp');fill();msg(LG('Profil créé ! Copie ton code de sauvegarde et garde-le.','Profile created! Copy your save code and keep it.'),1)}catch(e){msg(UNR(),0)}}
  // reprendre son profil ouvert sur un autre appareil (l'autre passe en invite)
  async function take(){msg(LG('Connexion…','Connecting…'),1);await sync(true);fill();
   if(ST==='on')msg(LG('Ton profil est maintenant actif ici. L’autre appareil passe en invité.','Your profile is now active here. The other device switches to guest.'),1);else msg(UNR(),0)}
@@ -11020,26 +11044,29 @@ const PROF=(()=>{
    if(!j.sid&&j._st!==409)return msg(UNR(),0);
    const prev=code();old(I);I=q;put(KI,I);P=Object.assign({},P0);MIG=null;
    if(j.sid){SID=j.sid;sput(KS,SID);keep(j.prof);setSt('on')}else{SID='';sput(KS,'');setSt('busy')}
-   const ip=$('nameInput');if(ip&&P.n)ip.value=P.n;fill();$('profImp').value='';
+   const ip=$('nameInput');if(ip&&P.n)ip.value=P.n;$('profBox').classList.remove('imp');fill();$('profImp').value='';
    msg((j.sid?LG('Profil récupéré : niveau ','Profile restored: level ')+lvlOf(P.xp)+'.':LG('Profil récupéré, mais il est ouvert sur un autre appareil : « Jouer ici » pour l’utiliser sur celui-ci.','Profile restored, but it is open on another device: “Play here” to use it on this one.'))+(prev?LG(' Ancien code de cet appareil (toujours valable) : ',' Previous code of this device (still valid): ')+prev:''),1)}catch(e){msg(UNR(),0)}}
  function init(){if(HEADLESS)return;load();
   const logo=document.querySelector('#menu .logo');if(!logo)return;
   const c=document.createElement('button');c.id='profChip';c.type='button';c.setAttribute('aria-label',LG('Mon profil','My profile'));
   c.innerHTML='<span class="pbg"><b>1</b></span><span class="pi"><span class="pn"></span><span class="pbar"><i></i></span><span class="pl"></span></span>';logo.insertAdjacentElement('afterend',c);c.onclick=open;
-  const b=document.createElement('div');b.id='profBox';b.innerHTML='<div class="ppPanel" role="dialog" aria-modal="true"><button class="ppX" aria-label="'+LG('Fermer','Close')+'">✕</button>'+
-   '<div class="ppGuest"><div class="ppGT">'+LG('Tu joues en invité','You are playing as a guest')+'</div><p>'+LG('Ta progression n’est pas sauvegardée. Crée ton profil pour gagner de l’XP et monter de niveau : il suffit d’un pseudo.','Your progress is not saved. Create your profile to earn XP and level up: all it takes is a name.')+'</p>'+
-    '<div class="ppRow"><input id="profNew" maxlength="14" autocomplete="off" placeholder="'+LG('Ton pseudo','Your name')+'"><button class="ppB" id="profMake">'+LG('Créer mon profil','Create my profile')+'</button></div><p class="ppMig"></p></div>'+
-   '<div class="ppBusyBox"><div class="ppGT">'+LG('Profil ouvert sur un autre appareil','Profile open on another device')+'</div><p>'+LG('Un profil ne peut jouer que sur un appareil (ou un onglet) à la fois. Tant qu’il est ouvert ailleurs, tu joues ici en invité.','A profile can only play on one device (or tab) at a time. While it is open elsewhere, you play here as a guest.')+'</p>'+
-    '<button class="ppB ppWide" id="profTake">'+LG('Jouer ici avec mon profil','Play here with my profile')+'</button><p class="ppSmall">'+LG('L’autre appareil passera en invité.','The other device will switch to guest.')+'</p></div>'+
-   '<div class="ppMain"><div class="ppHead"><span class="ppBadge"><b>1</b></span><div class="ppId"><label for="profName">'+LG('Pseudo','Name')+'</label><input id="profName" maxlength="14" autocomplete="off" placeholder="'+LG('Joueur','Player')+'"><span class="ppLv"></span></div></div>'+
-   '<div class="ppBar"><i></i></div><div class="ppXp"></div><div class="ppStats"></div></div>'+
-   '<p class="ppHow">'+LG('XP gagnée à la fin de chaque partie terminée : éliminations (+10), objectifs du mode, partie terminée (+50), victoire (+100), MVP (+50), première victoire du jour (+150). Une partie quittée ou non terminée ne rapporte rien. Contre l’IA, l’XP est divisée par deux (3 000 XP par jour au plus). L’XP est comptée par le serveur du jeu. Niveau maximum : 30.','XP is earned at the end of each finished game: eliminations (+10), mode objectives, game completed (+50), victory (+100), MVP (+50), first win of the day (+150). A game you leave or do not finish gives nothing. Against the AI, XP is halved (3,000 XP per day at most). XP is counted by the game server. Max level: 30.')+'</p>'+
-   '<div class="ppSave"><div class="ppCodeBox"><div class="ppT">'+LG('Code de sauvegarde','Save code')+'</div><p>'+LG('Ce code est la clé de ton profil et ne change jamais : garde-le pour le retrouver sur un autre appareil ou après avoir vidé le navigateur. Ne le partage pas.','This code is the key to your profile and never changes: keep it to get your profile back on another device or after clearing the browser. Do not share it.')+'</p>'+
-   '<div class="ppRow"><input id="profCode" readonly><button class="ppB" id="profCopy">'+LG('Copier','Copy')+'</button></div></div>'+
-   '<div class="ppT ppImpT"></div><div class="ppRow"><input id="profImp" placeholder="DTN2.…" autocomplete="off"><button class="ppB" id="profGo">'+LG('Importer','Import')+'</button></div>'+
-   '<div class="ppWarn">'+LG('Serveur du jeu injoignable pour le moment : le profil affiché est la dernière copie de ce navigateur.','Game server unreachable for now: the profile shown is this browser’s last copy.')+'</div><div id="profMsg" class="ppMsg"></div></div></div>';
+  const b=document.createElement('div');b.id='profBox';b.dataset.v='home';b.innerHTML='<div class="ppPanel" role="dialog" aria-modal="true">'+
+   '<div class="ppTop"><button class="ppBack" aria-label="'+LG('Retour','Back')+'">‹</button><span class="ppTitle"></span><button class="ppX" aria-label="'+LG('Fermer','Close')+'">✕</button></div>'+
+   '<div class="ppHome">'+
+    '<div class="ppGuest"><span class="ppGBadge"><b>+</b></span><p>'+LG('Crée ton profil pour sauvegarder ton XP.','Create your profile to save your XP.')+'</p>'+
+     '<div class="ppRow"><input id="profNew" maxlength="14" autocomplete="off" placeholder="'+LG('Ton pseudo','Your name')+'"><button class="ppB" id="profMake">'+LG('Créer','Create')+'</button></div><p class="ppMig"></p></div>'+
+    '<div class="ppBusyBox"><p>'+LG('Ton profil est ouvert sur un autre appareil.','Your profile is open on another device.')+'</p><button class="ppB ppWide" id="profTake">'+LG('Jouer ici avec mon profil','Play here with my profile')+'</button></div>'+
+    '<div class="ppMain"><div class="ppHead"><span class="ppBadge"><b>1</b></span><div class="ppId"><label for="profName">'+LG('Pseudo','Name')+'</label><input id="profName" maxlength="14" autocomplete="off" placeholder="'+LG('Joueur','Player')+'"><span class="ppLv"></span></div></div>'+
+     '<div class="ppBar"><i></i></div><div class="ppXp"></div><div class="ppStats"></div>'+
+     '<div class="ppCodeBox"><div class="ppT">'+LG('Code de sauvegarde','Save code')+'</div><div class="ppRow"><input id="profCode" readonly><button class="ppB" id="profCopy">'+LG('Copier','Copy')+'</button></div>'+
+      '<p class="ppHint">'+LG('Il ne change jamais : garde-le pour retrouver ton profil sur un autre appareil.','It never changes: keep it to get your profile back on another device.')+'</p></div></div>'+
+    '<div class="ppLinks"><button class="ppL" id="profInfoB">'+LG('Calcul de l’XP','How XP is counted')+'</button><button class="ppL" id="profImpB"></button></div>'+
+    '<div class="ppImp"><div class="ppRow"><input id="profImp" placeholder="DTN2.…" autocomplete="off"><button class="ppB" id="profGo">'+LG('Importer','Import')+'</button></div></div>'+
+    '<div class="ppWarn">'+LG('Serveur du jeu injoignable : profil affiché = dernière copie.','Game server unreachable: profile shown = last copy.')+'</div><div id="profMsg" class="ppMsg"></div>'+
+   '</div><div class="ppInfo"></div></div>';
   document.body.appendChild(b);
-  b.addEventListener('pointerdown',e=>{if(e.target===b)close()});b.querySelector('.ppX').onclick=close;addEventListener('keydown',e=>{if(e.key==='Escape'&&b.classList.contains('on'))close()});
+  b.addEventListener('pointerdown',e=>{if(e.target===b)close()});b.querySelector('.ppX').onclick=close;b.querySelector('.ppBack').onclick=home;
+  $('profInfoB').onclick=info;$('profImpB').onclick=()=>{b.classList.toggle('imp');if(b.classList.contains('imp'))$('profImp').focus()};addEventListener('keydown',e=>{if(e.key==='Escape'&&b.classList.contains('on'))b.dataset.v==='info'?home():close()});
   const ni=$('profName');for(const k of['input','change'])ni.addEventListener(k,()=>{const v=ni.value.trim().slice(0,14);if(v!==P.n)setName(v)});   // enregistre a chaque lettre (Tab est reservee au tableau des scores)
   $('profMake').onclick=make;$('profNew').addEventListener('keydown',e=>{if(e.key==='Enter')make()});$('profTake').onclick=take;$('profGo').onclick=imp;
   $('profCopy').onclick=async()=>{const t=$('profCode');if(!I)return;try{await navigator.clipboard.writeText(t.value);msg(LG('Code copié. Garde-le précieusement.','Code copied. Keep it safe.'),1)}catch(e){t.select();try{document.execCommand('copy');msg(LG('Code copié.','Code copied.'),1)}catch(x){msg(LG('Sélectionne le code et copie-le.','Select the code and copy it.'),0)}}};
