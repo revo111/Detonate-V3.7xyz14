@@ -270,23 +270,37 @@ const publicPlayers = room => room.players.map(p => ({
 // profil du joueur (identifiant + secret envoyes par le jeu) : son niveau s'affiche dans le salon et a la fin de la partie
 const pidOk = v => typeof v === 'string' && /^[A-Za-z0-9_-]{4,40}$/.test(v);
 function setProfile(room, p, m) {
-  if (!pidOk(m.pid) || !pidOk(m.ps)) return;
-  p.pid = m.pid; p.ps = m.ps;
-  PROFILES.peek(p.pid, p.ps).then(l => { p.lvl = l; if (room.players.includes(p)) lobby(room); }).catch(() => {});
+  if (!pidOk(m.pid) || !pidOk(m.ps) || !pidOk(m.psid)) return;
+  p.pid = m.pid; p.ps = m.ps; p.psid = m.psid;
+  PROFILES.peek(p.pid, p.ps, p.psid).then(l => {
+    if (l < 0) { if (p.psid === m.psid) { p.pid = p.ps = p.psid = null; p.lvl = 0; } }   // profil ouvert sur un autre appareil : joue en invite
+    else p.lvl = l;
+    if (room.players.includes(p)) lobby(room);
+  }).catch(() => {});
 }
+const noProfile = p => { p.pid = p.ps = p.psid = null; p.lvl = 0; };
+// statistiques d'une place (pour retirer ce que l'IA a fait pendant l'absence du joueur)
+const REP_F = ['k', 'd', 'p', 'df', 'fl', 'zc', 'cr', 'zk'];
+const repOf = (g, slot) => { try { return g.report(slot); } catch (e) { return null; } };
+const repAdd = (a, b, sign) => { const o = Object.assign({}, a || {}); if (b) for (const f of REP_F) o[f] = (o[f] || 0) + sign * (b[f] || 0); return o; };
 
 // fin de partie en ligne : le serveur calcule l'XP de chaque joueur connecte a partir de sa simulation
 // (le joueur n'envoie rien). Moins de 2 joueurs humains : partie contre l'IA, XP divisee par deux.
 const XP_MIN_MS = process.env.DETONATE_XP_MIN_MS !== undefined ? +process.env.DETONATE_XP_MIN_MS : 60 * 1000;   // arrive moins d'une minute avant la fin : pas d'XP
+const XP_AWAY_MAX = 0.25;   // deconnecte plus d'un quart de la partie : pas d'XP
 function awardXP(room) {
   const g = room.game, now = Date.now(), here = online(room), ai = here.length < 2, list = [], who = [];
   for (const p of here) {
     if (!p.pid) { send(p.ws, { type: 'xp', err: 'profile' }); continue; }
+    // partie quittee (bouton Quitter) ou absent plus d'un quart de la partie : 0 XP, meme en revenant avant la fin
+    const t0 = Math.max(room.gameT0 || now, p.gt0 || now), away = (p.away || 0) + (p.awayT0 ? now - p.awayT0 : 0);
+    if (p.quit || away > (now - t0) * XP_AWAY_MAX) { send(p.ws, { type: 'xp', err: 'left' }); continue; }
     if (now - (p.gt0 || now) < XP_MIN_MS) { send(p.ws, { type: 'xp', err: 'late' }); continue; }
-    let r = null;
-    try { r = g.report(p.slot); } catch (e) { console.error('Rapport de fin de partie :', e); }
+    let r = repOf(g, p.slot);
     if (!r) { send(p.ws, { type: 'xp', err: 'remote' }); continue; }
-    list.push({ id: p.pid, s: p.ps, r, ai }); who.push(p);
+    // ce que l'IA a fait a sa place (avant son arrivee, pendant une deconnexion) ne compte pas
+    if (p.sub) for (const f of REP_F) r[f] = Math.max(0, (r[f] || 0) - (p.sub[f] || 0));
+    list.push({ id: p.pid, s: p.ps, sid: p.psid, r, ai }); who.push(p);
   }
   if (!list.length) return;
   PROFILES.award(list).then(out => {
@@ -326,8 +340,8 @@ function startGame(room) {
     sendRoom(room, { type: 'tolobby', reason: 'error' });
     return lobby(room);
   }
-  room.xpDone = false;
-  room.players.forEach(p => { p.gt0 = p.ws ? Date.now() : 0; });
+  room.xpDone = false; room.gameT0 = Date.now();
+  room.players.forEach(p => { p.gt0 = p.ws ? Date.now() : 0; p.quit = false; p.away = 0; p.awayT0 = 0; p.sub = null; p.repL = null; });
   const STEP = 1000 / 60, t0 = performance.now();
   let n = 0, endAt = 0, emptyAt = 0, lagMax = 0, lagShown = 0, lagReset = t0;
   const tick = () => {
@@ -382,7 +396,7 @@ function toLobby(room, reason) {
 // joueur parti : on garde son jeton (il pourra revenir), sa place se libere
 function ghost(room, p) {
   room.players = room.players.filter(x => x !== p);
-  room.ghosts.set(p.tok, { id: p.id, name: p.name, slot: p.slot, vote: p.vote, pid: p.pid, ps: p.ps, lvl: p.lvl });
+  room.ghosts.set(p.tok, { id: p.id, name: p.name, slot: p.slot, vote: p.vote, pid: p.pid, ps: p.ps, psid: p.psid, lvl: p.lvl });
 }
 
 function launch(room) {
@@ -407,6 +421,7 @@ function leave(ws) {
   touch(room);
   if (room.started && room.game) {
     // la partie continue : l'IA reprend sa place ; il pourra revenir avec son jeton
+    if (!p.awayT0) { p.awayT0 = Date.now(); p.repL = repOf(room.game, p.slot); }
     room.game.leave(p.slot);
     sendRoom(room, { type: 'peer_left', slot: p.slot });
   } else {
@@ -433,13 +448,22 @@ function join(ws, m) {
     let slot = gh && !used.has(gh.slot) && gh.slot < capOf(room.map) ? gh.slot : freeSlot(room);
     if (slot === undefined) return send(ws, { type: 'error', message: 'Le salon est plein (' + capOf(room.map) + ' joueurs).' });
     p = { id: gh ? gh.id : newId(), tok: gh ? tok : newTok(), name: cleanName(m.name || (gh && gh.name)), slot, ws, ready: false, vote: gh ? gh.vote : null,
-      pid: gh && gh.pid, ps: gh && gh.ps, lvl: gh ? gh.lvl : 0 };
+      pid: gh && gh.pid, ps: gh && gh.ps, psid: gh && gh.psid, lvl: gh ? gh.lvl : 0 };
     if (gh) room.ghosts.delete(tok);
     room.players.push(p);
   }
   if (m.name) p.name = cleanName(m.name);
-  if (room.started && room.game && !p.gt0) p.gt0 = Date.now();   // arrive en cours de partie
-  if (pidOk(m.pid) && m.pid !== p.pid) setProfile(room, p, m);
+  if (room.started && room.game) {
+    const now = Date.now();
+    if (!p.gt0) { p.gt0 = now; p.sub = repOf(room.game, p.slot); p.away = 0; p.awayT0 = 0; p.repL = null; }   // arrive en cours de partie
+    else if (p.awayT0) {   // revient apres une deconnexion : le temps d'absence et ce que l'IA a fait sont retires
+      p.away = (p.away || 0) + now - p.awayT0; p.awayT0 = 0;
+      if (p.repL) p.sub = repAdd(p.sub, repAdd(repOf(room.game, p.slot), p.repL, -1), 1);
+      p.repL = null;
+    }
+  }
+  if (pidOk(m.pid)) { if (m.pid !== p.pid || m.psid !== p.psid) setProfile(room, p, m); }
+  else if (p.pid) noProfile(p);   // revient en invite (profil ouvert sur un autre appareil)
   ws.room = room;
   fixHost(room);
   touch(room);
@@ -543,6 +567,7 @@ wss.on('connection', ws => {
       }
 
       case 'leave':
+        if (room && p && room.started) p.quit = true;   // bouton Quitter pendant la partie : 0 XP pour cette partie
         return leave(ws);
     }
   });
