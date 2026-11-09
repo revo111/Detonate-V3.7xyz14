@@ -8,7 +8,7 @@
 // - Chaque profil a un identifiant et un secret (le « code de sauvegarde » du joueur). Le serveur n'en garde que l'empreinte.
 // - XP des parties en ligne : calculee par le serveur a partir de la simulation (le joueur n'envoie rien).
 // - XP des parties solo contre l'IA (elles tournent dans le navigateur) : le joueur envoie le resume de sa partie,
-//   le serveur le borne (valeurs plausibles, 90 s minimum entre deux parties, 3 000 XP par jour au plus) et divise par deux.
+//   le serveur le borne (valeurs plausibles, 90 s de jeu, 90 s entre deux parties, 3 000 XP par jour face aux bots).
 
 const fs = require('fs');
 const path = require('path');
@@ -32,27 +32,51 @@ const XMAX = TOT[LMAX];
 const lvlOf = xp => { let n = 1; while (n < LMAX && xp >= TOT[n + 1]) n++; return n; };
 
 // ---------- stockage ----------
-let DB = {}, dirty = false, saving = false;
+// Le code de sauvegarde d'un joueur ne doit jamais changer : le serveur refuse donc de gerer les profils (reponse 503,
+// le jeu garde le code et reessaie plus tard) plutot que de repartir d'une liste vide quand :
+//  - sur Fly, le volume n'est pas monte sur /data (les profils crees seraient perdus au deploiement suivant) ;
+//  - le fichier des profils existe mais ne peut pas etre lu (il n'est alors jamais ecrase).
+let DB = {}, dirty = false, saving = false, STORE_OK = true, lastBackup = '';
+const isMount = d => { try { return fs.statSync(d).dev !== fs.statSync('/').dev; } catch (e) { return false; } };
 if (IS_PRIMARY) {
-  try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (e) {}
-  try { DB = JSON.parse(fs.readFileSync(FILE, 'utf8')) || {}; } catch (e) { DB = {}; }
-  console.log('Profils : ' + Object.keys(DB).length + ' charges depuis ' + FILE + (HERE && DATA_DIR !== '/data' ? ' (ATTENTION : pas de volume /data, les profils seront perdus au prochain deploiement)' : ''));
+  if (HERE && !process.env.DATA_DIR && !isMount('/data')) {
+    STORE_OK = false;
+    console.error('Profils : ERREUR, pas de volume monte sur /data dans cette region. Profils desactives (le jeu reste jouable). Voir [mounts] dans fly.toml.');
+  } else {
+    try { fs.mkdirSync(DATA_DIR, { recursive: true }); } catch (e) {}
+    if (fs.existsSync(FILE)) {
+      try { DB = JSON.parse(fs.readFileSync(FILE, 'utf8')); if (!DB || typeof DB !== 'object') throw new Error('contenu invalide'); }
+      catch (e) { STORE_OK = false; DB = {}; console.error('Profils : ERREUR, ' + FILE + ' illisible (' + e.message + '). Fichier laisse intact, profils desactives. Restaurer une sauvegarde profiles-AAAA-MM-JJ.json du meme dossier.'); }
+    }
+    if (STORE_OK) console.log('Profils : ' + Object.keys(DB).length + ' charges depuis ' + FILE);
+  }
+}
+// copie du fichier une fois par jour (profiles-AAAA-MM-JJ.json, les 7 dernieres sont gardees)
+function backup() {
+  const d = new Date().toISOString().slice(0, 10);
+  if (d === lastBackup) return;
+  lastBackup = d;
+  try {
+    fs.copyFileSync(FILE, path.join(DATA_DIR, 'profiles-' + d + '.json'));
+    const old = fs.readdirSync(DATA_DIR).filter(f => /^profiles-\d{4}-\d{2}-\d{2}\.json$/.test(f)).sort().slice(0, -7);
+    old.forEach(f => { try { fs.unlinkSync(path.join(DATA_DIR, f)); } catch (e) {} });
+  } catch (e) { console.error('Profils : copie du jour impossible', e.message); }
 }
 function save(now) {
-  if (!IS_PRIMARY) return;
+  if (!IS_PRIMARY || !STORE_OK) return;
   dirty = true;
   if (saving && !now) return;
   saving = true;
   const run = () => {
     dirty = false;
     const tmp = FILE + '.tmp';
-    try { fs.writeFileSync(tmp, JSON.stringify(DB)); fs.renameSync(tmp, FILE); } catch (e) { console.error('Profils : ecriture impossible', e.message); }
+    try { fs.writeFileSync(tmp, JSON.stringify(DB)); fs.renameSync(tmp, FILE); backup(); } catch (e) { console.error('Profils : ecriture impossible', e.message); }
     saving = false;
     if (dirty) save();
   };
   if (now) run(); else setTimeout(run, 1500);
 }
-function flush() { if (IS_PRIMARY && (dirty || saving)) { saving = false; save(true); } }
+function flush() { if (IS_PRIMARY && STORE_OK && (dirty || saving)) { saving = false; save(true); } }
 
 const sha = s => crypto.createHash('sha256').update(String(s)).digest('hex');
 const day = () => new Date().toISOString().slice(0, 10);
@@ -66,27 +90,44 @@ function auth(id, s) {
   return P;
 }
 
+// ---------- une seule session par profil : un profil ne joue que sur un appareil (un onglet) a la fois ----------
+// Chaque page du jeu ouvre une session (login) et la garde avec un signal toutes les 20 s (ping). Un autre appareil
+// ne peut ouvrir le profil que si la session en cours est silencieuse depuis 75 s, ou en la reprenant (take) :
+// l'ancien appareil passe alors en invite. L'XP (solo et en ligne) n'est comptee que pour la session en cours.
+// Les sessions sont en memoire : apres un redemarrage du serveur, la premiere session qui se manifeste est reprise.
+const SESS = new Map();   // identifiant du profil -> { sid, t }
+const SESS_TTL = 75 * 1000;
+const newSid = () => crypto.randomBytes(12).toString('base64url');
+function sessOk(id, sid) {
+  if (typeof sid !== 'string' || !sid || sid.length > 40) return false;
+  const S = SESS.get(id);
+  if (!S) { SESS.set(id, { sid, t: Date.now() }); return true; }
+  if (S.sid !== sid) return false;
+  S.t = Date.now();
+  return true;
+}
+
 // ---------- calcul de l'XP d'une partie (meme bareme pour les parties en ligne et solo) ----------
 // r : { mode, k, d, p, df, fl, zc, cr, zk, wv, win, mvp } ; lignes [cle, xp, nombre] (le jeu traduit les cles)
-function xpFrom(r, ai, first) {
+function xpFrom(r, first) {
+  // bareme (V3.7) : tous les points divises par deux, plus de division par deux contre l'IA
+  // (le meme bareme est affiche dans le jeu : bouton « Calcul de l'XP » de la fenetre du profil)
   const L = [], add = (k, v, n) => { v = Math.round(v); if (v > 0) L.push([k, v, n || 0]); };
-  add('kills', r.k * 10, r.k);
+  add('kills', r.k * 5, r.k);
   switch (r.mode) {
-    case 'zombie': add('zombies', r.zk * 2, r.zk); add('waves', r.wv * 10, r.wv); break;
-    case 'cristal': add('crystals', r.cr * 30, r.cr); break;
-    case 'zones': add('zone', Math.min(150, r.zc * 0.5), r.zc); break;
-    case 'war': add('war', r.p * 20 + r.df * 15); break;
-    case 'hack': add('hack', r.p * 25 + r.fl * 40 + r.df * 20); break;
-    case 'tdm': add('flags', r.fl * 20, r.fl); break;
-    default: add('bomb', r.p * 25 + r.df * 30 + r.fl * 20);
+    case 'zombie': add('zombies', r.zk * 1, r.zk); add('waves', r.wv * 5, r.wv); break;
+    case 'cristal': add('crystals', r.cr * 15, r.cr); break;
+    case 'zones': add('zone', Math.min(75, r.zc * 0.25), r.zc); break;
+    case 'war': add('war', r.p * 10 + r.df * 7.5); break;
+    case 'hack': add('hack', r.p * 12.5 + r.fl * 20 + r.df * 10); break;
+    case 'tdm': add('flags', r.fl * 10, r.fl); break;
+    default: add('bomb', r.p * 12.5 + r.df * 15 + r.fl * 10);
   }
-  add('done', 50);
-  if (r.win) add('win', 100);
-  if (r.mvp && r.mode !== 'zombie') add('mvp', 50);
-  if (first) add('daily', 150);
-  let tot = L.reduce((s, l) => s + l[1], 0);
-  if (ai) { const t2 = Math.round(tot * 0.5); L.push(['ai', t2 - tot, 0]); tot = t2; }
-  return { L, tot };
+  add('done', 25);
+  if (r.win) add('win', 50);
+  if (r.mvp && r.mode !== 'zombie') add('mvp', 25);
+  if (first) add('daily', 75);
+  return { L, tot: L.reduce((s, l) => s + l[1], 0) };
 }
 const MODES = new Set(['zombie', 'cristal', 'zones', 'war', 'hack', 'tdm', 'bomb']);
 function cleanReport(r, solo) {
@@ -98,27 +139,29 @@ function cleanReport(r, solo) {
   return o;
 }
 // applique une partie a un profil ; renvoie le resultat affiche par le jeu
-function apply(P, r, ai, opt) {
+// bots : partie face aux bots (solo, ou salon prive avec moins de 2 joueurs humains) -> 3 000 XP par jour au plus
+const BOT_CAP = 3000;
+function apply(P, r, bots, opt) {
   opt = opt || {};
   const d = day(), first = !!r.win && P.day !== d;
-  let { L, tot } = xpFrom(r, ai, first);
+  let { L, tot } = xpFrom(r, first);
   let note = '';
+  if (P.sd !== d) { P.sd = d; P.sx = 0; }
   if (opt.solo) {
-    // parties solo : 90 s de jeu au moins, 90 s entre deux parties, 3 000 XP par jour au plus
-    if (P.sd !== d) { P.sd = d; P.sx = 0; }
+    // parties solo : 90 s de jeu au moins, 90 s entre deux parties
     const now = Date.now();
     if (num(opt.dur, 1e6) < 90) note = 'short';
     else if (now - (P.st || 0) < 90000) note = 'fast';
     // partie trop courte ou trop rapprochee : ni XP ni statistiques
-    if (note) return { L, tot: 0, x0: P.xp, x1: P.xp, l0: lvlOf(P.xp), l1: lvlOf(P.xp), ai: !!ai, note };
-    if (P.sx + tot > 3000) { tot = Math.max(0, 3000 - P.sx); note = 'cap'; }
-    P.st = now; P.sx += tot;
+    if (note) return { L, tot: 0, x0: P.xp, x1: P.xp, l0: lvlOf(P.xp), l1: lvlOf(P.xp), ai: !!bots, note };
+    P.st = now;
   }
+  if (bots) { if (P.sx + tot > BOT_CAP) { tot = Math.max(0, BOT_CAP - P.sx); note = 'cap'; } P.sx += tot; }
   const x0 = P.xp, x1 = Math.min(XMAX, x0 + tot);
   P.xp = x1; P.g++; if (r.win) P.w++; P.k += r.k; P.d += r.d; if (r.mvp && r.mode !== 'zombie') P.mvp++;
   if (first && tot > 0) P.day = d;
   save();
-  return { L, tot: x1 - x0, x0, x1, l0: lvlOf(x0), l1: lvlOf(x1), ai: !!ai, note };
+  return { L, tot: x1 - x0, x0, x1, l0: lvlOf(x0), l1: lvlOf(x1), ai: !!bots, note };
 }
 
 // ---------- creation (avec reprise du profil local de l'etape 1, plafonnee) ----------
@@ -133,7 +176,8 @@ function create(name, mig, ip) {
   const m = mig && typeof mig === 'object' ? mig : {};
   const P = { id, sk: sha(s), n: cleanName(name), xp: num(m.xp, 3000), g: num(m.g, 100), w: num(m.w, 100), k: num(m.k, 2000), d: num(m.d, 2000), mvp: num(m.mvp, 50), day: '', sd: '', sx: 0, st: 0, c: now, ls: now };
   DB[id] = P; save();
-  return { id, s, prof: pub(P) };
+  const sid = newSid(); SESS.set(id, { sid, t: now });
+  return { id, s, sid, prof: pub(P) };
 }
 
 // ---------- API HTTP (le jeu envoie du JSON en text/plain : pas de pre-requete CORS) ----------
@@ -154,6 +198,7 @@ async function http(req, res, url) {
     return res.end();
   }
   if (!IS_PRIMARY) return out(res, 503, { err: 'unavailable' });
+  if (!STORE_OK) return out(res, 503, { err: 'storage' });   // jamais « profil inconnu » : le jeu garde le code du joueur
   if (req.method !== 'POST') return out(res, 405, { err: 'method' });
   const m = await body(req);
   if (!m) return out(res, 400, { err: 'json' });
@@ -170,12 +215,23 @@ async function http(req, res, url) {
   }
   if (op === 'peek') {
     if (m.key !== KEY) return out(res, 403, { err: 'key' });
-    const P = auth(m.id, m.s);
-    return out(res, 200, { lvl: P ? lvlOf(P.xp) : 0 });
+    return out(res, 200, { lvl: peekLocal(m.id, m.s, m.sid) });
   }
   const P = auth(m.id, m.s);
   if (!P) return out(res, 404, { err: 'profile' });
   if (op === 'get') return out(res, 200, { prof: pub(P) });
+  // ouvrir le profil sur cet appareil : refuse (409 busy) s'il est en cours d'utilisation ailleurs, sauf reprise (take)
+  if (op === 'login') {
+    const S = SESS.get(P.id), now = Date.now();
+    if (S && S.sid !== m.sid && now - S.t < SESS_TTL && !m.take) return out(res, 409, { err: 'busy' });
+    const sid = S && S.sid === m.sid ? m.sid : newSid();
+    SESS.set(P.id, { sid, t: now });
+    return out(res, 200, { sid, prof: pub(P) });
+  }
+  if (op === 'logout') { const S = SESS.get(P.id); if (S && S.sid === m.sid) SESS.delete(P.id); return out(res, 200, { ok: 1 }); }
+  // toutes les autres operations : seulement pour la session en cours (sinon 409 kicked : le profil est ouvert ailleurs)
+  if (!sessOk(P.id, m.sid)) return out(res, 409, { err: 'kicked' });
+  if (op === 'ping') return out(res, 200, { ok: 1, prof: pub(P) });
   if (op === 'name') { const n = cleanName(m.n); if (n !== P.n) { P.n = n; save(); } return out(res, 200, { prof: pub(P) }); }
   if (op === 'solo') {
     const r = cleanReport(m.r, true);
@@ -187,9 +243,11 @@ async function http(req, res, url) {
 
 // ---------- appels entre serveurs ----------
 function awardLocal(list) {
+  if (!STORE_OK) return (Array.isArray(list) ? list : []).map(a => ({ id: a && a.id, err: 'remote' }));
   return (Array.isArray(list) ? list : []).slice(0, 32).map(a => {
     const P = auth(a && a.id, a && a.s);
     if (!P) return { id: a && a.id, err: 'profile' };
+    if (!sessOk(P.id, a.sid)) return { id: P.id, err: 'session' };   // profil ouvert sur un autre appareil pendant la partie
     const r = cleanReport(a.r, false);
     return { id: P.id, res: apply(P, r, !!a.ai), prof: pub(P) };
   });
@@ -215,12 +273,17 @@ async function award(list) {
   const j = await remote('award', { list });
   return j && j.list ? j.list : list.map(a => ({ id: a.id, err: 'remote' }));
 }
-// niveau d'un joueur (affiche dans le salon et dans le tableau de fin) ; 0 si inconnu
-async function peek(id, s) {
+// niveau d'un joueur (affiche dans le salon et dans le tableau de fin) ; 0 si inconnu, -1 si sa session n'est pas la session en cours
+function peekLocal(id, s, sid) {
+  const P = STORE_OK && auth(id, s);
+  if (!P) return 0;
+  return sessOk(P.id, sid) ? lvlOf(P.xp) : -1;
+}
+async function peek(id, s, sid) {
   if (!id || !s) return 0;
-  if (IS_PRIMARY) { const P = auth(id, s); return P ? lvlOf(P.xp) : 0; }
+  if (IS_PRIMARY) return peekLocal(id, s, sid);
   if (!APP && !process.env.PROFILE_URL) return 0;
-  const j = await remote('peek', { id, s });
+  const j = await remote('peek', { id, s, sid });
   return j && j.lvl ? j.lvl : 0;
 }
 
