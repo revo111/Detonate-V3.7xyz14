@@ -130,7 +130,7 @@ function xpFrom(r, first) {
   add('done', F[0]);
   if (r.win) add('win', F[1]);
   if (r.mvp && r.mode !== 'zombie') add('mvp', 25);
-  if (first) add('daily', 75);
+  if (first) add('daily', 150);
   return { L, tot: L.reduce((s, l) => s + l[1], 0) };
 }
 const MODES = new Set(['zombie', 'cristal', 'zones', 'war', 'hack', 'tdm', 'bomb']);
@@ -163,7 +163,7 @@ function apply(P, r, opt) {
     r.mode = S.mode;                                // le mode annonce au debut fait foi
   }
   let { L, tot } = xpFrom(r, first);
-  if (opt.solo) { const dl = first ? 75 : 0, max = Math.ceil(sec / 60 * SOLO_RATE) + dl; if (tot > max) { tot = max; note = 'rate'; } }
+  if (opt.solo) { const dl = first ? 150 : 0, max = Math.ceil(sec / 60 * SOLO_RATE) + dl; if (tot > max) { tot = max; note = 'rate'; } }
   const x0 = P.xp, x1 = Math.min(XMAX, x0 + tot);
   P.xp = x1; P.g++; if (r.win) P.w++; P.k += r.k; P.d += r.d; if (r.mvp && r.mode !== 'zombie') P.mvp++;
   if (first && tot > 0) P.day = d;
