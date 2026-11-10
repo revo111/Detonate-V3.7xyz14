@@ -425,6 +425,19 @@ body.inmenu #muteBtn svg,body.inmenu #fsBtn svg{width:20px;height:20px}
 /* vignette en cours de preparation : fondu a l'arrivee */
 #skinBox .skI{transition:opacity .25s}
 #skinBox .skI.ld{opacity:.35}
+/* boutique : prix sur la carte, barre d'achat sous la grille */
+#skinBox .skPr{position:absolute;top:4px;right:4px;z-index:1;padding:4px 7px 3px;border-radius:7px;background:linear-gradient(180deg,#ffd76a,#f2b33a);color:#1b1406;font:800 10.5px/1 var(--fd);box-shadow:0 2px 8px rgba(0,0,0,.35)}
+#skinBox .skBuy{display:none;flex:none;align-items:center;gap:12px;padding:10px 14px;border-top:1px solid rgba(255,215,106,.22);background:rgba(255,215,106,.06)}
+#skinBox .skBuy.on{display:flex}
+#skinBox .skBuyT{flex:1;min-width:0;font-size:13px;line-height:1.35;color:#eef2f8}
+#skinBox .skBuyT b{color:#ffd76a;font-family:var(--fd)}
+#skinBox .skBuyT small{display:block;margin-top:2px;font-size:11px;color:#9aa6b9}
+#skinBox .skBuyR{flex:none;display:flex;gap:8px}
+#skinBox .skBuyB{flex:none;height:36px;padding:0 18px;border:0;border-radius:999px;background:linear-gradient(180deg,#ffd76a,#f2b33a);color:#1b1406;font:800 13px/1 var(--fd);cursor:pointer}
+#skinBox .skBuyB:hover{filter:brightness(1.08)}
+#skinBox .skBuyX{flex:none;height:36px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:none;color:#c8d0dd;font:600 12.5px/1 var(--fd);cursor:pointer}
+@media (max-height:500px) and (orientation:landscape){#skinBox .skBuy{padding:6px 10px}#skinBox .skBuyT small{display:none}}
+#skinBox .skMsg:empty:has(+ .skBuy.on){display:none}
 </style></head><body>
 <div id="menu" data-v="mainMenu"><div id="mfade"></div><div class="panel">
 <header class="mtop"><h1 class="logo">DETONATE<span class="ver">V3.7</span></h1><div class="mtopR"><a id="founder" href="https://x.com/Revo_YHWH" target="_blank" rel="noopener noreferrer" aria-label="Revo sur X (@Revo_YHWH)"><span class="av"><img alt="Revo" width="40" height="40" src="data:image/webp;base64,UklGRmoJAABXRUJQVlA4IF4JAACQKgCdASqAAIAAPlUmkEWjoiGVCmzoOAVEsQBcNQsr/1Wzc8fgSIBsbXzAP1d6eXmG/aH1ePSn6AH9z/unW4egn+x3p0eyh+5P7me060k588uzS6M/ft17BZXDbXSRzw6RBgT12HvGIKPJz/TH4WKGYERkkKBPkFO/NKpvG2Esm/ThmAJatRLq+o5PELY8r4PxYNk9KSD+3itJGSN3iL1C3WPPTBHUGxbmrhSSpbTgRGPcUrIFAxkJVZ3vPKCGpAyfVi7bDAJE3rgcBzNqIlA09Njc3AUMIG8mqKnhBcpNUpPkGqDl8hVHz9mVJKximQugZDmEFKriiAmj0uVEPZpJZ/BXRE0pvRRH0+RvjShWhoLlmZALGkVlhAbdp1EDdTGll5ctxAJ5ngiMExLOCg8Hb02BcvpBrdFdAI3kjQTMnQDBJyKs7dgS4lSSLp736cGYELvwYmjnK/Kext4AAP78do+x25bIuKsGkTa/trMENwvtoW2pVRiOzFTUPWYRm02Nz5ELLwefQArZltp5bUULF1lveZ7j+0XK3xq0xBg6AcWDGfPHYU4hT/WydJhGou/7TBWdfqZcefVbpCMchNw7B9FgzX4JrdviIF99qB+QDBlOT3g4DoVLIBR/w6+BQHeZOZ1h3DlUd3ejdIVrBLP/jVeRRKCfSFrFz1ze0xIDLFFmNaln2bXTU+15OFqx6W8tDvNk3UAdntvBb+mm3dINFo/IfHVtV1ka3M7dONoREO4lRmjkQOVfzRYoDWnoqoMbXEk8G8QtVEBNya+UgR76bNZ+m5Bp/jqbLzgtZoW9atHSH6hdd0MMdGb7mJRtcxK4ek+VMI0Obf3q5LYis0qHnh5kWg6ktDw/iuTp/kiLE8N5JtoTpDpQldCAX01iRkSH1N3n2ScCwm1hGd3KT/63Kf9dGPxGMu5PsSTGUbs8D7JZ5R0gxmlz2vjYjht2V61vOOqv2AJf+xNiwdcKOVEOrhWWcGh0PECJR/nyAh+IkKbV/O2mtkPoH8ixNp9jTMcnRHc3hACsMJuz7MfxGWTnQ1L63SrJ64Xdo8sfjCt+j2ONSuIyLvk7hSFdsbNATrIOiqBNnqzYV92tHMrXYkAtCJ4kkt0tH9fzJhg1ULILihBy1z8UiHgHNK1Da7AcxjkTZoMKtevScqE+LPqdfMa0O1FT67boOTh5mOvQg8GvkpSsT8OZi+9dTMzjzVMv+04nC/v5hzr9yqOQOV4kmv31hz2jue/Evhcb6/FkQHX2yl1K0GYIBkExwEjV9rDax8jBljIUfihwGv4dSk4v/ymtPbyN1Sy/xiZIuq24V/Hg4y0sZ5PM5jTSEhPSC7G5ewyMrEDTXqnieKEKF3E/FzmR4hMWaMBnKY15DTt2Mr+AsgcWw7wxT9hm1eLFnDeF+XpvzxsG67c5lpdizZAiUYesqTwaDFwv4I56/zO+PxBx8OwwjOmw3k0MotJrr593S4G/6qPPvNFxVWp20deWQnefB62U7EI0V+VsudapNyZF9JRXnOg8r8BqrMdKCDcD2Z64321t0dJ5OyS9kNld2Eb7haOAkVYvibnYDjUGR3y+2zVYJYK3wr9hVydb86mVM7kp3ci+diSOYWGhEHnlQXjGl7AbzloHQm/4xz9MjiT0ZYzQKDo8/fbeitCfLW3kDJYw5acKs9K2nyIuk2QPqBF3G2lXhU9eMBV2G42Sxcdwr63PrNdPeUuRIHcaLZiqImWqshYdERReKpHRUXIt0+lgXtaeFuiApRXhVWnBoXVfVIKMrKDfM54jpH568ah+m9j8WySaJ/K2C3MNOTzUTzZgfmoJGI6wwwHDpXGZAkBbpjBspF2S6ACZY0UbjenBt1WxCCD5Ew9DLKp0Dhj/kpjsPdf6GNr/AC03KK7485Dak2kwNxe84h7diKD0/h8By0G/1XIyK39VtQF2zgjrhRW07DJcyVHq69i0TJyh49frOZgoOpNWgWgjKQJaHVSz5FLpylqsaAiL/8edItQ1QlypG774rSHujq0xjspjmCtVNuwEkLknDheuxqLFSde/uRXSGXqOx4/RAKL1h/0K3z9wdnSdotUTswFAfzBYAk+46DDc9fRm+DLOkQ56lo+SBx8jzjvSiwNO9jJgNh2j2cX0Au78k+Vt8LjpQ+75xQGY0RAg52BpI8jk6CgWopkLeTTBbE/wNcrOJ0nyZEVOh03okA+BvGHkNwBDpZAIbHSUhjxegonjkht2uV0zZ6jeM9XNG5SvVdrJ6JLbPQmL+89aWHImont1oXvT2JWtSsFFKwVuMweWS3XwSqBxKRj+IEfmdYU6IMki9cY0xLuubyYTLfGo5TEIofoinWcd1rWH4pQ2TEVKhaL3G8+jRrjzrKiQgfB43mieNmzDvFuq/uR+KiZZ/hwSZYpUU9/KhSaSmV0aK1AVXUQafc53ouXYYQqVx6/lq8YWAxdEGyKtDxLikX+/RzmNFp/z/hd5vpX29Pc9eBqmjsEbCl809N0SazfeAwmsL29GS1sYlCpi2QrfOuO3htekQKJWGQwB4rxko3LWbCyLIpcL6CrIRWh+Z+nYZ338TgtKcvocbqC9K4DNl/oZzDMLwQcgjtYl4xXz5biLJmi2yzNgn1zCCRWdTG7re2KfkiNKimNLFpILeJj4mduoCkzX4OtsH+sgzqXeTyhYSDYgecSGLEGJQXNM3aOHN6WG32/oa+Hyy7KiSM1IknrimGbZBVhvKB/2DF1TfW17sV0GKO+RCqQEN4jBJPnwgCvxvLcP54IQpUMIeXP/UJbMqHHj/xYn/FoG/cZdCzYFjwm0xMFvATryXQ7IpwIewKXtzuzFPMiimq7AI/mg4HhQ5jyrOrwfB9MOwA4Eyjk96M3b5PaKlTrgFnc0T8twbWIWUYsLrcmGt8LWud3FCDtM/m4dDDY0qVGaTI2XJgBu8w+f27YEHV18J7aZr0CY+MF3XLjagyy5MGkK+AHBrqIofDwqC5Q3Uefb8/Xai0d0Tb+cPsoaLpGaFJIy8Ik8vgnyJCKCFDBNdoGEH9vJd52IunFZzAViL0eWcgxX1VuwcE1bX+JbK1iT6hw7EXHEUtwnceD2vRx6bqcOs0t9nyX3sbba3DrirKEJtpyah5Sqsi12LJijd5fFpP3Nu6u8B5SppBMHe6SJCEFZvCtOxesWHuCZWjA7oyRT9a6FXhX+clPHgstKQgAAAAAA"></span><span class="who"><span class="role">Fondateur</span><span class="nm">Revo</span></span><span class="xl"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Suivre</span></a><div id="langSel"><button data-lang="fr">FR</button><button data-lang="en">EN</button></div></div></header>
@@ -11046,7 +11059,7 @@ const PROF=(()=>{
   if(!I&&c&&c.v===1)MIG={xp:c.xp,g:c.g,w:c.w,k:c.k,d:c.d,mvp:c.mvp};   // profil local de l'etape 1 : repris a la creation du profil (plafonne par le serveur)
   if(!P.n)P.n=gname()}
  const old=q=>{if(!q||!q.id)return;const h=(get(KH)||[]).filter(x=>x&&x.id!==q.id);h.unshift({id:q.id,s:q.s,srv:SRV,t:Date.now()});put(KH,h.slice(0,10))};   // anciens codes de cet appareil
- const keep=pr=>{if(!pr)return;P={n:pr.n||'',xp:pr.xp||0,lvl:pr.lvl||lvlOf(pr.xp||0),g:pr.g||0,w:pr.w||0,k:pr.k||0,d:pr.d||0,mvp:pr.mvp||0,sk:pr.sk||null,ska:pr.ska?1:0};put(KC,Object.assign({v:2},P));
+ const keep=pr=>{if(!pr)return;P={n:pr.n||'',xp:pr.xp||0,lvl:pr.lvl||lvlOf(pr.xp||0),g:pr.g||0,w:pr.w||0,k:pr.k||0,d:pr.d||0,mvp:pr.mvp||0,sk:pr.sk||null,ska:pr.ska?1:0,own:Array.isArray(pr.own)?pr.own:[]};put(KC,Object.assign({v:2},P));
   if(typeof SKIN!=='undefined'&&SKIN.fromProf)SKIN.fromProf(P.sk);ui()};   // skins equipes : ceux enregistres sur le serveur font foi
  async function api(op,b){const c=new AbortController(),t=setTimeout(()=>c.abort(),25000);
   try{const r=await fetch(httpBase()+'/api/profile/'+op,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(b),cache:'no-store',signal:c.signal});const j=await r.json().catch(()=>({}));j._st=r.status;return j}finally{clearTimeout(t)}}
@@ -11202,7 +11215,12 @@ const PROF=(()=>{
  // skins equipes : enregistres dans le profil sur le serveur ; dans un salon en ligne, montres tout de suite aux autres joueurs
  function saveSkins(sel){try{if(netMode&&netSocket&&netSocket.readyState===1)sendNet({type:'sk',sk:sel})}catch(e){}
   if(!isOn())return Promise.resolve(false);return api('skins',idb({sk:sel})).then(j=>{if(j.prof){keep(j.prof);return true}if(j._st===409)setSt('busy');return false}).catch(()=>false)}
- return{init,award,drawXP,ui,open,prog,need,TOT,LMAX,get:()=>P,code,report,hexBadge,lvlOfSlot,onXP,KD,state:()=>ST,saveSkins,isOn,lvlOf}})();
+ // boutique : prix (sans profil), achat (le serveur ouvre la page de paiement Stripe), retour de paiement (le serveur verifie)
+ let SHOPJ=null;
+ function shopInfo(){if(SHOPJ)return Promise.resolve(SHOPJ);return api('shop',{}).then(j=>{if(j&&j.prices){SHOPJ=j;return j}return{on:0,prices:{}}}).catch(()=>({on:0,prices:{}}))}
+ function buy(c,it){if(!isOn())return Promise.resolve({err:I?'session':'guest'});return api('buy',idb({c,it,ret:location.origin+location.pathname})).catch(()=>({err:'net'}))}
+ function claim(cs){if(!isOn())return Promise.resolve({err:'session'});return api('claim',idb({cs})).then(j=>{if(j.prof)keep(j.prof);if(j._st===409)setSt('busy');return j}).catch(()=>({err:'net'}))}
+ return{init,award,drawXP,ui,open,prog,need,TOT,LMAX,get:()=>P,code,report,hexBadge,lvlOfSlot,onXP,KD,state:()=>ST,saveSkins,isOn,lvlOf,shopInfo,buy,claim}})();
 // ===================== V3.7 : SKINS (tenue, bonnet, arme, sac, aura) =====================
 // 29 skins en 5 categories, une recompense par niveau (du niveau 2 au niveau 30), plus 25 skins de la boutique (skins_shop.js).
 // Les modeles sont faits pour la vue du jeu (camera presque au-dessus) : coiffes, epaules, sac dans le dos, arme, aura au sol.
@@ -11663,7 +11681,7 @@ const SKIN=(()=>{
  try{SEEN=new Set(JSON.parse(localStorage.getItem(KSEEN)||'[]'))}catch(e){}
  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(SEL))}catch(e){}},saveSeen=()=>{try{localStorage.setItem(KSEEN,JSON.stringify([...SEEN]))}catch(e){}};
  const prof=()=>typeof PROF!=='undefined'&&PROF.code()?PROF.get():null;
- const lvlNow=()=>{const p=prof();return p?(p.ska?99:p.lvl||0):0},unl=(c,id)=>!id||!!DEF[c][id].shop||lvlNow()>=DEF[c][id].lv;   // skins de la boutique : gratuits pendant les tests
+ const lvlNow=()=>{const p=prof();return p?(p.ska?99:p.lvl||0):0},owned=(c,id)=>{const p=prof();return!!p&&(!!p.ska||(Array.isArray(p.own)&&p.own.includes(c+':'+id)))},unl=(c,id)=>!id||(DEF[c][id].shop?owned(c,id):lvlNow()>=DEF[c][id].lv);   // skins de la boutique : achetes (liste « own » du profil, tenue par le serveur)
  const worn=()=>{const w={};for(const k in SEL)w[k]=unl(k,SEL[k])?SEL[k]:'';return w},keyOf=w=>w?w.o+'|'+w.h+'|'+w.g+'|'+w.b+'|'+w.a:'';
  // envoi au serveur (profil + salon en ligne) ; s'il echoue (serveur injoignable), renvoye des que le profil revient
  function push(){if(typeof PROF==='undefined')return;PEND=true;PROF.saveSkins(Object.assign({},SEL)).then(ok=>{if(ok)PEND=false})}
@@ -11744,30 +11762,54 @@ const SKIN=(()=>{
  function list(){TQ=[];const D=DEF[CAT],lv=lvlNow(),cur=Object.assign({},worn(),TRY)[CAT],ids=Object.keys(D).sort((a,b)=>(D[a].shop||0)-(D[b].shop||0)||(D[a].shop?D[a].r-D[b].r:D[a].lv-D[b].lv));let sep=0;
   $('skTabs').innerHTML=CATS.map(c=>'<button class="skTab'+(c[0]===CAT?' on':'')+'" data-c="'+c[0]+'">'+esc(LGn(c[1]))+'</button>').join('');
   $('skGrid').innerHTML='<button class="skC def'+(cur?'':' on')+'" data-id=""><span class="skI skNo">∅</span><span class="skN">'+LG('Par défaut','Default')+'</span><span class="skL"> </span></button>'+
-   ids.map(id=>{const it=D[id],ok=unl(CAT,id),r=rarOf(it),nw=ok&&!it.shop&&!SEEN.has(CAT+':'+id),on=cur===id,hd=it.shop&&!sep++?'<div class="skSep"><b>'+LG('Boutique','Shop')+'</b><span>'+LG('gratuit pendant les tests','free during testing')+'</span></div>':'';
-    return hd+'<button class="skC r'+r+(on?' on':'')+(ok?'':' lock')+'" data-id="'+id+'" style="'+RSTY(r)+'">'+(nw?'<span class="skNew">'+LG('NOUVEAU','NEW')+'</span>':'')+
-     (on&&ok?'<span class="skOn">✓</span>':ok?'':'<span class="skLk">🔒 '+LG('Niv. ','Lv. ')+it.lv+'</span>')+
+   ids.map(id=>{const it=D[id],ok=unl(CAT,id),r=rarOf(it),nw=ok&&!it.shop&&!SEEN.has(CAT+':'+id),on=cur===id,hd=it.shop&&!sep++?'<div class="skSep"><b>'+LG('Boutique','Shop')+'</b><span>'+(!SHOPI?'…':SHOPI.free?LG('gratuit sur ce serveur de test','free on this test server'):SHOPI.on?LG('paiement sécurisé par Stripe','secure payment by Stripe'):LG('bientôt disponible','coming soon'))+'</span></div>':'',pr=it.shop&&!ok?priceOf(CAT,id):0;
+    return hd+'<button class="skC r'+r+(on?' on':'')+(ok?'':it.shop?' sale':' lock')+'" data-id="'+id+'" style="'+RSTY(r)+'">'+(nw?'<span class="skNew">'+LG('NOUVEAU','NEW')+'</span>':'')+
+     (on&&ok?'<span class="skOn">✓</span>':ok?'':it.shop?'<span class="skPr">'+(SHOPI&&SHOPI.on&&pr?money(pr):'…')+'</span>':'<span class="skLk">🔒 '+LG('Niv. ','Lv. ')+it.lv+'</span>')+
      (TH[CAT+id+132]?'<img class="skI" alt="" src="'+TH[CAT+id+132]+'">':(TQ.push({c:CAT,id}),'<img class="skI ld" alt="" data-k="'+CAT+id+'" src="'+PX+'">'))+'<span class="skN">'+esc(LGn(it.n))+'</span><span class="skL">'+esc(LGn(RARN[r]))+'</span></button>'}).join('');
   $('skTabs').querySelectorAll('.skTab').forEach(t=>t.classList.toggle('nw',unseen(t.dataset.c)>0&&t.dataset.c!==CAT));
   if(lv)for(const id of ids)if(!D[id].shop&&lv>=D[id].lv)SEEN.add(CAT+':'+id);saveSeen();if(typeof PROF!=='undefined')PROF.ui()}
  // skins debloques pas encore vus dans le casier (point dore sur la pastille du profil)
  function unseen(c){const lv=lvlNow();if(!lv)return 0;let n=0;for(const k in DEF)if(!c||c===k)for(const id in DEF[k])if(!DEF[k][id].shop&&lv>=DEF[k][id].lv&&!SEEN.has(k+':'+id))n++;return n}
  function say(t,ok){const m=$('skMsg');m.textContent=t;m.className='skMsg'+(ok?' ok':'')}
- function pick(id){const D=DEF[CAT];if(!id){SEL[CAT]='';delete TRY[CAT];save();push();say(LG('Skin retiré.','Skin removed.'),1)}
+ function pick(id){const D=DEF[CAT];hideBuy();if(!id){SEL[CAT]='';delete TRY[CAT];save();push();say(LG('Skin retiré.','Skin removed.'),1)}
   else if(unl(CAT,id)){SEL[CAT]=id;delete TRY[CAT];save();push();say(LGn(D[id].n)+LG(' : équipé.',': equipped.'),1)}
+  else if(D[id].shop){TRY[CAT]=id;say('',1);buyBar(CAT,id,0)}
   else{TRY[CAT]=id;say(LGn(D[id].n)+LG(' : essai. Se débloque au niveau ',': preview. Unlocks at level ')+D[id].lv+(lvlNow()?'.':LG(' (crée ton profil pour gagner des niveaux).',' (create your profile to earn levels).')),0)}
   list()}
- function open(){const b=$('skinBox');if(!b)return;TRY={};b.classList.add('on');pvInit();PV.zm=PV.zmT=1;PV.cur=null;list();say(lvlNow()?'':LG('Crée ton profil pour débloquer des skins en montant de niveau.','Create your profile to unlock skins as you level up.'),0);cancelAnimationFrame(RAF);pvLoop();try{uiClick()}catch(e){}}
- function close(){const b=$('skinBox');b.classList.remove('on');cancelAnimationFrame(RAF);TRY={};TQ=[];if(PV){apply(PV.man,null);PV.key='x';PV.lt=0}}
+ // ---------- boutique : achat d'un skin (paiement sur la page de Stripe, puis retour dans le jeu) ----------
+ let SHOPI=null,BUY=null;   // SHOPI : prix et etat de la boutique (serveur) ; BUY : { c, id, step 0 prix | 1 confirmation | 2 ouverture }
+ const priceOf=(c,id)=>SHOPI&&SHOPI.prices&&SHOPI.prices[c]&&SHOPI.prices[c][id]||0;
+ const money=v=>{try{return new Intl.NumberFormat(LANG==='en'?'en-US':'fr-FR',{style:'currency',currency:String(SHOPI&&SHOPI.cur||'eur').toUpperCase()}).format(v/100)}catch(e){return(v/100).toFixed(2)+' €'}};
+ function shopLoad(){if(typeof PROF==='undefined'||!PROF.shopInfo||(SHOPI&&SHOPI.prices&&Object.keys(SHOPI.prices).length))return;PROF.shopInfo().then(j=>{SHOPI=j;const b=$('skinBox');if(b&&b.classList.contains('on')){list();if(BUY)buyBar(BUY.c,BUY.id,BUY.step)}})}
+ function hideBuy(){BUY=null;const b=$('skBuy');if(b){b.className='skBuy';b.innerHTML=''}}
+ function buyBar(c,id,step){const b=$('skBuy');if(!b)return;BUY={c,id,step:step||0};const pr=priceOf(c,id),nm=esc(LGn(DEF[c][id].n)),gs=typeof PROF==='undefined'||!PROF.code();let h;
+  if(!SHOPI||!SHOPI.on||!pr)h='<span class="skBuyT">'+nm+LG(' : essai. Boutique bientôt disponible.',': preview. Shop coming soon.')+'</span>';
+  else if(gs)h='<span class="skBuyT">'+nm+' · <b>'+money(pr)+'</b><small>'+LG('Crée ton profil pour acheter : le skin y sera enregistré.','Create your profile to buy: the skin is saved to it.')+'</small></span><button class="skBuyB" data-a="prof">'+LG('Créer mon profil','Create my profile')+'</button>';
+  else if(BUY.step===0)h='<span class="skBuyT">'+nm+' · <b>'+money(pr)+'</b><small>'+LG('Essai sur ton personnage.','Previewing on your character.')+'</small></span><button class="skBuyB" data-a="go">'+LG('Acheter','Buy')+'</button>';
+  else if(BUY.step===1)h='<span class="skBuyT"><b>'+nm+' · '+money(pr)+'</b><small>'+LG('Paiement sécurisé par Stripe. Livraison immédiate dans le jeu : en continuant, tu renonces au droit de rétractation de 14 jours.','Secure payment by Stripe. Delivered instantly in the game: by continuing, you waive the 14-day withdrawal right.')+'</small></span><span class="skBuyR"><button class="skBuyX" data-a="no">'+LG('Annuler','Cancel')+'</button><button class="skBuyB" data-a="pay">'+LG('Payer','Pay')+'</button></span>';
+  else h='<span class="skBuyT">'+LG('Ouverture de la page de paiement…','Opening the payment page…')+'</span>';
+  b.innerHTML=h;b.className='skBuy on'}
+ async function buyAct(a){if(!BUY)return;const{c,id}=BUY;try{uiClick()}catch(e){}
+  if(a==='prof'){close();try{PROF.open()}catch(e){}return}
+  if(a==='go')return buyBar(c,id,1);
+  if(a==='no')return buyBar(c,id,0);
+  if(a!=='pay')return;
+  if(!PROF.isOn()){say(LG('Ton profil n’est pas connecté sur cet appareil : réessaie dans un instant.','Your profile is not connected on this device: try again in a moment.'),0);return}
+  buyBar(c,id,2);const j=await PROF.buy(c,id);
+  if(j&&typeof j.url==='string'&&/^(https:\/\/|http:\/\/localhost[:/])/.test(j.url)){location.href=j.url;return}
+  buyBar(c,id,0);say(j&&j.err==='owned'?LG('Tu possèdes déjà ce skin.','You already own this skin.'):j&&j.err==='shop'?LG('La boutique n’est pas encore ouverte sur ce serveur.','The shop is not open on this server yet.'):LG('Paiement impossible pour le moment. Réessaie plus tard.','Payment unavailable right now. Try again later.'),0)}
+ function open(){const b=$('skinBox');if(!b)return;TRY={};hideBuy();shopLoad();b.classList.add('on');pvInit();PV.zm=PV.zmT=1;PV.cur=null;list();say(lvlNow()?'':LG('Crée ton profil pour débloquer des skins en montant de niveau.','Create your profile to unlock skins as you level up.'),0);cancelAnimationFrame(RAF);pvLoop();try{uiClick()}catch(e){}}
+ function close(){const b=$('skinBox');b.classList.remove('on');cancelAnimationFrame(RAF);TRY={};TQ=[];hideBuy();if(PV){apply(PV.man,null);PV.key='x';PV.lt=0}}
  function init(){const b=document.createElement('div');b.id='skinBox';b.innerHTML='<div class="skPanel" role="dialog" aria-modal="true"><div class="skTop"><span class="skTitle">'+LG('Skins','Skins')+'</span><button class="skX" aria-label="'+LG('Fermer','Close')+'">✕</button></div>'+
    '<div class="skBody"><div class="skView"><canvas id="skCv"></canvas><button class="skVw" id="skVw">'+LG('Vue de jeu','Game view')+'</button></div>'+
-   '<div class="skSide"><div class="skTabs" id="skTabs"></div><div class="skGrid" id="skGrid"></div><div class="skMsg" id="skMsg"></div></div></div></div>';
+   '<div class="skSide"><div class="skTabs" id="skTabs"></div><div class="skGrid" id="skGrid"></div><div class="skMsg" id="skMsg"></div><div class="skBuy" id="skBuy"></div></div></div></div>';
   document.body.appendChild(b);b.addEventListener('pointerdown',e=>{if(e.target===b)close()});b.querySelector('.skX').onclick=close;
   // le casier garde ses appuis : sans cela, le jeu capturait le pointeur pour son propre canevas et l'apercu ne recevait plus les mouvements
   for(const k of['pointerdown','pointermove','pointerup','pointercancel'])b.addEventListener(k,e=>e.stopPropagation());
   addEventListener('keydown',e=>{if(e.key==='Escape'&&b.classList.contains('on'))close()});
-  $('skTabs').addEventListener('click',e=>{const t=e.target.closest('.skTab');if(t){CAT=t.dataset.c;list();say('',1)}});
+  $('skTabs').addEventListener('click',e=>{const t=e.target.closest('.skTab');if(t){CAT=t.dataset.c;hideBuy();list();say('',1)}});
   $('skGrid').addEventListener('click',e=>{const t=e.target.closest('.skC');if(t)pick(t.dataset.id)});
+  $('skBuy').addEventListener('click',e=>{const t=e.target.closest('button[data-a]');if(t)buyAct(t.dataset.a)});
   $('skVw').onclick=()=>{PV.top=PV.top?0:1;$('skVw').textContent=PV.top?LG('Vue 3/4','3/4 view'):LG('Vue de jeu','Game view')};
   // rotation au doigt ou a la souris : gauche-droite fait tourner, haut-bas incline la vue 3/4 ; elan au lacher
   // zoom : molette ou pincement a deux doigts (jusqu'a 2,5 fois plus pres) ; double-clic ou double tape : tout le skin a nouveau
@@ -11805,6 +11847,22 @@ const SKIN=(()=>{
   // la carte se ferme toute seule quand l'ecran de fin disparait
   setInterval(()=>{if(b.classList.contains('on')&&typeof st!=='undefined'&&st.s!=='end')shut()},500)}
  init();initRew();
+ // retour de la page de paiement Stripe (?shop=ok&cs=... ou ?shop=cancel) : le serveur verifie le paiement aupres de Stripe,
+ // puis le skin achete est equipe et le casier s'ouvre dessus
+ {let q=null;try{q=new URLSearchParams(location.search)}catch(e){}const sh=q&&q.get('shop'),cs=q&&q.get('cs')||'';
+  if(sh){try{history.replaceState(null,'',location.pathname+location.hash)}catch(e){}
+   const done=(c,t,ok)=>{if(c&&DEF[c])CAT=c;open();say(t,ok)};
+   if(sh==='cancel')setTimeout(()=>done('',LG('Paiement annulé : aucun montant n’a été prélevé.','Payment cancelled: you were not charged.'),0),600);
+   else if(sh==='ok'&&/^cs_[A-Za-z0-9_]+$/.test(cs)){let n=0;const tryC=async()=>{n++;
+     if(typeof PROF==='undefined'||!PROF.isOn()){if(n<40)return setTimeout(tryC,500);return done('',LG('Paiement reçu. Ouvre ton profil sur cet appareil pour récupérer ton skin.','Payment received. Open your profile on this device to get your skin.'),0)}
+     const j=await PROF.claim(cs);
+     if(j&&j.st==='paid'&&j.c&&DEF[j.c]&&DEF[j.c][j.it]){SEL[j.c]=j.it;save();push();done(j.c,LG('Merci ! ','Thank you! ')+LGn(DEF[j.c][j.it].n)+LG(' est à toi et équipé.',' is yours and equipped.'),1);try{boostSnd()}catch(e){}}
+     else if(j&&j.st==='pending'&&n<70)setTimeout(tryC,2000);
+     else done('',LG('Paiement en cours de vérification : ton skin apparaîtra dans le casier dès sa confirmation.','Payment being verified: your skin will appear in the locker once confirmed.'),0)};
+    setTimeout(tryC,300)}}}
+ // salon en ligne : le jeu annonce ses skins au serveur en entrant dans un salon, puis a chaque changement (avec ou sans profil),
+ // pour que tous les joueurs du salon les voient ; le serveur ne garde que ceux auxquels le joueur a droit
+ {let NK='';setInterval(()=>{try{const on=typeof netMode!=='undefined'&&netMode&&typeof netSocket!=='undefined'&&netSocket&&netSocket.readyState===1&&netRoomCode,k=on?netRoomCode+'|'+keyOf(SEL):'';if(k&&k!==NK)sendNet({type:'sk',sk:Object.assign({},SEL)});NK=k}catch(e){}},600)}
  // pendant que le casier est ouvert, le decor du menu (cache derriere) n'est plus redessine : la carte graphique sert a l'apercu
  if(typeof MENU!=='undefined'&&typeof MENU.frame==='function'){const f0=MENU.frame;let sw=0,sh=0;MENU.frame=function(){const b=$('skinBox'),o=b&&b.classList.contains('on');if(o&&innerWidth===sw&&innerHeight===sh)return;sw=innerWidth;sh=innerHeight;return f0.apply(this,arguments)}}
  return{sync,open,close,apply,clear,tick,thumb,CATS,DEF,worn,sel:()=>SEL,set:(c,id)=>{SEL[c]=id;save()},pv:()=>PV,tv:()=>tvInit(),RAR,rarOf,fromProf,announce,rewards,nextReward,unseen}})();
