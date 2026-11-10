@@ -334,7 +334,8 @@ body.inmenu #muteBtn svg,body.inmenu #fsBtn svg{width:20px;height:20px}
 #skinBox .skX:hover{color:#fff;border-color:rgba(255,255,255,.3)}
 #skinBox .skBody{flex:1;min-height:0;display:flex}
 #skinBox .skView{position:relative;flex:0 0 42%;min-width:0;background:radial-gradient(ellipse at 50% 62%,rgba(60,78,120,.34),rgba(9,12,20,0) 70%)}
-#skinBox #skCv{position:static;display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#skinBox #skCv{position:static;display:block;width:100%;height:100%;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+#skinBox #skCv.drag{cursor:grabbing}
 #skinBox .skVw{position:absolute;left:12px;bottom:12px;height:34px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.16);background:rgba(9,12,20,.7);color:#c8d0dd;font:600 12.5px/1 var(--fd);cursor:pointer}
 #skinBox .skVw:hover{border-color:rgba(255,207,90,.6);color:#fff}
 #skinBox .skSide{flex:1;min-width:0;display:flex;flex-direction:column;border-left:1px solid rgba(255,255,255,.07)}
@@ -421,6 +422,9 @@ body.inmenu #muteBtn svg,body.inmenu #fsBtn svg{width:20px;height:20px}
 #skinBox .skSep{grid-column:1/-1;display:flex;align-items:baseline;gap:10px;margin:8px 0 0;padding:9px 2px 2px;border-top:1px solid rgba(255,255,255,.09)}
 #skinBox .skSep b{font:800 12px/1 var(--fd);letter-spacing:.12em;text-transform:uppercase;color:#ffd76a}
 #skinBox .skSep span{font:600 10.5px/1 var(--fd);color:#8d99ab}
+/* vignette en cours de preparation : fondu a l'arrivee */
+#skinBox .skI{transition:opacity .25s}
+#skinBox .skI.ld{opacity:.35}
 </style></head><body>
 <div id="menu" data-v="mainMenu"><div id="mfade"></div><div class="panel">
 <header class="mtop"><h1 class="logo">DETONATE<span class="ver">V3.7</span></h1><div class="mtopR"><a id="founder" href="https://x.com/Revo_YHWH" target="_blank" rel="noopener noreferrer" aria-label="Revo sur X (@Revo_YHWH)"><span class="av"><img alt="Revo" width="40" height="40" src="data:image/webp;base64,UklGRmoJAABXRUJQVlA4IF4JAACQKgCdASqAAIAAPlUmkEWjoiGVCmzoOAVEsQBcNQsr/1Wzc8fgSIBsbXzAP1d6eXmG/aH1ePSn6AH9z/unW4egn+x3p0eyh+5P7me060k588uzS6M/ft17BZXDbXSRzw6RBgT12HvGIKPJz/TH4WKGYERkkKBPkFO/NKpvG2Esm/ThmAJatRLq+o5PELY8r4PxYNk9KSD+3itJGSN3iL1C3WPPTBHUGxbmrhSSpbTgRGPcUrIFAxkJVZ3vPKCGpAyfVi7bDAJE3rgcBzNqIlA09Njc3AUMIG8mqKnhBcpNUpPkGqDl8hVHz9mVJKximQugZDmEFKriiAmj0uVEPZpJZ/BXRE0pvRRH0+RvjShWhoLlmZALGkVlhAbdp1EDdTGll5ctxAJ5ngiMExLOCg8Hb02BcvpBrdFdAI3kjQTMnQDBJyKs7dgS4lSSLp736cGYELvwYmjnK/Kext4AAP78do+x25bIuKsGkTa/trMENwvtoW2pVRiOzFTUPWYRm02Nz5ELLwefQArZltp5bUULF1lveZ7j+0XK3xq0xBg6AcWDGfPHYU4hT/WydJhGou/7TBWdfqZcefVbpCMchNw7B9FgzX4JrdviIF99qB+QDBlOT3g4DoVLIBR/w6+BQHeZOZ1h3DlUd3ejdIVrBLP/jVeRRKCfSFrFz1ze0xIDLFFmNaln2bXTU+15OFqx6W8tDvNk3UAdntvBb+mm3dINFo/IfHVtV1ka3M7dONoREO4lRmjkQOVfzRYoDWnoqoMbXEk8G8QtVEBNya+UgR76bNZ+m5Bp/jqbLzgtZoW9atHSH6hdd0MMdGb7mJRtcxK4ek+VMI0Obf3q5LYis0qHnh5kWg6ktDw/iuTp/kiLE8N5JtoTpDpQldCAX01iRkSH1N3n2ScCwm1hGd3KT/63Kf9dGPxGMu5PsSTGUbs8D7JZ5R0gxmlz2vjYjht2V61vOOqv2AJf+xNiwdcKOVEOrhWWcGh0PECJR/nyAh+IkKbV/O2mtkPoH8ixNp9jTMcnRHc3hACsMJuz7MfxGWTnQ1L63SrJ64Xdo8sfjCt+j2ONSuIyLvk7hSFdsbNATrIOiqBNnqzYV92tHMrXYkAtCJ4kkt0tH9fzJhg1ULILihBy1z8UiHgHNK1Da7AcxjkTZoMKtevScqE+LPqdfMa0O1FT67boOTh5mOvQg8GvkpSsT8OZi+9dTMzjzVMv+04nC/v5hzr9yqOQOV4kmv31hz2jue/Evhcb6/FkQHX2yl1K0GYIBkExwEjV9rDax8jBljIUfihwGv4dSk4v/ymtPbyN1Sy/xiZIuq24V/Hg4y0sZ5PM5jTSEhPSC7G5ewyMrEDTXqnieKEKF3E/FzmR4hMWaMBnKY15DTt2Mr+AsgcWw7wxT9hm1eLFnDeF+XpvzxsG67c5lpdizZAiUYesqTwaDFwv4I56/zO+PxBx8OwwjOmw3k0MotJrr593S4G/6qPPvNFxVWp20deWQnefB62U7EI0V+VsudapNyZF9JRXnOg8r8BqrMdKCDcD2Z64321t0dJ5OyS9kNld2Eb7haOAkVYvibnYDjUGR3y+2zVYJYK3wr9hVydb86mVM7kp3ci+diSOYWGhEHnlQXjGl7AbzloHQm/4xz9MjiT0ZYzQKDo8/fbeitCfLW3kDJYw5acKs9K2nyIuk2QPqBF3G2lXhU9eMBV2G42Sxcdwr63PrNdPeUuRIHcaLZiqImWqshYdERReKpHRUXIt0+lgXtaeFuiApRXhVWnBoXVfVIKMrKDfM54jpH568ah+m9j8WySaJ/K2C3MNOTzUTzZgfmoJGI6wwwHDpXGZAkBbpjBspF2S6ACZY0UbjenBt1WxCCD5Ew9DLKp0Dhj/kpjsPdf6GNr/AC03KK7485Dak2kwNxe84h7diKD0/h8By0G/1XIyK39VtQF2zgjrhRW07DJcyVHq69i0TJyh49frOZgoOpNWgWgjKQJaHVSz5FLpylqsaAiL/8edItQ1QlypG774rSHujq0xjspjmCtVNuwEkLknDheuxqLFSde/uRXSGXqOx4/RAKL1h/0K3z9wdnSdotUTswFAfzBYAk+46DDc9fRm+DLOkQ56lo+SBx8jzjvSiwNO9jJgNh2j2cX0Au78k+Vt8LjpQ+75xQGY0RAg52BpI8jk6CgWopkLeTTBbE/wNcrOJ0nyZEVOh03okA+BvGHkNwBDpZAIbHSUhjxegonjkht2uV0zZ6jeM9XNG5SvVdrJ6JLbPQmL+89aWHImont1oXvT2JWtSsFFKwVuMweWS3XwSqBxKRj+IEfmdYU6IMki9cY0xLuubyYTLfGo5TEIofoinWcd1rWH4pQ2TEVKhaL3G8+jRrjzrKiQgfB43mieNmzDvFuq/uR+KiZZ/hwSZYpUU9/KhSaSmV0aK1AVXUQafc53ouXYYQqVx6/lq8YWAxdEGyKtDxLikX+/RzmNFp/z/hd5vpX29Pc9eBqmjsEbCl809N0SazfeAwmsL29GS1sYlCpi2QrfOuO3htekQKJWGQwB4rxko3LWbCyLIpcL6CrIRWh+Z+nYZ338TgtKcvocbqC9K4DNl/oZzDMLwQcgjtYl4xXz5biLJmi2yzNgn1zCCRWdTG7re2KfkiNKimNLFpILeJj4mduoCkzX4OtsH+sgzqXeTyhYSDYgecSGLEGJQXNM3aOHN6WG32/oa+Hyy7KiSM1IknrimGbZBVhvKB/2DF1TfW17sV0GKO+RCqQEN4jBJPnwgCvxvLcP54IQpUMIeXP/UJbMqHHj/xYn/FoG/cZdCzYFjwm0xMFvATryXQ7IpwIewKXtzuzFPMiimq7AI/mg4HhQ5jyrOrwfB9MOwA4Eyjk96M3b5PaKlTrgFnc0T8twbWIWUYsLrcmGt8LWud3FCDtM/m4dDDY0qVGaTI2XJgBu8w+f27YEHV18J7aZr0CY+MF3XLjagyy5MGkK+AHBrqIofDwqC5Q3Uefb8/Xai0d0Tb+cPsoaLpGaFJIy8Ik8vgnyJCKCFDBNdoGEH9vJd52IunFZzAViL0eWcgxX1VuwcE1bX+JbK1iT6hw7EXHEUtwnceD2vRx6bqcOs0t9nyX3sbba3DrirKEJtpyah5Sqsi12LJijd5fFpP3Nu6u8B5SppBMHe6SJCEFZvCtOxesWHuCZWjA7oyRT9a6FXhX+clPHgstKQgAAAAAA"></span><span class="who"><span class="role">Fondateur</span><span class="nm">Revo</span></span><span class="xl"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Suivre</span></a><div id="langSel"><button data-lang="fr">FR</button><button data-lang="en">EN</button></div></div></header>
@@ -2836,7 +2840,7 @@ const _to=box(9,16,15,mu,0,22,0,b);box(3,12,12,mb,-5,22,0,b);const pk=new THREE.
 const h=new THREE.Mesh(new THREE.SphereGeometry(5.5,10,8),ms);h.position.y=35;b.add(h);
 const hl=new THREE.Mesh(new THREE.SphereGeometry(6.4,10,6,0,Math.PI*2,0,1.6),mb);hl.position.y=36;b.add(hl);
 const _a1=box(15,4,4,mu,8,25,-6,b);_a1.rotation.y=.4;const _a2=box(11,4,4,mu,5,24,6,b);
-const gn=new THREE.Group();b.add(gn);if(TET_)TARM.gun(team,gn);else{box(28,5,4,mb,14,25,1,gn);box(4,9,3,mb,12,19,1,gn);box(10,6,4,mb,-2,24,1,gn);box(6,2,2,redM,20,28,1,gn);
+const gn=new THREE.Group();b.add(gn);if(TET_)TARM.gun(team,gn);else{box(28,5,4,mb,14,25,1,gn);box(4,9,3,mb,12,19,1,gn);box(6.5,6,4,mb,-.85,24,1,gn);box(6,2,2,redM,20,28,1,gn);
 const br=new THREE.Mesh(new THREE.CylinderGeometry(1,1,14,6),mb);br.rotation.z=Math.PI/2;br.position.set(33,26,1);gn.add(br)}
 const fl=new THREE.Mesh(TET_?new THREE.BoxGeometry(6,6,6):new THREE.SphereGeometry(4,6,5),new THREE.MeshBasicMaterial({color:TET_?TARM.flc(team):0xffe08a}));fl.position.set(TET_?35:42,26,1);if(TET_)fl.rotation.set(.62,.79,0);fl.visible=false;b.add(fl);
 grp.add(b);const rg=new THREE.Mesh(new THREE.RingGeometry(10,13,20),new THREE.MeshBasicMaterial({color:RING[team]}));rg.rotation.x=-Math.PI/2;rg.position.y=1.2;grp.add(rg);
@@ -11264,7 +11268,7 @@ const SKIN=(()=>{
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));return g}
  const shineTex=tex('fx_shine',(x,S)=>{const g=x.createLinearGradient(0,0,S,0);g.addColorStop(0,'rgba(255,255,255,0)');g.addColorStop(.43,'rgba(255,255,255,0)');g.addColorStop(.49,'rgba(255,255,255,.9)');g.addColorStop(.5,'rgba(255,255,255,1)');g.addColorStop(.51,'rgba(255,255,255,.9)');g.addColorStop(.57,'rgba(255,255,255,0)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,S,S)},256);
  // halo en croix (a plat et debout) autour de l'arme, reflet qui la balaie, eclats qui scintillent
- function gunGlow(g,bb,mat,k){const c=bb.getCenter(new THREE.Vector3()),sz=bb.getSize(new THREE.Vector3()),L_=sz.x*1.3,w=Math.max(sz.y,sz.z)*(k||3.4);
+ function gunGlow(g,bb,mat,k){const c=bb.getCenter(new THREE.Vector3()),sz=bb.getSize(new THREE.Vector3()),L_=sz.x*1.16,w=Math.max(sz.y,sz.z)*(k||3.4);c.x+=sz.x*.08;   // halo : depuis l'arriere de l'arme jusqu'un peu devant le canon
   const h1=mesh(g,G('pl'+L_.toFixed(1)+'_'+w.toFixed(1),()=>new THREE.PlaneGeometry(L_,w)),mat,c.x,c.y,c.z);h1.rotation.x=-Math.PI/2;const h2=mesh(g,h1.geometry,mat,c.x,c.y,c.z);return{c,sz,h1,h2}}
  const LT=(k,f,o)=>M(k,()=>new THREE.MeshLambertMaterial(Object.assign({map:tex(k,f)},o||{})));
  const gold=()=>P('gold',0xf2c14a,110,{specular:0xfff0b0});
@@ -11672,34 +11676,80 @@ const SKIN=(()=>{
  {const d0=draw;draw=function(){try{sync()}catch(e){}return d0.apply(this,arguments)}}
  // ---------- casier : apercu 3D et choix des skins ----------
  const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
- let PV=null,CAT='o',RAF=0,TH={},PV_FL=null;
+ let PV=null,TV=null,CAT='o',RAF=0,TH={},TQ=[];
  const VIEW={o:[0,27,0,96,.75,.42],h:[0,47,0,50,-.75,.5],g:[26,31,1,64,1.15,.6],b:[-12,30,0,62,2.55,.5],a:[0,12,0,112,.8,.72]};
- function pvInit(){if(PV)return PV;const cvs=$('skCv'),ren2=new THREE.WebGLRenderer({canvas:cvs,antialias:true,alpha:true});ren2.setPixelRatio(Math.min(2,devicePixelRatio||1));
+ // scene d'apercu : lumieres, disque au sol, mannequin (soldat standard)
+ function stage(cvs){const ren2=new THREE.WebGLRenderer({canvas:cvs,antialias:true,alpha:true});
   const scn=new THREE.Scene();scn.add(new THREE.HemisphereLight(0xdfe6ff,0x2a2e38,.95));const d=new THREE.DirectionalLight(0xffffff,.75);d.position.set(60,120,80);scn.add(d);
-  const fl=new THREE.Mesh(new THREE.CircleGeometry(36,40),new THREE.MeshBasicMaterial({color:0x151a26,transparent:true,opacity:.85}));fl.rotation.x=-Math.PI/2;scn.add(fl);PV_FL=fl;
+  const fl=new THREE.Mesh(new THREE.CircleGeometry(36,40),new THREE.MeshBasicMaterial({color:0x151a26,transparent:true,opacity:.85}));fl.rotation.x=-Math.PI/2;scn.add(fl);
   const man=mkChar(0,'nuit');sc.remove(man.grp);scn.add(man.grp);man.grp.visible=true;man.hp.visible=false;
-  const cam2=new THREE.PerspectiveCamera(36,1,5,800);
-  return PV={ren:ren2,scn,cam:cam2,man,az:.75,top:0,drag:0,key:'',w:0,h:0}}
- function pvCam(v,az,top){const el=top?1.36:v[5],d=top?v[3]*1.15:v[3];PV.cam.position.set(v[0]+d*Math.cos(el)*Math.cos(az),v[1]+d*Math.sin(el),v[2]+d*Math.cos(el)*Math.sin(az));PV.cam.lookAt(v[0],v[1],v[2])}
+  return{ren:ren2,scn,cam:new THREE.PerspectiveCamera(36,1,2,2000),man,fl}}
+ // apercu 3D du casier (canevas visible)
+ function pvInit(){if(PV)return PV;const s_=stage($('skCv'));s_.ren.setPixelRatio(Math.min(2,devicePixelRatio||1));
+  return PV=Object.assign(s_,{az:.75,el:.36,elU:.36,vel:0,drag:0,rel:-9,top:0,key:'',w:0,h:0,fit:null,fk:'',fc:null,cur:null,lt:0,zm:1,zmT:1})}
+ // vignettes : moteur a part, hors de l'ecran, pour ne jamais redimensionner ni interrompre l'apercu
+ function tvInit(){if(TV)return TV;const c=document.createElement('canvas');c.width=c.height=132;TV=stage(c);TV.ren.setPixelRatio(1);return TV}
+ function camAt(cam,v,az,top){const el=top?1.36:v[5],d=top?v[3]*1.15:v[3];cam.position.set(v[0]+d*Math.cos(el)*Math.cos(az),v[1]+d*Math.sin(el),v[2]+d*Math.cos(el)*Math.sin(az));cam.lookAt(v[0],v[1],v[2])}
+ // ---------- cadrage automatique : tout le personnage et ses skins dans l'image ----------
+ const _v=new THREE.Vector3(),_w=new THREE.Vector3(),PLN={PlaneGeometry:1},RND={CircleGeometry:1,RingGeometry:1};
+ // points qui entourent les pieces visibles d'un objet (repere du monde) ; disques et plans : cercle ou bords (pas les coins vides du carre)
+ function ptsOf(root,P,skip){root.updateMatrixWorld(true);root.traverseVisible(q=>{if(skip&&skip(q))return;
+   if(q.isMesh){const gq=q.geometry,ty=gq.type,pr=gq.parameters||{};let L_=null;
+    if(RND[ty]){const r=pr.outerRadius||pr.radius||1;L_=[];for(let i=0;i<8;i++){const a=i*Math.PI/4;L_.push([Math.cos(a)*r,Math.sin(a)*r,0])}}
+    else if(PLN[ty]){const w=(pr.width||1)/2,h=(pr.height||1)/2;L_=[[w,0,0],[-w,0,0],[0,h,0],[0,-h,0]]}
+    else{if(!gq.boundingBox)gq.computeBoundingBox();const b=gq.boundingBox;if(b.isEmpty())return;L_=[];for(let i=0;i<8;i++)L_.push([i&1?b.max.x:b.min.x,i&2?b.max.y:b.min.y,i&4?b.max.z:b.min.z])}
+    for(const c of L_){_v.set(c[0],c[1],c[2]).applyMatrix4(q.matrixWorld);P.push(_v.x,_v.y,_v.z)}}
+   else if(q.isSprite){q.getWorldPosition(_v);q.getWorldScale(_w);const r=Math.max(_w.x,_w.y)*.28;if(r>.01)for(const[a,b,c]of[[r,0,0],[-r,0,0],[0,r,0],[0,-r,0],[0,0,r],[0,0,-r]])P.push(_v.x+a,_v.y+b,_v.z+c)}})}
+ // cylindre vertical qui contient le mannequin et ses skins, releve a plusieurs instants de l'animation (ailes, drone, flammes...)
+ function measure(m){const P=[];for(const t of[.3,1.4,2.6,3.9,5.3,6.8,8.2]){tick(t);ptsOf(m.grp,P,q=>q===m.hp)}tick(performance.now()/1000);
+  let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9,y0=1e9,y1=-1e9;for(let i=0;i<P.length;i+=3){const x=P[i],y=P[i+1],z=P[i+2];x0=Math.min(x0,x);x1=Math.max(x1,x);y0=Math.min(y0,y);y1=Math.max(y1,y);z0=Math.min(z0,z);z1=Math.max(z1,z)}
+  const cx=(x0+x1)/2,cz=(z0+z1)/2;let R=0;for(let i=0;i<P.length;i+=3)R=Math.max(R,Math.hypot(P[i]-cx,P[i+2]-cz));return{cx,cz,R,y0:Math.max(0,y0),y1}}
+ // repere de la camera (azimut, hauteur) : vers la camera, vers le haut de l'image, vers la droite
+ const basis=(az,el)=>{const ce=Math.cos(el),se=Math.sin(el),ca=Math.cos(az),sa=Math.sin(az);return{o:[ce*ca,se,ce*sa],u:[-se*ca,ce,-se*sa],r:[sa,0,-ca]}};
+ // etendue des points a l'ecran (coordonnees -1..1) pour une camera a la distance d de la cible T
+ function ext(P,T,d,B,tv,th){const cx=T[0]+B.o[0]*d,cy=T[1]+B.o[1]*d,cz=T[2]+B.o[2]*d;let mx=0,lo=1e9,hi=-1e9;
+  for(let i=0;i<P.length;i+=3){const x=P[i]-cx,y=P[i+1]-cy,z=P[i+2]-cz,zc=-(x*B.o[0]+y*B.o[1]+z*B.o[2]);if(zc<3)return null;
+   const nx=(x*B.r[0]+z*B.r[2])/(zc*th),ny=(x*B.u[0]+y*B.u[1]+z*B.u[2])/(zc*tv);mx=Math.max(mx,Math.abs(nx));lo=Math.min(lo,ny);hi=Math.max(hi,ny)}return{mx,lo,hi}}
+ function fitD(P,T,B,tv,th,mg){let a=1,b=4000;for(let i=0;i<34;i++){const m=(a+b)/2,e=ext(P,T,m,B,tv,th);if(e&&e.mx<=mg&&e.lo>=-mg&&e.hi<=mg)b=m;else a=m}return b}
+ // cadrage d'un ensemble de points vu sous (az, el) : distance, puis recentrage vertical (decalage k le long du haut de l'image)
+ function fitPts(P,T0,az,el,asp,mg){const tv=Math.tan(18*Math.PI/180),th=tv*asp,B=basis(az,el);let k=0,d=0,T=T0;
+  for(let n=0;n<4;n++){T=[T0[0]+B.u[0]*k,T0[1]+B.u[1]*k,T0[2]+B.u[2]*k];d=fitD(P,T,B,tv,th,mg);if(n===3)break;const e=ext(P,T,d,B,tv,th);if(!e)break;k+=(e.lo+e.hi)/2*d*tv}return{d,k}}
+ // apercu : le cylindre est le meme sous tous les angles, donc le cadrage ne « respire » pas pendant la rotation
+ function fitCyl(F,el,asp){const P=[];for(let i=0;i<32;i++){const a=i/32*TAU,x=F.cx+Math.cos(a)*F.R,z=F.cz+Math.sin(a)*F.R;P.push(x,F.y0,z,x,F.y1,z)}return fitPts(P,[F.cx,(F.y0+F.y1)/2,F.cz],0,el,asp,.9)}
  function pvSize(){const c=$('skCv'),w=c.clientWidth|0,h=c.clientHeight|0;if(w&&h&&(w!==PV.w||h!==PV.h)){PV.w=w;PV.h=h;PV.ren.setSize(w,h,false);PV.cam.aspect=w/h;PV.cam.updateProjectionMatrix()}}
- function pvLoop(){RAF=requestAnimationFrame(pvLoop);if(!PV)return;const t=performance.now()/1000,w=Object.assign({},worn(),TRY),k=keyOf(w);if(k!==PV.key){apply(PV.man,w);PV.key=k}
-  pvSize();if(!PV.drag)PV.az+=.006;tick(t);const as=PV.w&&PV.h?PV.w/PV.h:1;pvCam([0,30,0,128*Math.max(1,.8/as),0,.36],PV.az,PV.top);PV.ren.render(PV.scn,PV.cam)}
- // vignette d'un skin : le mannequin ne porte que ce skin, cadre sur la bonne partie du corps
- function thumb(c,id,S,top,sel,tt){S=S||132;const k=c+id+S+(top?'t':'');if(!sel&&TH[k])return TH[k];const P_=pvInit();apply(P_.man,sel||{[c]:id});P_.key='';tick(tt==null?7.3:tt);P_.ren.setPixelRatio(1);P_.ren.setSize(S,S,false);P_.cam.aspect=1;P_.cam.updateProjectionMatrix();const it=DEF[c][id],v0=VIEW[top?'o':c],v=top?(it&&it.tz?[v0[0],v0[1],v0[2],v0[3]*it.tz,v0[4],v0[5]]:v0):(it&&it.vw||v0);pvCam(v,top?0:v[4],top);
+ const AUTO=.42,ease=(a,b,f)=>a+(b-a)*f;
+ function pvLoop(){RAF=requestAnimationFrame(pvLoop);if(!PV)return;const t=performance.now()/1000,dt=PV.lt?Math.min(.05,Math.max(0,t-PV.lt)):0;PV.lt=t;
+  const w=Object.assign({},worn(),TRY),k=keyOf(w);if(k!==PV.key){apply(PV.man,w);PV.key=k;PV.fit=measure(PV.man)}
+  pvSize();
+  // rotation : on fait tourner au doigt ou a la souris (avec elan au lacher), puis la rotation automatique reprend en douceur
+  if(!PV.drag){const want=t-PV.rel>1.6?AUTO:0;PV.vel=ease(PV.vel,want,1-Math.exp(-dt*(want?1.1:2.4)));PV.az+=PV.vel*dt}
+  PV.el=ease(PV.el,PV.top?1.36:PV.elU,1-Math.exp(-dt*8));PV.zm=ease(PV.zm,PV.zmT,1-Math.exp(-dt*10));
+  const asp=PV.w&&PV.h?PV.w/PV.h:1,F=PV.fit,fk=F?[F.cx,F.cz,F.R,F.y1,PV.el,asp].map(x=>x.toFixed(2)).join():'';if(F&&fk!==PV.fk){PV.fk=fk;PV.fc=fitCyl(F,PV.el,asp)}
+  if(F&&PV.fc){const g={cx:F.cx,cz:F.cz,ty:(F.y0+F.y1)/2,d:PV.fc.d*PV.zm,k:PV.fc.k*PV.zm};if(!PV.cur)PV.cur=g;else{const f=1-Math.exp(-dt*7);for(const q in g)PV.cur[q]=ease(PV.cur[q],g[q],f)}}
+  tick(t);const C=PV.cur||{cx:0,cz:0,ty:30,d:140,k:0},B=basis(PV.az,PV.el),T=[C.cx+B.u[0]*C.k,C.ty+B.u[1]*C.k,C.cz+B.u[2]*C.k];
+  PV.cam.position.set(T[0]+B.o[0]*C.d,T[1]+B.o[1]*C.d,T[2]+B.o[2]*C.d);PV.cam.lookAt(T[0],T[1],T[2]);PV.ren.render(PV.scn,PV.cam);
+  // vignettes en attente : quelques-unes par image, sans bloquer la rotation
+  const t0=performance.now();while(TQ.length&&!PV.drag&&performance.now()-t0<9){const q=TQ.shift(),im=$('skGrid').querySelector('img[data-k="'+q.c+q.id+'"]');if(!im)continue;im.src=thumb(q.c,q.id);im.classList.remove('ld')}}
+ // vignette d'un skin : le mannequin ne porte que ce skin, cadre sur la bonne partie du corps (l'arme : en entier)
+ function thumb(c,id,S,top,sel,tt){S=S||132;const k=c+id+S+(top?'t':'');if(!sel&&TH[k])return TH[k];const T_=tvInit(),it=DEF[c][id];apply(T_.man,sel||{[c]:id});tick(tt==null?7.3:tt);
+  if(T_.ren.domElement.width!==S)T_.ren.setSize(S,S,false);T_.cam.aspect=1;T_.cam.updateProjectionMatrix();
+  if(c==='g'&&!top&&!sel){const R=T_.man.sk,P=[];for(const q of R.gun)if(q.visible)ptsOf(q,P);let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9,z0=1e9,z1=-1e9;for(let i=0;i<P.length;i+=3){x0=Math.min(x0,P[i]);x1=Math.max(x1,P[i]);y0=Math.min(y0,P[i+1]);y1=Math.max(y1,P[i+1]);z0=Math.min(z0,P[i+2]);z1=Math.max(z1,P[i+2])}
+   const v=VIEW.g,T0=[(x0+x1)/2,(y0+y1)/2,(z0+z1)/2],f=fitPts(P,T0,v[4],v[5],1,.84),B=basis(v[4],v[5]),T=[T0[0]+B.u[0]*f.k,T0[1]+B.u[1]*f.k,T0[2]+B.u[2]*f.k];
+   T_.cam.position.set(T[0]+B.o[0]*f.d,T[1]+B.o[1]*f.d,T[2]+B.o[2]*f.d);T_.cam.lookAt(T[0],T[1],T[2])}
+  else{const v0=VIEW[top?'o':c],v=top?(it&&it.tz?[v0[0],v0[1],v0[2],v0[3]*it.tz,v0[4],v0[5]]:v0):(it&&it.vw||v0);camAt(T_.cam,v,top?0:v[4],top)}
   // vignette sur fond transparent (sans le disque du sol) : le halo de la couleur de rarete de la carte passe derriere le modele
-  if(PV_FL&&!sel)PV_FL.visible=false;P_.ren.render(P_.scn,P_.cam);if(PV_FL)PV_FL.visible=true;
-  const u=$('skCv').toDataURL('image/png');P_.ren.setPixelRatio(Math.min(2,devicePixelRatio||1));P_.w=P_.h=0;return TH[k]=u}
+  T_.fl.visible=!!sel;T_.ren.render(T_.scn,T_.cam);T_.fl.visible=true;const u=T_.ren.domElement.toDataURL('image/png');clear(T_.man);return sel?u:TH[k]=u}
  const LGn=n=>LG(n[0],n[1]);
- function list(){const D=DEF[CAT],lv=lvlNow(),cur=Object.assign({},worn(),TRY)[CAT],ids=Object.keys(D).sort((a,b)=>(D[a].shop||0)-(D[b].shop||0)||(D[a].shop?D[a].r-D[b].r:D[a].lv-D[b].lv));let sep=0;
+ const PX='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+ function list(){TQ=[];const D=DEF[CAT],lv=lvlNow(),cur=Object.assign({},worn(),TRY)[CAT],ids=Object.keys(D).sort((a,b)=>(D[a].shop||0)-(D[b].shop||0)||(D[a].shop?D[a].r-D[b].r:D[a].lv-D[b].lv));let sep=0;
   $('skTabs').innerHTML=CATS.map(c=>'<button class="skTab'+(c[0]===CAT?' on':'')+'" data-c="'+c[0]+'">'+esc(LGn(c[1]))+'</button>').join('');
   $('skGrid').innerHTML='<button class="skC def'+(cur?'':' on')+'" data-id=""><span class="skI skNo">∅</span><span class="skN">'+LG('Par défaut','Default')+'</span><span class="skL"> </span></button>'+
    ids.map(id=>{const it=D[id],ok=unl(CAT,id),r=rarOf(it),nw=ok&&!it.shop&&!SEEN.has(CAT+':'+id),on=cur===id,hd=it.shop&&!sep++?'<div class="skSep"><b>'+LG('Boutique','Shop')+'</b><span>'+LG('gratuit pendant les tests','free during testing')+'</span></div>':'';
     return hd+'<button class="skC r'+r+(on?' on':'')+(ok?'':' lock')+'" data-id="'+id+'" style="'+RSTY(r)+'">'+(nw?'<span class="skNew">'+LG('NOUVEAU','NEW')+'</span>':'')+
      (on&&ok?'<span class="skOn">✓</span>':ok?'':'<span class="skLk">🔒 '+LG('Niv. ','Lv. ')+it.lv+'</span>')+
-     '<img class="skI" alt="" src="'+thumb(CAT,id)+'"><span class="skN">'+esc(LGn(it.n))+'</span><span class="skL">'+esc(LGn(RARN[r]))+'</span></button>'}).join('');
+     (TH[CAT+id+132]?'<img class="skI" alt="" src="'+TH[CAT+id+132]+'">':(TQ.push({c:CAT,id}),'<img class="skI ld" alt="" data-k="'+CAT+id+'" src="'+PX+'">'))+'<span class="skN">'+esc(LGn(it.n))+'</span><span class="skL">'+esc(LGn(RARN[r]))+'</span></button>'}).join('');
   $('skTabs').querySelectorAll('.skTab').forEach(t=>t.classList.toggle('nw',unseen(t.dataset.c)>0&&t.dataset.c!==CAT));
-  if(lv)for(const id of ids)if(!D[id].shop&&lv>=D[id].lv)SEEN.add(CAT+':'+id);saveSeen();if(typeof PROF!=='undefined')PROF.ui();
-  PV.key=''}
+  if(lv)for(const id of ids)if(!D[id].shop&&lv>=D[id].lv)SEEN.add(CAT+':'+id);saveSeen();if(typeof PROF!=='undefined')PROF.ui()}
  // skins debloques pas encore vus dans le casier (point dore sur la pastille du profil)
  function unseen(c){const lv=lvlNow();if(!lv)return 0;let n=0;for(const k in DEF)if(!c||c===k)for(const id in DEF[k])if(!DEF[k][id].shop&&lv>=DEF[k][id].lv&&!SEEN.has(k+':'+id))n++;return n}
  function say(t,ok){const m=$('skMsg');m.textContent=t;m.className='skMsg'+(ok?' ok':'')}
@@ -11707,18 +11757,33 @@ const SKIN=(()=>{
   else if(unl(CAT,id)){SEL[CAT]=id;delete TRY[CAT];save();push();say(LGn(D[id].n)+LG(' : équipé.',': equipped.'),1)}
   else{TRY[CAT]=id;say(LGn(D[id].n)+LG(' : essai. Se débloque au niveau ',': preview. Unlocks at level ')+D[id].lv+(lvlNow()?'.':LG(' (crée ton profil pour gagner des niveaux).',' (create your profile to earn levels).')),0)}
   list()}
- function open(){const b=$('skinBox');if(!b)return;TRY={};b.classList.add('on');pvInit();list();say(lvlNow()?'':LG('Crée ton profil pour débloquer des skins en montant de niveau.','Create your profile to unlock skins as you level up.'),0);cancelAnimationFrame(RAF);pvLoop();try{uiClick()}catch(e){}}
- function close(){const b=$('skinBox');b.classList.remove('on');cancelAnimationFrame(RAF);TRY={};if(PV){apply(PV.man,null);PV.key='x'}}
+ function open(){const b=$('skinBox');if(!b)return;TRY={};b.classList.add('on');pvInit();PV.zm=PV.zmT=1;PV.cur=null;list();say(lvlNow()?'':LG('Crée ton profil pour débloquer des skins en montant de niveau.','Create your profile to unlock skins as you level up.'),0);cancelAnimationFrame(RAF);pvLoop();try{uiClick()}catch(e){}}
+ function close(){const b=$('skinBox');b.classList.remove('on');cancelAnimationFrame(RAF);TRY={};TQ=[];if(PV){apply(PV.man,null);PV.key='x';PV.lt=0}}
  function init(){const b=document.createElement('div');b.id='skinBox';b.innerHTML='<div class="skPanel" role="dialog" aria-modal="true"><div class="skTop"><span class="skTitle">'+LG('Skins','Skins')+'</span><button class="skX" aria-label="'+LG('Fermer','Close')+'">✕</button></div>'+
    '<div class="skBody"><div class="skView"><canvas id="skCv"></canvas><button class="skVw" id="skVw">'+LG('Vue de jeu','Game view')+'</button></div>'+
    '<div class="skSide"><div class="skTabs" id="skTabs"></div><div class="skGrid" id="skGrid"></div><div class="skMsg" id="skMsg"></div></div></div></div>';
   document.body.appendChild(b);b.addEventListener('pointerdown',e=>{if(e.target===b)close()});b.querySelector('.skX').onclick=close;
+  // le casier garde ses appuis : sans cela, le jeu capturait le pointeur pour son propre canevas et l'apercu ne recevait plus les mouvements
+  for(const k of['pointerdown','pointermove','pointerup','pointercancel'])b.addEventListener(k,e=>e.stopPropagation());
   addEventListener('keydown',e=>{if(e.key==='Escape'&&b.classList.contains('on'))close()});
   $('skTabs').addEventListener('click',e=>{const t=e.target.closest('.skTab');if(t){CAT=t.dataset.c;list();say('',1)}});
   $('skGrid').addEventListener('click',e=>{const t=e.target.closest('.skC');if(t)pick(t.dataset.id)});
   $('skVw').onclick=()=>{PV.top=PV.top?0:1;$('skVw').textContent=PV.top?LG('Vue 3/4','3/4 view'):LG('Vue de jeu','Game view')};
-  const cv_=$('skCv');let px=0;cv_.addEventListener('pointerdown',e=>{PV.drag=1;px=e.clientX;cv_.setPointerCapture(e.pointerId)});cv_.addEventListener('pointermove',e=>{if(PV&&PV.drag){PV.az+=(e.clientX-px)*.012;px=e.clientX}});
-  for(const k of['pointerup','pointercancel'])cv_.addEventListener(k,()=>{if(PV)PV.drag=0});
+  // rotation au doigt ou a la souris : gauche-droite fait tourner, haut-bas incline la vue 3/4 ; elan au lacher
+  // zoom : molette ou pincement a deux doigts (jusqu'a 2,5 fois plus pres) ; double-clic ou double tape : tout le skin a nouveau
+  const cv_=$('skCv'),PT=new Map();let px=0,py=0,pt=0,pd=0,tap=0;
+  const zoomBy=f=>{if(PV)PV.zmT=Math.min(1,Math.max(.4,PV.zmT*f))},pinch=()=>{const a=[...PT.values()];return Math.hypot(a[0][0]-a[1][0],a[0][1]-a[1][1])};
+  cv_.addEventListener('pointerdown',e=>{if(!PV)return;PT.set(e.pointerId,[e.clientX,e.clientY]);try{cv_.setPointerCapture(e.pointerId)}catch(er){}
+   if(PT.size===2){PV.drag=0;pd=pinch();return}const n=performance.now();if(n-tap<320&&e.pointerType!=='mouse')PV.zmT=1;tap=n;
+   PV.drag=1;PV.vel=0;px=e.clientX;py=e.clientY;pt=n;cv_.classList.add('drag')});
+  cv_.addEventListener('pointermove',e=>{if(!PV||!PT.has(e.pointerId))return;PT.set(e.pointerId,[e.clientX,e.clientY]);
+   if(PT.size===2){const d=pinch();if(pd>0&&d>0)zoomBy(pd/d);pd=d;return}if(!PV.drag)return;
+   const n=performance.now(),dx=e.clientX-px,dy=e.clientY-py,dtm=Math.max(8,n-pt)/1000,da=dx*.011;px=e.clientX;py=e.clientY;pt=n;
+   PV.az+=da;PV.vel=PV.vel*.5+(da/dtm)*.5;if(!PV.top)PV.elU=Math.min(1.05,Math.max(.06,PV.elU+dy*.006))});
+  const up=e=>{PT.delete(e.pointerId);if(PT.size<2)pd=0;if(PV&&PV.drag&&!PT.size){PV.drag=0;PV.rel=performance.now()/1000;if(performance.now()-pt>90)PV.vel=0;PV.vel=Math.max(-7,Math.min(7,PV.vel))}if(!PT.size)cv_.classList.remove('drag')};
+  for(const k of['pointerup','pointercancel','lostpointercapture'])cv_.addEventListener(k,up);
+  cv_.addEventListener('wheel',e=>{e.preventDefault();zoomBy(Math.exp(e.deltaY*(e.deltaMode?.05:.0015)))},{passive:false});
+  cv_.addEventListener('dblclick',()=>{if(PV)PV.zmT=1});
   setInterval(()=>{if(b.classList.contains('on')&&menu.classList.contains('hidden'))close()},500)}
  // ---------- recompenses : skins debloques par les niveaux gagnes ----------
  const CATN={o:['Tenue','Outfit'],h:['Bonnet','Hat'],g:['Arme','Weapon'],b:['Sac','Bag'],a:['Aura','Aura']};
@@ -11733,12 +11798,16 @@ const SKIN=(()=>{
   b.classList.toggle('leg',r.some(q=>RAR(q.lv)===3));b.classList.add('on');try{boostSnd()}catch(e){}}
  function initRew(){const b=document.createElement('div');b.id='skRew';b.innerHTML='<div class="srP" role="dialog" aria-modal="true"><div class="srGlow"></div><div class="srT"></div><div class="srS"></div><div class="srL"></div><button class="srX">'+LG('Continuer','Continue')+'</button></div>';document.body.appendChild(b);
   const shut=()=>b.classList.remove('on');b.querySelector('.srX').onclick=shut;b.addEventListener('pointerdown',e=>{if(e.target===b)shut()});
+  // un appui sur la carte ne doit pas declencher le bouton de l'ecran de fin dessine dessous
+  for(const k of['pointerdown','pointerup'])b.addEventListener(k,e=>e.stopPropagation());
   b.querySelector('.srL').addEventListener('click',e=>{const t=e.target.closest('.srE');if(!t)return;const q=RQ[+t.dataset.i];if(!q)return;SEL[q.c]=q.id;save();push();SEEN.add(q.c+':'+q.id);saveSeen();
    b.querySelectorAll('.srE').forEach(x=>{const o=RQ[+x.dataset.i];if(o.c===q.c){x.textContent=o.id===q.id?LG('Équipé ✓','Equipped ✓'):LG('Équiper','Equip');x.classList.toggle('ok',o.id===q.id)}});try{uiClick()}catch(e){}});
   // la carte se ferme toute seule quand l'ecran de fin disparait
   setInterval(()=>{if(b.classList.contains('on')&&typeof st!=='undefined'&&st.s!=='end')shut()},500)}
  init();initRew();
- return{sync,open,close,apply,clear,tick,thumb,CATS,DEF,worn,sel:()=>SEL,set:(c,id)=>{SEL[c]=id;save()},pv:()=>PV,RAR,rarOf,fromProf,announce,rewards,nextReward,unseen}})();
+ // pendant que le casier est ouvert, le decor du menu (cache derriere) n'est plus redessine : la carte graphique sert a l'apercu
+ if(typeof MENU!=='undefined'&&typeof MENU.frame==='function'){const f0=MENU.frame;let sw=0,sh=0;MENU.frame=function(){const b=$('skinBox'),o=b&&b.classList.contains('on');if(o&&innerWidth===sw&&innerHeight===sh)return;sw=innerWidth;sh=innerHeight;return f0.apply(this,arguments)}}
+ return{sync,open,close,apply,clear,tick,thumb,CATS,DEF,worn,sel:()=>SEL,set:(c,id)=>{SEL[c]=id;save()},pv:()=>PV,tv:()=>tvInit(),RAR,rarOf,fromProf,announce,rewards,nextReward,unseen}})();
 MENU.init();PROF.init();if(!HEADLESS)modeHint();
 if(HEADLESS)loadMap('neon');else MENU.boot();
 // le serveur (game_sim.js) coupe le script a partir de « newRound();let last » : la boucle d'affichage ne tourne pas chez lui
