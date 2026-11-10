@@ -343,15 +343,15 @@ body.inmenu #muteBtn svg,body.inmenu #fsBtn svg{width:20px;height:20px}
 #skinBox .skTab{flex:1 0 auto;height:36px;padding:0 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#c8d0dd;font:600 13px/1 var(--fd);cursor:pointer;white-space:nowrap}
 #skinBox .skTab.on{background:#ffcf5a;border-color:#ffcf5a;color:#1a1206}
 #skinBox .skGrid{flex:1;min-height:0;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px;align-content:start;padding:4px 14px 12px}
-#skinBox .skC{--rc:#9aa6b9;display:flex;flex-direction:column;align-items:stretch;gap:5px;padding:7px 7px 9px;border-radius:12px;border:1.5px solid rgba(255,255,255,.1);background:rgba(255,255,255,.035);color:#eef2f8;cursor:pointer;text-align:center;font:inherit}
-#skinBox .skC:hover{border-color:rgba(255,255,255,.3)}
-#skinBox .skC.on{border-color:#ffcf5a;background:rgba(255,207,90,.09)}
-#skinBox .skI{display:block;width:100%;aspect-ratio:1;border-radius:8px;background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.015));border-bottom:2px solid var(--rc);object-fit:cover}
+#skinBox .skC{--rc:#a3b1c2;--rca:rgba(163,177,194,.13);--rcb:rgba(163,177,194,.42);--rcg:rgba(163,177,194,.62);display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:7px 7px 9px;border-radius:12px;border:1.5px solid var(--rcb);background:linear-gradient(180deg,var(--rca),rgba(255,255,255,.015) 78%);color:#eef2f8;cursor:pointer;text-align:center;font:inherit}
+#skinBox .skC:hover{border-color:var(--rc)}
+#skinBox .skC.on{border-color:var(--rc);outline:2px solid #fff;outline-offset:2px}
+#skinBox .skI{display:block;width:100%;aspect-ratio:1;box-sizing:border-box;border-radius:8px;background:radial-gradient(circle at 50% 60%,var(--rcg),rgba(0,0,0,0) 66%),linear-gradient(165deg,rgba(255,255,255,.07),rgba(255,255,255,.01));border-bottom:3px solid var(--rc);object-fit:cover}
 #skinBox .skNo{display:grid;place-items:center;font:500 30px/1 system-ui,sans-serif;color:#5d6778}
 #skinBox .skN{font:700 12.5px/1.2 var(--fd);min-height:30px;display:grid;place-items:center}
-#skinBox .skL{font:600 11px/1 system-ui,sans-serif;color:var(--rc);min-height:11px}
-#skinBox .skC.lock .skI{filter:saturate(.55) brightness(.72)}
-#skinBox .skC.lock .skL{color:#9aa6b9}
+#skinBox .skL{align-self:center;min-height:10px;padding:4px 9px 3px;border-radius:999px;border:1px solid var(--rcb);background:var(--rca);color:var(--rc);font:800 9.5px/1 var(--fd);letter-spacing:.09em;text-transform:uppercase}
+#skinBox .skC.lock .skI{filter:saturate(.45) brightness(.62)}
+#skinBox .skC.lock .skN{color:#b4bdca}
 #skinBox .skMsg{flex:none;min-height:18px;padding:8px 14px 12px;font-size:12.5px;color:#ffcf5a;border-top:1px solid rgba(255,255,255,.07)}
 #skinBox .skMsg.ok{color:#7fe8a2}
 @media (max-width:700px),(max-height:430px) and (orientation:portrait){#skinBox{padding:8px}#skinBox .skPanel{height:100%}#skinBox .skBody{flex-direction:column}#skinBox .skView{flex:0 0 36%}#skinBox .skSide{border-left:0;border-top:1px solid rgba(255,255,255,.07)}#skinBox .skGrid{grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}}
@@ -366,7 +366,7 @@ body.inmenu #muteBtn svg,body.inmenu #fsBtn svg{width:20px;height:20px}
 #skinBox .skTab.nw::after{content:'';display:inline-block;width:7px;height:7px;margin-left:6px;border-radius:50%;background:#ffcf5a;vertical-align:2px}
 /* pastille du profil : point dore s'il y a des skins nouveaux ; compteur sur le bouton « Skins » */
 #menu #profChip{position:relative}
-#menu #profChip.new::after{content:'';position:absolute;top:3px;left:33px;width:11px;height:11px;border-radius:50%;background:#ffcf5a;box-shadow:0 0 0 2px rgba(9,12,20,.9),0 0 10px rgba(255,207,90,.8)}
+#menu #profChip.new::after{content:'';position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:#ffcf5a;box-shadow:0 0 0 2px rgba(9,12,20,.9),0 0 10px rgba(255,207,90,.8)}
 #profBox .ppSkin i{display:inline-grid;place-items:center;min-width:20px;height:20px;margin-left:8px;padding:0 5px;border-radius:10px;background:#ffcf5a;color:#1a1206;font:800 12px/1 var(--fd);font-style:normal;vertical-align:1px}
 /* fenetre du profil : prochaine recompense */
 #profBox .ppNext{display:flex;align-items:center;gap:12px;margin:12px 0 0;padding:8px 12px 8px 8px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}
@@ -395,6 +395,27 @@ body.inmenu #muteBtn svg,body.inmenu #fsBtn svg{width:20px;height:20px}
 #skRew .srX{position:relative;margin-top:16px;height:40px;padding:0 26px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:none;color:#eef2f8;font:700 14px/1 var(--fd);cursor:pointer}
 #skRew .srX:hover{border-color:rgba(255,255,255,.4)}
 @media (max-height:500px){#skRew .srP{padding:14px 14px 12px}#skRew .srI img{width:84px;height:84px}#skRew .srT{font-size:20px}#skRew .srS{margin:4px 0 10px}#skRew .srX{margin-top:10px}}
+/* raretes (commun gris, rare bleu, epique violet, legendaire orange dore) : bord, fond, halo derriere le modele, pastille.
+   Epique : leger halo autour de la carte ; legendaire : halo plus fort et reflet qui fait le tour du bord */
+#skinBox .skC.def{--rc:#5d6778;--rca:rgba(255,255,255,.03);--rcb:rgba(255,255,255,.1);--rcg:rgba(0,0,0,0)}
+#skinBox .skC.def .skL{visibility:hidden}
+#skinBox .skC.r2{box-shadow:0 0 16px -6px var(--rcg)}
+#skinBox .skC.r3{box-shadow:0 0 20px -5px var(--rcg)}
+#skinBox .skC.r3::before,#skRew .srI.r3::before,#profBox .ppNext.r3::before{content:'';position:absolute;inset:-1.5px;border-radius:inherit;padding:1.5px;background:linear-gradient(115deg,rgba(255,255,255,0) 35%,rgba(255,236,190,.95) 50%,rgba(255,255,255,0) 65%) 0 0/260% 100%;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:skShine 3.2s linear infinite;pointer-events:none}
+@keyframes skShine{from{background-position:130% 0}to{background-position:-30% 0}}
+#skinBox .skOn{position:absolute;top:4px;right:4px;z-index:1;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#fff;color:#11141c;font:900 13px/1 system-ui,sans-serif;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+#skinBox .skLk{position:absolute;top:4px;right:4px;z-index:1;padding:4px 6px 3px;border-radius:7px;background:rgba(9,12,20,.82);color:#dfe5ee;font:700 10px/1 var(--fd)}
+#skinBox .skNew{box-shadow:0 2px 6px rgba(0,0,0,.4)}
+/* carte de recompense */
+#skRew .srI{--rca:rgba(163,177,194,.13);--rcb:rgba(163,177,194,.42);--rcg:rgba(163,177,194,.62);position:relative;border-color:var(--rcb);background:linear-gradient(180deg,var(--rca),rgba(255,255,255,.015) 80%)}
+#skRew .srI.r2{box-shadow:0 0 22px -6px var(--rcg)}#skRew .srI.r3{box-shadow:0 0 28px -4px var(--rcg)}
+#skRew .srI img{box-sizing:border-box;background:radial-gradient(circle at 50% 60%,var(--rcg),rgba(0,0,0,0) 66%),linear-gradient(165deg,rgba(255,255,255,.07),rgba(255,255,255,.01));border-bottom:3px solid var(--rc)}
+#skRew .srR{padding:4px 10px 3px;border-radius:999px;border:1px solid var(--rcb);background:var(--rca);color:var(--rc);font:800 10px/1 var(--fd);letter-spacing:.09em;text-transform:uppercase}
+/* prochaine recompense (fenetre du profil) */
+#profBox .ppNext{position:relative;border-color:var(--rcb,rgba(255,255,255,.07));background:linear-gradient(90deg,var(--rca,rgba(255,255,255,.04)),rgba(255,255,255,.02))}
+#profBox .ppNext img{box-sizing:border-box;background:radial-gradient(circle at 50% 60%,var(--rcg,rgba(0,0,0,0)),rgba(0,0,0,0) 68%),rgba(255,255,255,.04);border-bottom:2px solid var(--rc,transparent)}
+#profBox .ppNext b{color:var(--rc,#eef2f8)}
+#profBox .ppNext small i{margin-left:6px;padding:3px 7px 2px;border-radius:999px;border:1px solid var(--rcb);background:var(--rca);color:var(--rc);font:800 9px/1 var(--fd);font-style:normal;letter-spacing:.08em;text-transform:uppercase;vertical-align:1px}
 </style></head><body>
 <div id="menu" data-v="mainMenu"><div id="mfade"></div><div class="panel">
 <header class="mtop"><h1 class="logo">DETONATE<span class="ver">V3.7</span></h1><div class="mtopR"><a id="founder" href="https://x.com/Revo_YHWH" target="_blank" rel="noopener noreferrer" aria-label="Revo sur X (@Revo_YHWH)"><span class="av"><img alt="Revo" width="40" height="40" src="data:image/webp;base64,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"></span><span class="who"><span class="role">Fondateur</span><span class="nm">Revo</span></span><span class="xl"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Suivre</span></a><div id="langSel"><button data-lang="fr">FR</button><button data-lang="en">EN</button></div></div></header>
@@ -11095,7 +11116,8 @@ const PROF=(()=>{
   b.querySelector('.ppBadge b').textContent=lv;const ni=$('profName');if(document.activeElement!==ni)ni.value=P.n;
   b.querySelector('.ppLv').textContent=LG('Niveau ','Level ')+lv+' / '+LMAX;b.querySelector('.ppBar i').style.width=(nd?cur/nd*100:100)+'%';
   {const nx=b.querySelector('.ppNext'),r=typeof SKIN!=='undefined'&&SKIN.nextReward?SKIN.nextReward(lv):null;
-   nx.innerHTML=r?'<img alt="" src="'+r.img+'"><span><em>'+LG('Prochaine récompense · niveau ','Next reward · level ')+r.lv+'</em><b style="color:'+r.col+'">'+esc(r.name)+'</b><small>'+esc(r.cat)+' · '+esc(r.rar)+'</small></span>':'<span><em>'+LG('Toutes les récompenses sont débloquées','All rewards unlocked')+'</em></span>'}
+   nx.className='ppNext'+(r?' r'+r.r:'');nx.style.cssText=r?r.sty:'';
+   nx.innerHTML=r?'<img alt="" src="'+r.img+'"><span><em>'+LG('Prochaine récompense · niveau ','Next reward · level ')+r.lv+'</em><b>'+esc(r.name)+'</b><small>'+esc(r.cat)+' <i>'+esc(r.rar)+'</i></small></span>':'<span><em>'+LG('Toutes les récompenses sont débloquées','All rewards unlocked')+'</em></span>'}
   b.querySelector('.ppXp').textContent=lv>=LMAX?LG('Niveau maximum atteint · ','Max level reached · ')+fr(P.xp)+' XP':fr(cur)+' / '+fr(nd)+' XP · '+LG('encore ','')+fr(nd-cur)+LG(' XP pour le niveau ',' XP to level ')+(lv+1);
   const S=[[LG('Parties','Games'),fr(P.g)],[LG('Victoires','Wins'),fr(P.w)],[LG('Éliminations','Eliminations'),fr(P.k)],[LG('Ratio K/D','K/D ratio'),kd()],['MVP',fr(P.mvp)],[LG('XP totale','Total XP'),fr(P.xp)]];
   b.querySelector('.ppStats').innerHTML=S.map(s=>'<div><b>'+esc(s[1])+'</b><span>'+esc(s[0])+'</span></div>').join('');
@@ -11366,7 +11388,9 @@ const SKIN=(()=>{
     const dm=[...Array(4)].map(()=>{const q=mesh(g,G('oct',()=>new THREE.OctahedronGeometry(1,0)),au);q.scale.set(1.9,3,1.9);return q}),sp=[...Array(8)].map(()=>bx(g,1.1,1.1,1.1,ad,0,0,0));
     return t=>{r1.rotation.y=t*.6;r2.rotation.y=-t*.4;dm.forEach((q,i)=>{const a=i/4*TAU+t*1.1;q.position.set(Math.cos(a)*17.3,9+2*Math.sin(t*2.2+i*1.6),Math.sin(a)*17.3);q.rotation.y=t*2});sp.forEach((q,i)=>{const p=(t*.45+i/8)%1,a=i*2.4-t*.3,r=10+7*Math.abs(Math.sin(i*4.1));q.position.set(Math.cos(a)*r,2+p*28,Math.sin(a)*r);q.scale.setScalar(Math.sin(p*3.14)*1.3);q.rotation.set(t*2,t*3,.78)})}}}};
  const CATS=[['o',['Tenue','Outfit'],OUT],['h',['Bonnet','Hat'],HAT],['g',['Arme','Weapon'],GUN],['b',['Sac','Bag'],BAG],['a',['Aura','Aura'],AUR]],DEF={o:OUT,h:HAT,g:GUN,b:BAG,a:AUR};
- const RAR=l=>l>=25?3:l>=17?2:l>=9?1:0,RARN=[['Commun','Common'],['Rare','Rare'],['Épique','Epic'],['Légendaire','Legendary']],RARC=['#9aa6b9','#4aa8ff','#b46bff','#ffcf5a'];
+ const RAR=l=>l>=25?3:l>=17?2:l>=9?1:0,RARN=[['Commun','Common'],['Rare','Rare'],['Épique','Epic'],['Légendaire','Legendary']],RARC=['#a3b1c2','#3fa2ff','#b768ff','#ffae2b'];
+ // couleurs de rarete pour les cartes (variables CSS) : teinte pleine, fond leger, bord, halo derriere le modele
+ const RSTY=r=>{const h=RARC[r],n=parseInt(h.slice(1),16),c=[n>>16,n>>8&255,n&255].join(',');return'--rc:'+h+';--rca:rgba('+c+',.13);--rcb:rgba('+c+',.42);--rcg:rgba('+c+',.62)'};
  // ---------- poser / retirer un skin sur un personnage ----------
  const ACT=[];
  function clear(m){const s=m._sk;if(!s)return;for(const[q,mt]of s.sw)q.material=mt;for(const q of s.hid)q.visible=true;for(const o of s.g)if(o.parent)o.parent.remove(o);const i=ACT.indexOf(s);if(i>=0)ACT.splice(i,1);m._sk=null}
@@ -11417,11 +11441,11 @@ const SKIN=(()=>{
  {const d0=draw;draw=function(){try{sync()}catch(e){}return d0.apply(this,arguments)}}
  // ---------- casier : apercu 3D et choix des skins ----------
  const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
- let PV=null,CAT='o',RAF=0,TH={};
+ let PV=null,CAT='o',RAF=0,TH={},PV_FL=null;
  const VIEW={o:[0,27,0,96,.75,.42],h:[0,47,0,50,-.75,.5],g:[26,31,1,64,1.15,.6],b:[-12,30,0,62,2.55,.5],a:[0,12,0,112,.8,.72]};
  function pvInit(){if(PV)return PV;const cvs=$('skCv'),ren2=new THREE.WebGLRenderer({canvas:cvs,antialias:true,alpha:true});ren2.setPixelRatio(Math.min(2,devicePixelRatio||1));
   const scn=new THREE.Scene();scn.add(new THREE.HemisphereLight(0xdfe6ff,0x2a2e38,.95));const d=new THREE.DirectionalLight(0xffffff,.75);d.position.set(60,120,80);scn.add(d);
-  const fl=new THREE.Mesh(new THREE.CircleGeometry(36,40),new THREE.MeshBasicMaterial({color:0x151a26,transparent:true,opacity:.85}));fl.rotation.x=-Math.PI/2;scn.add(fl);
+  const fl=new THREE.Mesh(new THREE.CircleGeometry(36,40),new THREE.MeshBasicMaterial({color:0x151a26,transparent:true,opacity:.85}));fl.rotation.x=-Math.PI/2;scn.add(fl);PV_FL=fl;
   const man=mkChar(0,'nuit');sc.remove(man.grp);scn.add(man.grp);man.grp.visible=true;man.hp.visible=false;
   const cam2=new THREE.PerspectiveCamera(36,1,5,800);
   return PV={ren:ren2,scn,cam:cam2,man,az:.75,top:0,drag:0,key:'',w:0,h:0}}
@@ -11430,13 +11454,18 @@ const SKIN=(()=>{
  function pvLoop(){RAF=requestAnimationFrame(pvLoop);if(!PV)return;const t=performance.now()/1000,w=Object.assign({},worn(),TRY),k=keyOf(w);if(k!==PV.key){apply(PV.man,w);PV.key=k}
   pvSize();if(!PV.drag)PV.az+=.006;tick(t);const as=PV.w&&PV.h?PV.w/PV.h:1;pvCam([0,30,0,128*Math.max(1,.8/as),0,.36],PV.az,PV.top);PV.ren.render(PV.scn,PV.cam)}
  // vignette d'un skin : le mannequin ne porte que ce skin, cadre sur la bonne partie du corps
- function thumb(c,id,S,top,sel,tt){S=S||132;const k=c+id+S+(top?'t':'');if(!sel&&TH[k])return TH[k];const P_=pvInit();apply(P_.man,sel||{[c]:id});P_.key='';tick(tt==null?7.3:tt);P_.ren.setPixelRatio(1);P_.ren.setSize(S,S,false);P_.cam.aspect=1;P_.cam.updateProjectionMatrix();const v=VIEW[top?'o':c];pvCam(v,top?0:v[4],top);P_.ren.render(P_.scn,P_.cam);
+ function thumb(c,id,S,top,sel,tt){S=S||132;const k=c+id+S+(top?'t':'');if(!sel&&TH[k])return TH[k];const P_=pvInit();apply(P_.man,sel||{[c]:id});P_.key='';tick(tt==null?7.3:tt);P_.ren.setPixelRatio(1);P_.ren.setSize(S,S,false);P_.cam.aspect=1;P_.cam.updateProjectionMatrix();const v=VIEW[top?'o':c];pvCam(v,top?0:v[4],top);
+  // vignette sur fond transparent (sans le disque du sol) : le halo de la couleur de rarete de la carte passe derriere le modele
+  if(PV_FL&&!sel)PV_FL.visible=false;P_.ren.render(P_.scn,P_.cam);if(PV_FL)PV_FL.visible=true;
   const u=$('skCv').toDataURL('image/png');P_.ren.setPixelRatio(Math.min(2,devicePixelRatio||1));P_.w=P_.h=0;return TH[k]=u}
  const LGn=n=>LG(n[0],n[1]);
  function list(){const D=DEF[CAT],lv=lvlNow(),cur=Object.assign({},worn(),TRY)[CAT],ids=Object.keys(D).sort((a,b)=>D[a].lv-D[b].lv);
   $('skTabs').innerHTML=CATS.map(c=>'<button class="skTab'+(c[0]===CAT?' on':'')+'" data-c="'+c[0]+'">'+esc(LGn(c[1]))+'</button>').join('');
   $('skGrid').innerHTML='<button class="skC def'+(cur?'':' on')+'" data-id=""><span class="skI skNo">∅</span><span class="skN">'+LG('Par défaut','Default')+'</span><span class="skL"> </span></button>'+
-   ids.map(id=>{const it=D[id],ok=lv>=it.lv,r=RAR(it.lv),nw=ok&&!SEEN.has(CAT+':'+id);return'<button class="skC'+(cur===id?' on':'')+(ok?'':' lock')+'" data-id="'+id+'" style="--rc:'+RARC[r]+'">'+(nw?'<span class="skNew">'+LG('NOUVEAU','NEW')+'</span>':'')+'<img class="skI" alt="" src="'+thumb(CAT,id)+'"><span class="skN">'+esc(LGn(it.n))+'</span><span class="skL">'+(ok?esc(LGn(RARN[r])):'🔒 '+LG('Niv. ','Lv. ')+it.lv)+'</span></button>'}).join('');
+   ids.map(id=>{const it=D[id],ok=lv>=it.lv,r=RAR(it.lv),nw=ok&&!SEEN.has(CAT+':'+id),on=cur===id;
+    return'<button class="skC r'+r+(on?' on':'')+(ok?'':' lock')+'" data-id="'+id+'" style="'+RSTY(r)+'">'+(nw?'<span class="skNew">'+LG('NOUVEAU','NEW')+'</span>':'')+
+     (on&&ok?'<span class="skOn">✓</span>':ok?'':'<span class="skLk">🔒 '+LG('Niv. ','Lv. ')+it.lv+'</span>')+
+     '<img class="skI" alt="" src="'+thumb(CAT,id)+'"><span class="skN">'+esc(LGn(it.n))+'</span><span class="skL">'+esc(LGn(RARN[r]))+'</span></button>'}).join('');
   $('skTabs').querySelectorAll('.skTab').forEach(t=>t.classList.toggle('nw',unseen(t.dataset.c)>0&&t.dataset.c!==CAT));
   if(lv)for(const id of ids)if(lv>=D[id].lv)SEEN.add(CAT+':'+id);saveSeen();if(typeof PROF!=='undefined')PROF.ui();
   PV.key=''}
@@ -11464,12 +11493,12 @@ const SKIN=(()=>{
  const CATN={o:['Tenue','Outfit'],h:['Bonnet','Hat'],g:['Arme','Weapon'],b:['Sac','Bag'],a:['Aura','Aura']};
  function rewards(l0,l1){const r=[];for(const c in DEF)for(const id in DEF[c]){const lv=DEF[c][id].lv;if(lv>l0&&lv<=l1)r.push({c,id,lv})}return r.sort((a,b)=>a.lv-b.lv)}
  function nextReward(lv){let best=null;for(const c in DEF)for(const id in DEF[c]){const l=DEF[c][id].lv;if(l>lv&&(!best||l<best.lv))best={c,id,lv:l}}if(!best)return null;const it=DEF[best.c][best.id],r=RAR(it.lv);
-  return{lv:best.lv,name:LGn(it.n),cat:LGn(CATN[best.c]),rar:LGn(RARN[r]),col:RARC[r],img:thumb(best.c,best.id)}}
+  return{lv:best.lv,name:LGn(it.n),cat:LGn(CATN[best.c]),rar:LGn(RARN[r]),col:RARC[r],r,sty:RSTY(r),img:thumb(best.c,best.id)}}
  // carte affichee sur l'ecran de fin quand un niveau gagne debloque un ou plusieurs skins
  let RQ=[];
  function announce(l0,l1){const r=rewards(l0,l1);if(!r.length)return;RQ=r;const b=$('skRew'),lv=l1;
   b.querySelector('.srT').textContent=LG('Niveau ','Level ')+lv+LG(' atteint !',' reached!');b.querySelector('.srS').textContent=r.length>1?LG(r.length+' nouveaux skins débloqués',r.length+' new skins unlocked'):LG('Nouveau skin débloqué','New skin unlocked');
-  b.querySelector('.srL').innerHTML=r.map((q,i)=>{const it=DEF[q.c][q.id],rr=RAR(it.lv);return'<div class="srI" style="--rc:'+RARC[rr]+'"><img alt="" src="'+thumb(q.c,q.id)+'"><b>'+esc(LGn(it.n))+'</b><small>'+esc(LGn(CATN[q.c]))+' · <em>'+esc(LGn(RARN[rr]))+'</em></small><button class="srE" data-i="'+i+'">'+LG('Équiper','Equip')+'</button></div>'}).join('');
+  b.querySelector('.srL').innerHTML=r.map((q,i)=>{const it=DEF[q.c][q.id],rr=RAR(it.lv);return'<div class="srI r'+rr+'" style="'+RSTY(rr)+'"><img alt="" src="'+thumb(q.c,q.id)+'"><b>'+esc(LGn(it.n))+'</b><small>'+esc(LGn(CATN[q.c]))+'</small><span class="srR">'+esc(LGn(RARN[rr]))+'</span><button class="srE" data-i="'+i+'">'+LG('Équiper','Equip')+'</button></div>'}).join('');
   b.classList.toggle('leg',r.some(q=>RAR(q.lv)===3));b.classList.add('on');try{boostSnd()}catch(e){}}
  function initRew(){const b=document.createElement('div');b.id='skRew';b.innerHTML='<div class="srP" role="dialog" aria-modal="true"><div class="srGlow"></div><div class="srT"></div><div class="srS"></div><div class="srL"></div><button class="srX">'+LG('Continuer','Continue')+'</button></div>';document.body.appendChild(b);
   const shut=()=>b.classList.remove('on');b.querySelector('.srX').onclick=shut;b.addEventListener('pointerdown',e=>{if(e.target===b)shut()});
