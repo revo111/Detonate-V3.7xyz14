@@ -95,9 +95,18 @@ const SKIN_LV = {
   a: { braise: 6, givre: 11, toxique: 16, electrique: 20, ombre: 25, royale: 30 }
 };
 const SKINS_ALL = process.env.SKINS_ALL === '1';
+// Skins de la boutique (meme liste que le jeu : « shop:1 »). La boutique n'existe pas encore :
+// pendant les tests, ils sont gratuits pour tous les profils, quel que soit le niveau.
+const SKIN_SHOP = {
+  o: ['costard', 'squelette', 'astronaute', 'samourai', 'hologramme'],
+  h: ['bandana', 'kabuto', 'bulle', 'kitsune', 'aureole'],
+  g: ['bambou', 'graffiti', 'circuit', 'galaxie', 'prisme'],
+  b: ['carapace', 'katanas', 'drone', 'demon', 'ange'],
+  a: ['notes', 'petales', 'orbite', 'cercle', 'spectre']
+};
 function cleanSkins(sel, lvl) {
   const o = {};
-  for (const c in SKIN_LV) { const id = sel && typeof sel[c] === 'string' ? sel[c] : ''; o[c] = SKIN_LV[c][id] && (SKINS_ALL || lvl >= SKIN_LV[c][id]) ? id : ''; }
+  for (const c in SKIN_LV) { const id = sel && typeof sel[c] === 'string' ? sel[c] : ''; o[c] = (SKIN_LV[c][id] && (SKINS_ALL || lvl >= SKIN_LV[c][id])) || SKIN_SHOP[c].includes(id) ? id : ''; }
   return o;
 }
 const pub = P => { const l = lvlOf(P.xp); return { id: P.id, n: P.n, xp: P.xp, lvl: l, g: P.g, w: P.w, k: P.k, d: P.d, mvp: P.mvp, sk: cleanSkins(P.skn, l), ska: SKINS_ALL ? 1 : 0 }; };
