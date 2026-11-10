@@ -83,7 +83,24 @@ const sha = s => crypto.createHash('sha256').update(String(s)).digest('hex');
 const day = () => new Date().toISOString().slice(0, 10);
 const num = (v, max) => Math.max(0, Math.min(max, Math.floor(+v || 0)));
 const cleanName = n => String(n || '').replace(/[<>&"']/g, '').trim().slice(0, 14);
-const pub = P => ({ id: P.id, n: P.n, xp: P.xp, lvl: lvlOf(P.xp), g: P.g, w: P.w, k: P.k, d: P.d, mvp: P.mvp });
+// ---------- skins : niveau qui debloque chaque skin (meme table que le jeu, index.html : SKIN) ----------
+// tenue (o), bonnet (h), arme (g), sac (b), aura (a). Le serveur ne garde et ne transmet que des skins debloques.
+// Dans le profil, les skins equipes sont dans « skn » (« sk » est l'empreinte du secret du joueur).
+// SKINS_ALL=1 (variable d'environnement, serveur de test) : tous les skins debloques pour tout le monde.
+const SKIN_LV = {
+  o: { foret: 4, arctique: 9, urbain: 14, hazmat: 19, furtif: 23, elite: 27 },
+  h: { casquette: 3, bonnet: 8, beret: 13, ranger: 17, viking: 22, couronne: 29 },
+  g: { sable: 2, carbone: 7, glacier: 12, neon: 18, lave: 24, or: 28 },
+  b: { tactique: 5, sport: 10, radio: 15, jetpack: 21, cristal: 26 },
+  a: { braise: 6, givre: 11, toxique: 16, electrique: 20, ombre: 25, royale: 30 }
+};
+const SKINS_ALL = process.env.SKINS_ALL === '1';
+function cleanSkins(sel, lvl) {
+  const o = {};
+  for (const c in SKIN_LV) { const id = sel && typeof sel[c] === 'string' ? sel[c] : ''; o[c] = SKIN_LV[c][id] && (SKINS_ALL || lvl >= SKIN_LV[c][id]) ? id : ''; }
+  return o;
+}
+const pub = P => { const l = lvlOf(P.xp); return { id: P.id, n: P.n, xp: P.xp, lvl: l, g: P.g, w: P.w, k: P.k, d: P.d, mvp: P.mvp, sk: cleanSkins(P.skn, l), ska: SKINS_ALL ? 1 : 0 }; };
 function auth(id, s) {
   const P = typeof id === 'string' && DB[id];
   if (!P || typeof s !== 'string' || sha(s) !== P.sk) return null;
@@ -222,7 +239,7 @@ async function http(req, res, url) {
   }
   if (op === 'peek') {
     if (m.key !== KEY) return out(res, 403, { err: 'key' });
-    return out(res, 200, { lvl: peekLocal(m.id, m.s, m.sid) });
+    return out(res, 200, peekLocal(m.id, m.s, m.sid));
   }
   const P = auth(m.id, m.s);
   if (!P) return out(res, 404, { err: 'profile' });
@@ -241,6 +258,8 @@ async function http(req, res, url) {
   if (op === 'ping') return out(res, 200, { ok: 1, prof: pub(P) });
   // debut d'une partie solo : le serveur note l'heure et le mode (la duree de la partie est mesuree par lui)
   if (op === 'start') { SOLO.set(P.id, { t: Date.now(), mode: MODES.has(m.mode) ? m.mode : 'bomb' }); return out(res, 200, { ok: 1 }); }
+  // skins equipes : enregistres dans le profil (seulement ceux que le niveau du joueur debloque)
+  if (op === 'skins') { P.skn = cleanSkins(m.sk, lvlOf(P.xp)); save(); return out(res, 200, { prof: pub(P) }); }
   if (op === 'name') { const n = cleanName(m.n); if (n !== P.n) { P.n = n; save(); } return out(res, 200, { prof: pub(P) }); }
   if (op === 'solo') {
     const r = cleanReport(m.r, true);
@@ -282,18 +301,21 @@ async function award(list) {
   const j = await remote('award', { list });
   return j && j.list ? j.list : list.map(a => ({ id: a.id, err: 'remote' }));
 }
-// niveau d'un joueur (affiche dans le salon et dans le tableau de fin) ; 0 si inconnu, -1 si sa session n'est pas la session en cours
+// niveau et skins d'un joueur (affiches dans le salon, en partie et dans le tableau de fin) :
+// { lvl, sk } ; lvl 0 si inconnu, -1 si sa session n'est pas la session en cours (profil ouvert sur un autre appareil)
 function peekLocal(id, s, sid) {
   const P = STORE_OK && auth(id, s);
-  if (!P) return 0;
-  return sessOk(P.id, sid) ? lvlOf(P.xp) : -1;
+  if (!P) return { lvl: 0 };
+  if (!sessOk(P.id, sid)) return { lvl: -1 };
+  const l = lvlOf(P.xp);
+  return { lvl: l, sk: cleanSkins(P.skn, l) };
 }
 async function peek(id, s, sid) {
-  if (!id || !s) return 0;
+  if (!id || !s) return { lvl: 0 };
   if (IS_PRIMARY) return peekLocal(id, s, sid);
-  if (!APP && !process.env.PROFILE_URL) return 0;
+  if (!APP && !process.env.PROFILE_URL) return { lvl: 0 };
   const j = await remote('peek', { id, s, sid });
-  return j && j.lvl ? j.lvl : 0;
+  return j && typeof j.lvl === 'number' ? j : { lvl: 0 };
 }
 
-module.exports = { http, award, peek, flush, lvlOf, xpFrom, IS_PRIMARY, PRIMARY };
+module.exports = { http, award, peek, flush, lvlOf, xpFrom, cleanSkins, IS_PRIMARY, PRIMARY };
