@@ -360,6 +360,41 @@ body.inmenu #muteBtn svg,body.inmenu #fsBtn svg{width:20px;height:20px}
 #profBox .ppSkin{width:100%;height:44px;margin:14px 0 0;border-radius:10px;border:1px solid rgba(255,207,90,.55);background:rgba(255,207,90,.08);color:#ffcf5a;font:700 14px/1 var(--fd);letter-spacing:.06em;cursor:pointer}
 #profBox .ppSkin:hover{background:rgba(255,207,90,.16)}
 #profBox .ppLinks{margin-top:8px}
+/* casier : badge « NOUVEAU » sur les skins debloques pas encore vus, point sur l'onglet */
+#skinBox .skC{position:relative}
+#skinBox .skNew{position:absolute;top:4px;left:4px;z-index:1;padding:3px 6px;border-radius:6px;background:#ffcf5a;color:#1a1206;font:800 9.5px/1 var(--fd);letter-spacing:.06em}
+#skinBox .skTab.nw::after{content:'';display:inline-block;width:7px;height:7px;margin-left:6px;border-radius:50%;background:#ffcf5a;vertical-align:2px}
+/* pastille du profil : point dore s'il y a des skins nouveaux ; compteur sur le bouton « Skins » */
+#menu #profChip{position:relative}
+#menu #profChip.new::after{content:'';position:absolute;top:3px;left:33px;width:11px;height:11px;border-radius:50%;background:#ffcf5a;box-shadow:0 0 0 2px rgba(9,12,20,.9),0 0 10px rgba(255,207,90,.8)}
+#profBox .ppSkin i{display:inline-grid;place-items:center;min-width:20px;height:20px;margin-left:8px;padding:0 5px;border-radius:10px;background:#ffcf5a;color:#1a1206;font:800 12px/1 var(--fd);font-style:normal;vertical-align:1px}
+/* fenetre du profil : prochaine recompense */
+#profBox .ppNext{display:flex;align-items:center;gap:12px;margin:12px 0 0;padding:8px 12px 8px 8px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}
+#profBox .ppNext img{flex:none;width:52px;height:52px;border-radius:8px;background:rgba(255,255,255,.05)}
+#profBox .ppNext span{display:flex;flex-direction:column;gap:3px;min-width:0}
+#profBox .ppNext em{font:600 11px/1.2 system-ui,sans-serif;font-style:normal;color:#9aa6b9}
+#profBox .ppNext b{font:700 15px/1.15 var(--fd)}
+#profBox .ppNext small{font-size:11px;color:#9aa6b9}
+#profBox[data-st=guest] .ppNext{display:none}
+/* recompense de niveau : carte sur l'ecran de fin */
+#skRew{--fd:'Chakra Petch','Bahnschrift','DIN Alternate',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;position:fixed;inset:0;z-index:82;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,7,13,.55);font:400 14px/1.4 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#eef2f8}
+#skRew.on{display:flex}
+#skRew .srP{position:relative;overflow:hidden;box-sizing:border-box;width:min(100%,560px);max-height:100%;overflow-y:auto;padding:22px 20px 18px;border-radius:18px;border:1px solid rgba(255,207,90,.5);background:rgba(9,12,20,.97);box-shadow:0 24px 70px rgba(0,0,0,.6),0 0 40px rgba(255,207,90,.16);text-align:center;animation:srIn .45s cubic-bezier(.2,1.4,.4,1)}
+#skRew.leg .srP{border-color:#ffcf5a;box-shadow:0 24px 70px rgba(0,0,0,.6),0 0 70px rgba(255,207,90,.35)}
+@keyframes srIn{from{transform:scale(.7);opacity:0}to{transform:none;opacity:1}}
+#skRew .srGlow{position:absolute;left:50%;top:-120px;width:420px;height:240px;margin-left:-210px;border-radius:50%;background:radial-gradient(rgba(255,207,90,.28),rgba(255,207,90,0) 70%);pointer-events:none}
+#skRew .srT{position:relative;font:700 24px/1.1 var(--fd);color:#ffcf5a}
+#skRew .srS{position:relative;margin:6px 0 14px;font:600 13px/1.2 var(--fd);letter-spacing:.08em;text-transform:uppercase;color:#c8d0dd}
+#skRew .srL{position:relative;display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
+#skRew .srI{--rc:#9aa6b9;box-sizing:border-box;flex:0 1 160px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 10px 12px;border-radius:14px;border:1.5px solid var(--rc);background:rgba(255,255,255,.035)}
+#skRew .srI img{width:120px;height:120px;border-radius:10px;background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02))}
+#skRew .srI b{font:700 15px/1.15 var(--fd)}
+#skRew .srI small{font-size:11.5px;color:#9aa6b9}#skRew .srI em{font-style:normal;color:var(--rc);font-weight:700}
+#skRew .srE{margin-top:6px;height:34px;padding:0 16px;border:0;border-radius:9px;background:#ffcf5a;color:#1a1206;font:700 13px/1 var(--fd);cursor:pointer}
+#skRew .srE.ok{background:#7fe8a2}
+#skRew .srX{position:relative;margin-top:16px;height:40px;padding:0 26px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:none;color:#eef2f8;font:700 14px/1 var(--fd);cursor:pointer}
+#skRew .srX:hover{border-color:rgba(255,255,255,.4)}
+@media (max-height:500px){#skRew .srP{padding:14px 14px 12px}#skRew .srI img{width:84px;height:84px}#skRew .srT{font-size:20px}#skRew .srS{margin:4px 0 10px}#skRew .srX{margin-top:10px}}
 </style></head><body>
 <div id="menu" data-v="mainMenu"><div id="mfade"></div><div class="panel">
 <header class="mtop"><h1 class="logo">DETONATE<span class="ver">V3.7</span></h1><div class="mtopR"><a id="founder" href="https://x.com/Revo_YHWH" target="_blank" rel="noopener noreferrer" aria-label="Revo sur X (@Revo_YHWH)"><span class="av"><img alt="Revo" width="40" height="40" src="data:image/webp;base64,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"></span><span class="who"><span class="role">Fondateur</span><span class="nm">Revo</span></span><span class="xl"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Suivre</span></a><div id="langSel"><button data-lang="fr">FR</button><button data-lang="en">EN</button></div></div></header>
@@ -10981,7 +11016,8 @@ const PROF=(()=>{
   if(!I&&c&&c.v===1)MIG={xp:c.xp,g:c.g,w:c.w,k:c.k,d:c.d,mvp:c.mvp};   // profil local de l'etape 1 : repris a la creation du profil (plafonne par le serveur)
   if(!P.n)P.n=gname()}
  const old=q=>{if(!q||!q.id)return;const h=(get(KH)||[]).filter(x=>x&&x.id!==q.id);h.unshift({id:q.id,s:q.s,srv:SRV,t:Date.now()});put(KH,h.slice(0,10))};   // anciens codes de cet appareil
- const keep=pr=>{if(!pr)return;P={n:pr.n||'',xp:pr.xp||0,lvl:pr.lvl||lvlOf(pr.xp||0),g:pr.g||0,w:pr.w||0,k:pr.k||0,d:pr.d||0,mvp:pr.mvp||0};put(KC,Object.assign({v:2},P));ui()};
+ const keep=pr=>{if(!pr)return;P={n:pr.n||'',xp:pr.xp||0,lvl:pr.lvl||lvlOf(pr.xp||0),g:pr.g||0,w:pr.w||0,k:pr.k||0,d:pr.d||0,mvp:pr.mvp||0,sk:pr.sk||null,ska:pr.ska?1:0};put(KC,Object.assign({v:2},P));
+  if(typeof SKIN!=='undefined'&&SKIN.fromProf)SKIN.fromProf(P.sk);ui()};   // skins equipes : ceux enregistres sur le serveur font foi
  async function api(op,b){const c=new AbortController(),t=setTimeout(()=>c.abort(),25000);
   try{const r=await fetch(httpBase()+'/api/profile/'+op,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(b),cache:'no-store',signal:c.signal});const j=await r.json().catch(()=>({}));j._st=r.status;return j}finally{clearTimeout(t)}}
  const isOn=()=>ST==='on'&&!!I&&!!SID,idb=o=>Object.assign({id:I.id,s:I.s,sid:SID},o||{});
@@ -11033,6 +11069,7 @@ const PROF=(()=>{
    HUI.T(t_,tx,ty,z,gst?'#ffcf5a':R.err?HUI.LOSE:HUI.SOFT,'left',600,R.err?0:1);bar(I&&nd?cur/nd:0);return y+h+10}
   const k=ease((now-R.t0-350)/1700),xs=R.x0+(R.x1-R.x0)*k,[lv,cur,nd]=prog(xs),up=lvlOf(xs)>R.l0;
   if(up&&!R.snd){R.snd=1;try{boostSnd()}catch(e){}}
+  if(R.l1>R.l0&&!R.ann&&now-R.t0>2300){R.ann=1;try{SKIN.announce(R.l0,R.l1)}catch(e){}}   // skins debloques par les niveaux gagnes
   hexBadge(bx,y+h/2,r,lv);
   const xt='+'+Math.round(R.tot*Math.min(1,k*1.1))+' XP',xz=mob?15:18;HUI.T(xt,tx,ty,xz,'#ffcf5a','left',700,1);
   const rt=R.note&&NOTE[R.note]?NOTE[R.note]():(lv>=LMAX?LG('Niveau maximum','Max level'):(up?LG('Niveau '+lv+' atteint !','Level '+lv+' reached!'):LG('Niveau ','Level ')+lv+' · '+Math.floor(cur)+' / '+nd+' XP'));
@@ -11042,6 +11079,7 @@ const PROF=(()=>{
  const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
  const nm=()=>P.n||LG('Joueur','Player'),fr=v=>Number(v).toLocaleString(LANG==='en'?'en':'fr'),kd=()=>KD(P.k,P.d);
  function ui(){if(HEADLESS)return;const c=$('profChip');if(!c)return;const[lv,cur,nd]=prog(P.xp),gs=!I;c.classList.toggle('guest',gs);c.classList.toggle('busy',ST==='busy');
+  const nw=typeof SKIN!=='undefined'&&SKIN.unseen?SKIN.unseen():0;c.classList.toggle('new',nw>0);{const sb=$('profSkinB');if(sb)sb.innerHTML=LG('Skins','Skins')+(nw?' <i>'+nw+'</i>':'')}
   c.querySelector('.pbg b').textContent=gs?'+':lv;c.querySelector('.pn').textContent=gs?LG('Invité','Guest'):nm();
   c.querySelector('.pl').textContent=gs?LG('Créer un profil','Create a profile'):ST==='busy'?LG('Ouvert sur un autre appareil','Open on another device'):lv>=LMAX?LG('Niveau max','Max level'):LG('Niv. ','Lv. ')+lv+' · '+cur+' / '+nd;
   c.querySelector('.pbar i').style.width=(gs?0:nd?Math.round(cur/nd*1000)/10:100)+'%';
@@ -11056,6 +11094,8 @@ const PROF=(()=>{
   b.querySelector('.ppTitle').textContent=b.dataset.v==='info'?LG('Calcul de l’XP','How XP is counted'):st==='guest'?LG('Mode invité','Guest mode'):LG('Mon profil','My profile');
   b.querySelector('.ppBadge b').textContent=lv;const ni=$('profName');if(document.activeElement!==ni)ni.value=P.n;
   b.querySelector('.ppLv').textContent=LG('Niveau ','Level ')+lv+' / '+LMAX;b.querySelector('.ppBar i').style.width=(nd?cur/nd*100:100)+'%';
+  {const nx=b.querySelector('.ppNext'),r=typeof SKIN!=='undefined'&&SKIN.nextReward?SKIN.nextReward(lv):null;
+   nx.innerHTML=r?'<img alt="" src="'+r.img+'"><span><em>'+LG('Prochaine récompense · niveau ','Next reward · level ')+r.lv+'</em><b style="color:'+r.col+'">'+esc(r.name)+'</b><small>'+esc(r.cat)+' · '+esc(r.rar)+'</small></span>':'<span><em>'+LG('Toutes les récompenses sont débloquées','All rewards unlocked')+'</em></span>'}
   b.querySelector('.ppXp').textContent=lv>=LMAX?LG('Niveau maximum atteint · ','Max level reached · ')+fr(P.xp)+' XP':fr(cur)+' / '+fr(nd)+' XP · '+LG('encore ','')+fr(nd-cur)+LG(' XP pour le niveau ',' XP to level ')+(lv+1);
   const S=[[LG('Parties','Games'),fr(P.g)],[LG('Victoires','Wins'),fr(P.w)],[LG('Éliminations','Eliminations'),fr(P.k)],[LG('Ratio K/D','K/D ratio'),kd()],['MVP',fr(P.mvp)],[LG('XP totale','Total XP'),fr(P.xp)]];
   b.querySelector('.ppStats').innerHTML=S.map(s=>'<div><b>'+esc(s[1])+'</b><span>'+esc(s[0])+'</span></div>').join('');
@@ -11100,7 +11140,7 @@ const PROF=(()=>{
      '<div class="ppRow"><input id="profNew" maxlength="14" autocomplete="off" placeholder="'+LG('Ton pseudo','Your name')+'"><button class="ppB" id="profMake">'+LG('Créer','Create')+'</button></div><p class="ppMig"></p></div>'+
     '<div class="ppBusyBox"><p>'+LG('Ton profil est ouvert sur un autre appareil.','Your profile is open on another device.')+'</p><button class="ppB ppWide" id="profTake">'+LG('Jouer ici avec mon profil','Play here with my profile')+'</button></div>'+
     '<div class="ppMain"><div class="ppHead"><span class="ppBadge"><b>1</b></span><div class="ppId"><label for="profName">'+LG('Pseudo','Name')+'</label><input id="profName" maxlength="14" autocomplete="off" placeholder="'+LG('Joueur','Player')+'"><span class="ppLv"></span></div></div>'+
-     '<div class="ppBar"><i></i></div><div class="ppXp"></div><div class="ppStats"></div>'+
+     '<div class="ppBar"><i></i></div><div class="ppXp"></div><div class="ppNext"></div><div class="ppStats"></div>'+
      '<div class="ppCodeBox"><div class="ppT">'+LG('Code de sauvegarde','Save code')+'</div><div class="ppRow"><input id="profCode" readonly><button class="ppB" id="profCopy">'+LG('Copier','Copy')+'</button></div>'+
       '<p class="ppHint">'+LG('Il ne change jamais : garde-le pour retrouver ton profil sur un autre appareil.','It never changes: keep it to get your profile back on another device.')+'</p></div></div>'+
     '<button class="ppSkin" id="profSkinB">'+LG('Skins','Skins')+'</button>'+
@@ -11128,7 +11168,10 @@ const PROF=(()=>{
   ui();sync()}
  // niveau d'un joueur pour les tableaux des parties privees (en ligne) : celui envoye par le serveur (0 : bot ou inconnu)
  const lvlOfSlot=slot=>{if(netMode){const p=(netPlayers||[]).find(q=>q.slot===slot);return p&&p.lvl||0}return 0};
- return{init,award,drawXP,ui,open,prog,need,TOT,LMAX,get:()=>P,code,report,hexBadge,lvlOfSlot,onXP,KD,state:()=>ST}})();
+ // skins equipes : enregistres dans le profil sur le serveur ; dans un salon en ligne, montres tout de suite aux autres joueurs
+ function saveSkins(sel){try{if(netMode&&netSocket&&netSocket.readyState===1)sendNet({type:'sk',sk:sel})}catch(e){}
+  if(!isOn())return Promise.resolve(false);return api('skins',idb({sk:sel})).then(j=>{if(j.prof){keep(j.prof);return true}if(j._st===409)setSt('busy');return false}).catch(()=>false)}
+ return{init,award,drawXP,ui,open,prog,need,TOT,LMAX,get:()=>P,code,report,hexBadge,lvlOfSlot,onXP,KD,state:()=>ST,saveSkins,isOn,lvlOf}})();
 // ===================== V3.7 : SKINS (tenue, bonnet, arme, sac, aura) =====================
 // 29 skins en 5 categories, une recompense par niveau (du niveau 2 au niveau 30).
 // Les modeles sont faits pour la vue du jeu (camera presque au-dessus) : coiffes, epaules, sac dans le dos, arme, aura au sol.
@@ -11353,14 +11396,24 @@ const SKIN=(()=>{
   if(MAT.b_jet_f)MAT.b_jet_f.opacity=.65+.3*Math.sin(t*31);
   for(const s of ACT){const m=s.m;if(s.bag){s.bag.visible=!(m.pk&&m.pk.visible&&m.pk.children.length>1);if(s.btk&&s.bag.visible)s.btk(t)}for(const f of s.fx)if(f)f(t);if(s.aura){const v=m.rg.visible&&m.b.visible;s.aura.visible=v;if(v)s.tk(t)}}}
  // ---------- skins portes ----------
- const KEY='detonate_skins',ALLU=/[?&]skins=all\b/.test(location.search);
- let SEL={o:'',h:'',g:'',b:'',a:''},TRY={};
- try{const j=JSON.parse(localStorage.getItem(KEY)||'{}');for(const k in SEL)if(j&&typeof j[k]==='string'&&DEF[k][j[k]])SEL[k]=j[k]}catch(e){}
- const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(SEL))}catch(e){}};
- const lvlNow=()=>ALLU?99:(typeof PROF!=='undefined'&&PROF.code()?PROF.get().lvl:0),unl=(c,id)=>!id||lvlNow()>=DEF[c][id].lv;
- const worn=()=>{const w={};for(const k in SEL)w[k]=unl(k,SEL[k])?SEL[k]:'';return w},keyOf=w=>w.o+'|'+w.h+'|'+w.g+'|'+w.b+'|'+w.a;
- // en jeu : pour l'instant, seul le joueur local porte ses skins (les autres joueurs les verront quand le serveur les transmettra)
- function sync(){if(typeof E!=='undefined'&&E){const w=worn(),k=keyOf(w),has=k!=='||||';for(const e of E){const m=e.m;if(!m||!m.sk)continue;const want=has&&e.id===localSlot?k:'';if((m._skK||'')!==want){apply(m,want?w:null);m._skK=want}}}tick(performance.now()/1000)}
+ // skins equipes : enregistres dans le profil sur le serveur (il ne garde que des skins debloques) ; copie dans le navigateur.
+ // Le niveau qui debloque chaque skin est verifie par le serveur (meme table que profiles.js : SKIN_LV).
+ const KEY='detonate_skins',KSEEN='detonate_skins_seen',clean=j=>{const o={o:'',h:'',g:'',b:'',a:''};for(const k in o)if(j&&typeof j[k]==='string'&&DEF[k][j[k]])o[k]=j[k];return o};
+ let SEL=clean(null),TRY={},PEND=false,SEEN=new Set();
+ try{SEL=clean(JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
+ try{SEEN=new Set(JSON.parse(localStorage.getItem(KSEEN)||'[]'))}catch(e){}
+ const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(SEL))}catch(e){}},saveSeen=()=>{try{localStorage.setItem(KSEEN,JSON.stringify([...SEEN]))}catch(e){}};
+ const prof=()=>typeof PROF!=='undefined'&&PROF.code()?PROF.get():null;
+ const lvlNow=()=>{const p=prof();return p?(p.ska?99:p.lvl||0):0},unl=(c,id)=>!id||lvlNow()>=DEF[c][id].lv;
+ const worn=()=>{const w={};for(const k in SEL)w[k]=unl(k,SEL[k])?SEL[k]:'';return w},keyOf=w=>w?w.o+'|'+w.h+'|'+w.g+'|'+w.b+'|'+w.a:'';
+ // envoi au serveur (profil + salon en ligne) ; s'il echoue (serveur injoignable), renvoye des que le profil revient
+ function push(){if(typeof PROF==='undefined')return;PEND=true;PROF.saveSkins(Object.assign({},SEL)).then(ok=>{if(ok)PEND=false})}
+ // profil recu du serveur : ses skins font foi (sauf changement fait ici pendant une coupure : il est renvoye)
+ function fromProf(sk){if(PEND){if(typeof PROF!=='undefined'&&PROF.isOn())push();return}if(!sk)return;const n=clean(sk);if(keyOf(n)!==keyOf(SEL)){SEL=n;save();if(PV)PV.key=''}}
+ // en jeu : le joueur porte ses skins ; en ligne, les autres joueurs portent ceux que le serveur transmet (verifies par lui)
+ function sync(){if(typeof E!=='undefined'&&E){const mine=worn();for(const e of E){const m=e.m;if(!m||!m.sk)continue;let w=null;
+   if(e.id===localSlot)w=mine;else if(netMode&&typeof netPlayers!=='undefined'){const p=netPlayers.find(q=>q.slot===e.id);if(p&&p.sk)w=clean(p.sk)}
+   const want=w&&keyOf(w)!=='||||'?keyOf(w):'';if((m._skK||'')!==want){apply(m,want?w:null);m._skK=want}}}tick(performance.now()/1000)}
  {const d0=draw;draw=function(){try{sync()}catch(e){}return d0.apply(this,arguments)}}
  // ---------- casier : apercu 3D et choix des skins ----------
  const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
@@ -11383,11 +11436,15 @@ const SKIN=(()=>{
  function list(){const D=DEF[CAT],lv=lvlNow(),cur=Object.assign({},worn(),TRY)[CAT],ids=Object.keys(D).sort((a,b)=>D[a].lv-D[b].lv);
   $('skTabs').innerHTML=CATS.map(c=>'<button class="skTab'+(c[0]===CAT?' on':'')+'" data-c="'+c[0]+'">'+esc(LGn(c[1]))+'</button>').join('');
   $('skGrid').innerHTML='<button class="skC def'+(cur?'':' on')+'" data-id=""><span class="skI skNo">∅</span><span class="skN">'+LG('Par défaut','Default')+'</span><span class="skL"> </span></button>'+
-   ids.map(id=>{const it=D[id],ok=lv>=it.lv,r=RAR(it.lv);return'<button class="skC'+(cur===id?' on':'')+(ok?'':' lock')+'" data-id="'+id+'" style="--rc:'+RARC[r]+'"><img class="skI" alt="" src="'+thumb(CAT,id)+'"><span class="skN">'+esc(LGn(it.n))+'</span><span class="skL">'+(ok?esc(LGn(RARN[r])):'🔒 '+LG('Niv. ','Lv. ')+it.lv)+'</span></button>'}).join('');
+   ids.map(id=>{const it=D[id],ok=lv>=it.lv,r=RAR(it.lv),nw=ok&&!SEEN.has(CAT+':'+id);return'<button class="skC'+(cur===id?' on':'')+(ok?'':' lock')+'" data-id="'+id+'" style="--rc:'+RARC[r]+'">'+(nw?'<span class="skNew">'+LG('NOUVEAU','NEW')+'</span>':'')+'<img class="skI" alt="" src="'+thumb(CAT,id)+'"><span class="skN">'+esc(LGn(it.n))+'</span><span class="skL">'+(ok?esc(LGn(RARN[r])):'🔒 '+LG('Niv. ','Lv. ')+it.lv)+'</span></button>'}).join('');
+  $('skTabs').querySelectorAll('.skTab').forEach(t=>t.classList.toggle('nw',unseen(t.dataset.c)>0&&t.dataset.c!==CAT));
+  if(lv)for(const id of ids)if(lv>=D[id].lv)SEEN.add(CAT+':'+id);saveSeen();if(typeof PROF!=='undefined')PROF.ui();
   PV.key=''}
+ // skins debloques pas encore vus dans le casier (point dore sur la pastille du profil)
+ function unseen(c){const lv=lvlNow();if(!lv)return 0;let n=0;for(const k in DEF)if(!c||c===k)for(const id in DEF[k])if(lv>=DEF[k][id].lv&&!SEEN.has(k+':'+id))n++;return n}
  function say(t,ok){const m=$('skMsg');m.textContent=t;m.className='skMsg'+(ok?' ok':'')}
- function pick(id){const D=DEF[CAT];if(!id){SEL[CAT]='';delete TRY[CAT];save();say(LG('Skin retiré.','Skin removed.'),1)}
-  else if(unl(CAT,id)){SEL[CAT]=id;delete TRY[CAT];save();say(LGn(D[id].n)+LG(' : équipé.',': equipped.'),1)}
+ function pick(id){const D=DEF[CAT];if(!id){SEL[CAT]='';delete TRY[CAT];save();push();say(LG('Skin retiré.','Skin removed.'),1)}
+  else if(unl(CAT,id)){SEL[CAT]=id;delete TRY[CAT];save();push();say(LGn(D[id].n)+LG(' : équipé.',': equipped.'),1)}
   else{TRY[CAT]=id;say(LGn(D[id].n)+LG(' : essai. Se débloque au niveau ',': preview. Unlocks at level ')+D[id].lv+(lvlNow()?'.':LG(' (crée ton profil pour gagner des niveaux).',' (create your profile to earn levels).')),0)}
   list()}
  function open(){const b=$('skinBox');if(!b)return;TRY={};b.classList.add('on');pvInit();list();say(lvlNow()?'':LG('Crée ton profil pour débloquer des skins en montant de niveau.','Create your profile to unlock skins as you level up.'),0);cancelAnimationFrame(RAF);pvLoop();try{uiClick()}catch(e){}}
@@ -11403,8 +11460,25 @@ const SKIN=(()=>{
   const cv_=$('skCv');let px=0;cv_.addEventListener('pointerdown',e=>{PV.drag=1;px=e.clientX;cv_.setPointerCapture(e.pointerId)});cv_.addEventListener('pointermove',e=>{if(PV&&PV.drag){PV.az+=(e.clientX-px)*.012;px=e.clientX}});
   for(const k of['pointerup','pointercancel'])cv_.addEventListener(k,()=>{if(PV)PV.drag=0});
   setInterval(()=>{if(b.classList.contains('on')&&menu.classList.contains('hidden'))close()},500)}
- init();
- return{sync,open,close,apply,clear,tick,thumb,CATS,DEF,worn,sel:()=>SEL,set:(c,id)=>{SEL[c]=id;save()},pv:()=>PV,RAR}})();
+ // ---------- recompenses : skins debloques par les niveaux gagnes ----------
+ const CATN={o:['Tenue','Outfit'],h:['Bonnet','Hat'],g:['Arme','Weapon'],b:['Sac','Bag'],a:['Aura','Aura']};
+ function rewards(l0,l1){const r=[];for(const c in DEF)for(const id in DEF[c]){const lv=DEF[c][id].lv;if(lv>l0&&lv<=l1)r.push({c,id,lv})}return r.sort((a,b)=>a.lv-b.lv)}
+ function nextReward(lv){let best=null;for(const c in DEF)for(const id in DEF[c]){const l=DEF[c][id].lv;if(l>lv&&(!best||l<best.lv))best={c,id,lv:l}}if(!best)return null;const it=DEF[best.c][best.id],r=RAR(it.lv);
+  return{lv:best.lv,name:LGn(it.n),cat:LGn(CATN[best.c]),rar:LGn(RARN[r]),col:RARC[r],img:thumb(best.c,best.id)}}
+ // carte affichee sur l'ecran de fin quand un niveau gagne debloque un ou plusieurs skins
+ let RQ=[];
+ function announce(l0,l1){const r=rewards(l0,l1);if(!r.length)return;RQ=r;const b=$('skRew'),lv=l1;
+  b.querySelector('.srT').textContent=LG('Niveau ','Level ')+lv+LG(' atteint !',' reached!');b.querySelector('.srS').textContent=r.length>1?LG(r.length+' nouveaux skins débloqués',r.length+' new skins unlocked'):LG('Nouveau skin débloqué','New skin unlocked');
+  b.querySelector('.srL').innerHTML=r.map((q,i)=>{const it=DEF[q.c][q.id],rr=RAR(it.lv);return'<div class="srI" style="--rc:'+RARC[rr]+'"><img alt="" src="'+thumb(q.c,q.id)+'"><b>'+esc(LGn(it.n))+'</b><small>'+esc(LGn(CATN[q.c]))+' · <em>'+esc(LGn(RARN[rr]))+'</em></small><button class="srE" data-i="'+i+'">'+LG('Équiper','Equip')+'</button></div>'}).join('');
+  b.classList.toggle('leg',r.some(q=>RAR(q.lv)===3));b.classList.add('on');try{boostSnd()}catch(e){}}
+ function initRew(){const b=document.createElement('div');b.id='skRew';b.innerHTML='<div class="srP" role="dialog" aria-modal="true"><div class="srGlow"></div><div class="srT"></div><div class="srS"></div><div class="srL"></div><button class="srX">'+LG('Continuer','Continue')+'</button></div>';document.body.appendChild(b);
+  const shut=()=>b.classList.remove('on');b.querySelector('.srX').onclick=shut;b.addEventListener('pointerdown',e=>{if(e.target===b)shut()});
+  b.querySelector('.srL').addEventListener('click',e=>{const t=e.target.closest('.srE');if(!t)return;const q=RQ[+t.dataset.i];if(!q)return;SEL[q.c]=q.id;save();push();SEEN.add(q.c+':'+q.id);saveSeen();
+   b.querySelectorAll('.srE').forEach(x=>{const o=RQ[+x.dataset.i];if(o.c===q.c){x.textContent=o.id===q.id?LG('Équipé ✓','Equipped ✓'):LG('Équiper','Equip');x.classList.toggle('ok',o.id===q.id)}});try{uiClick()}catch(e){}});
+  // la carte se ferme toute seule quand l'ecran de fin disparait
+  setInterval(()=>{if(b.classList.contains('on')&&typeof st!=='undefined'&&st.s!=='end')shut()},500)}
+ init();initRew();
+ return{sync,open,close,apply,clear,tick,thumb,CATS,DEF,worn,sel:()=>SEL,set:(c,id)=>{SEL[c]=id;save()},pv:()=>PV,RAR,fromProf,announce,rewards,nextReward,unseen}})();
 MENU.init();PROF.init();if(!HEADLESS)modeHint();
 if(HEADLESS)loadMap('neon');else MENU.boot();
 // le serveur (game_sim.js) coupe le script a partir de « newRound();let last » : la boucle d'affichage ne tourne pas chez lui
