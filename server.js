@@ -264,7 +264,7 @@ function freeSlot(room, preferTeam) {
 
 const publicPlayers = room => room.players.map(p => ({
   id: p.id, name: p.name, slot: p.slot, team: teamOf(room, p.slot), host: p.id === room.hostId,
-  ready: !!p.ready, off: !p.ws, vote: p.vote || null, lvl: p.lvl || 0
+  ready: !!p.ready, off: !p.ws, vote: p.vote || null, lvl: p.lvl || 0, sk: p.pid && p.sk ? p.sk : null
 }));
 
 // profil du joueur (identifiant + secret envoyes par le jeu) : son niveau s'affiche dans le salon et a la fin de la partie
@@ -272,13 +272,13 @@ const pidOk = v => typeof v === 'string' && /^[A-Za-z0-9_-]{4,40}$/.test(v);
 function setProfile(room, p, m) {
   if (!pidOk(m.pid) || !pidOk(m.ps) || !pidOk(m.psid)) return;
   p.pid = m.pid; p.ps = m.ps; p.psid = m.psid;
-  PROFILES.peek(p.pid, p.ps, p.psid).then(l => {
-    if (l < 0) { if (p.psid === m.psid) { p.pid = p.ps = p.psid = null; p.lvl = 0; } }   // profil ouvert sur un autre appareil : joue en invite
-    else p.lvl = l;
+  PROFILES.peek(p.pid, p.ps, p.psid).then(r => {
+    if (r.lvl < 0) { if (p.psid === m.psid) { p.pid = p.ps = p.psid = null; p.lvl = 0; p.sk = null; } }   // profil ouvert sur un autre appareil : joue en invite
+    else { p.lvl = r.lvl; p.sk = r.sk || null; }
     if (room.players.includes(p)) lobby(room);
   }).catch(() => {});
 }
-const noProfile = p => { p.pid = p.ps = p.psid = null; p.lvl = 0; };
+const noProfile = p => { p.pid = p.ps = p.psid = null; p.lvl = 0; p.sk = null; };
 // statistiques d'une place (pour retirer ce que l'IA a fait pendant l'absence du joueur)
 const REP_F = ['k', 'd', 'p', 'df', 'fl', 'zc', 'cr', 'zk'];
 const repOf = (g, slot) => { try { return g.report(slot); } catch (e) { return null; } };
@@ -306,7 +306,7 @@ function awardXP(room) {
   PROFILES.award(list).then(out => {
     who.forEach((p, i) => {
       const o = out[i] || {};
-      if (o.prof) p.lvl = o.prof.lvl;
+      if (o.prof) { p.lvl = o.prof.lvl; if (o.prof.sk) p.sk = o.prof.sk; }
       send(p.ws, o.res ? { type: 'xp', res: o.res, prof: o.prof } : { type: 'xp', err: o.err || 'remote' });
     });
     if (rooms.get(room.code) === room) lobby(room);
@@ -396,7 +396,7 @@ function toLobby(room, reason) {
 // joueur parti : on garde son jeton (il pourra revenir), sa place se libere
 function ghost(room, p) {
   room.players = room.players.filter(x => x !== p);
-  room.ghosts.set(p.tok, { id: p.id, name: p.name, slot: p.slot, vote: p.vote, pid: p.pid, ps: p.ps, psid: p.psid, lvl: p.lvl });
+  room.ghosts.set(p.tok, { id: p.id, name: p.name, slot: p.slot, vote: p.vote, pid: p.pid, ps: p.ps, psid: p.psid, lvl: p.lvl, sk: p.sk });
 }
 
 function launch(room) {
@@ -448,7 +448,7 @@ function join(ws, m) {
     let slot = gh && !used.has(gh.slot) && gh.slot < capOf(room.map) ? gh.slot : freeSlot(room);
     if (slot === undefined) return send(ws, { type: 'error', message: 'Le salon est plein (' + capOf(room.map) + ' joueurs).' });
     p = { id: gh ? gh.id : newId(), tok: gh ? tok : newTok(), name: cleanName(m.name || (gh && gh.name)), slot, ws, ready: false, vote: gh ? gh.vote : null,
-      pid: gh && gh.pid, ps: gh && gh.ps, psid: gh && gh.psid, lvl: gh ? gh.lvl : 0 };
+      pid: gh && gh.pid, ps: gh && gh.ps, psid: gh && gh.psid, lvl: gh ? gh.lvl : 0, sk: gh ? gh.sk : null };
     if (gh) room.ghosts.delete(tok);
     room.players.push(p);
   }
@@ -564,6 +564,13 @@ wss.on('connection', ws => {
       case 'rematch': {
         if (!room || !room.started || !room.game || room.game.state() !== 'end' || !p || p.id !== room.hostId) return;
         return toLobby(room, 'end');
+      }
+
+      // skins equipes depuis le casier : verifies avec le niveau du joueur, puis montres a tout le salon (salon et partie en cours)
+      case 'sk': {
+        if (!room || !p || !p.pid) return;
+        p.sk = PROFILES.cleanSkins(m.sk, p.lvl || 0);
+        return lobby(room);
       }
 
       case 'leave':
