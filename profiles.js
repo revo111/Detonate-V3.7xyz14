@@ -107,13 +107,35 @@ const SHOP = {
   b: { carapace: [0, 'Carapace'], katanas: [1, 'Katanas croisés'], drone: [2, 'Drone compagnon'], demon: [2, 'Ailes de démon'], ange: [3, "Ailes d'ange"] },
   a: { notes: [0, 'Mélodie'], petales: [1, 'Pétales de cerisier'], orbite: [2, 'Orbite'], cercle: [2, "Cercle d'énergie"], spectre: [3, 'Flammes spectrales'] }
 };
-// prix en centimes selon la rarete (commun, rare, epique, legendaire) et devise
-const PRICE = [99, 199, 399, 699], SHOP_CUR = 'eur';
+// prix en centimes selon la rarete (commun, rare, epique, legendaire)
+// memes montants dans les deux devises : 0,99 / 1,49 / 1,99 / 2,99 ; l'euro par defaut, le dollar americain au choix du joueur
+const PRICE = [99, 149, 199, 299], SHOP_CUR = 'eur', SHOP_CURS = ['eur', 'usd'];
 const CATN = { o: 'Tenue', h: 'Bonnet', g: 'Arme', b: 'Sac', a: 'Aura' }, RARN = ['commun', 'rare', 'épique', 'légendaire'];
 const SHOP_FREE = process.env.SHOP_FREE === '1';
 const STRIPE_KEY = process.env.STRIPE_SECRET_KEY || '', STRIPE_WH = process.env.STRIPE_WEBHOOK_SECRET || '';
 const STRIPE_API = process.env.STRIPE_API || 'https://api.stripe.com';   // STRIPE_API : faux Stripe pour les tests sur ordinateur
 const SHOP_ALL = []; for (const c in SHOP) for (const id in SHOP[c]) SHOP_ALL.push(c + ':' + id);
+// Selection : la boutique propose 8 skins a la fois, deux par rarete, tires au hasard toutes les 8 heures (0 h, 8 h, 16 h UTC).
+// Le tirage ne depend que du creneau horaire : toutes les regions et tous les joueurs voient la meme boutique.
+// Une meme paire ne sort jamais deux creneaux de suite pour une rarete.
+const ROT_MS = 8 * 3600 * 1000, ROT_N = 2;
+const BY_R = [[], [], [], []]; for (const c in SHOP) for (const id in SHOP[c]) BY_R[SHOP[c][id][0]].push({ c, id });
+const rnd32 = s => () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+function rotation(slot) {
+  const res = [];
+  BY_R.forEach((L, r) => {
+    const draw = k => { const a = L.slice(), f = rnd32(Math.imul(k, 2654435761) + r * 104729 + 977); f(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(f() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const pair = (a, o) => a.slice(o, o + ROT_N), key = q => q.map(x => x.c + ':' + x.id).sort().join();
+    // pas de meme paire deux creneaux de suite : on repart d'un creneau repere (tous les 64) et on avance jusqu'au creneau demande
+    const s0 = Math.floor(slot / 64) * 64, b = draw(s0 - 1), a0 = draw(s0), no = [key(pair(b, 0)), key(pair(b, 1))];
+    let cur = pair(a0, 0); for (let o = 0; o + ROT_N <= a0.length; o++) { cur = pair(a0, o); if (!no.includes(key(cur))) break; }
+    for (let k = s0 + 1; k <= slot; k++) { const a = draw(k); cur = key(pair(a, 0)) === key(cur) ? pair(a, 1) : pair(a, 0); }
+    for (const it of cur) res.push({ c: it.c, id: it.id, r, p: PRICE[r] });
+  });
+  return res;
+}
+const slotNow = () => Math.floor(Date.now() / ROT_MS) + (+process.env.SHOP_SLOT_ADD || 0);   // SHOP_SLOT_ADD : tests
+const inRotation = (c, id) => process.env.SHOP_ANY === '1' || rotation(slotNow()).some(x => x.c === c && x.id === id);   // SHOP_ANY=1 : tests
 const priceOf = (c, id) => SHOP[c] && Object.prototype.hasOwnProperty.call(SHOP[c], id) ? PRICE[SHOP[c][id][0]] : 0;
 const owns = (own, c, id) => SHOP_FREE || SKINS_ALL || (Array.isArray(own) && own.includes(c + ':' + id));
 function cleanSkins(sel, lvl, own) {
@@ -124,7 +146,22 @@ function cleanSkins(sel, lvl, own) {
   }
   return o;
 }
-const pub = P => { const l = lvlOf(P.xp); return { id: P.id, n: P.n, xp: P.xp, lvl: l, g: P.g, w: P.w, k: P.k, d: P.d, mvp: P.mvp, sk: cleanSkins(P.skn, l, P.own), ska: SKINS_ALL ? 1 : 0, own: SHOP_FREE || SKINS_ALL ? SHOP_ALL.slice() : (P.own || []).slice() }; };
+// ---------- code PIN : il protege l'affichage du code de sauvegarde dans le jeu ----------
+// 4 chiffres choisis par le joueur ; le serveur n'en garde que l'empreinte. 5 erreurs : 5 minutes d'attente.
+// PIN oublie : le joueur le demande, puis peut en choisir un nouveau 24 heures plus tard (un curieux de passage ne peut pas le changer).
+const PIN_WAIT = (+process.env.PIN_WAIT_MS || 24 * 3600 * 1000), PIN_LOCK = 5 * 60 * 1000;
+const pinHash = (P, pin) => sha('pin|' + P.id + '|' + pin), pinOk = v => typeof v === 'string' && /^[0-9]{4}$/.test(v);
+const PINF = new Map();   // identifiant du profil -> { n, t } erreurs recentes
+// deux compteurs par profil : l'appareil du joueur (« own ») et les saisies du code sur un nouvel appareil (« imp »),
+// pour qu'un inconnu qui essaie des PIN au hasard ne bloque pas le joueur sur son propre appareil
+function pinTry(P, pin, who) {
+  const kf = P.id + '|' + (who || 'own'), f = PINF.get(kf), now = Date.now();
+  if (f && f.n >= 5 && now - f.t < PIN_LOCK) return { err: 'locked', wait: Math.ceil((PIN_LOCK - (now - f.t)) / 1000) };
+  if (pinOk(pin) && P.pin === pinHash(P, pin)) { PINF.delete(kf); return { ok: 1 }; }
+  const n = f && now - f.t < PIN_LOCK ? f.n + 1 : 1; PINF.set(kf, { n, t: now });
+  return n >= 5 ? { err: 'locked', wait: PIN_LOCK / 1000 } : { err: 'pin', left: 5 - n };
+}
+const pub = P => { const l = lvlOf(P.xp); return { pin: P.pin ? 1 : 0, pinr: P.pinr ? P.pinr + PIN_WAIT : 0, id: P.id, n: P.n, xp: P.xp, lvl: l, g: P.g, w: P.w, k: P.k, d: P.d, mvp: P.mvp, sk: cleanSkins(P.skn, l, P.own), ska: SKINS_ALL ? 1 : 0, own: SHOP_FREE || SKINS_ALL ? SHOP_ALL.slice() : (P.own || []).slice() }; };
 function auth(id, s) {
   const P = typeof id === 'string' && DB[id];
   if (!P || typeof s !== 'string' || sha(s) !== P.sk) return null;
@@ -139,6 +176,12 @@ function auth(id, s) {
 // Les sessions sont en memoire : apres un redemarrage du serveur, la premiere session qui se manifeste est reprise.
 const SESS = new Map();   // identifiant du profil -> { sid, t }
 const SESS_TTL = 75 * 1000;
+// ---------- un seul appareil par profil ----------
+// Chaque navigateur a un identifiant d'appareil (tire au hasard, garde par le jeu). Le profil retient l'appareil autorise (« dev ») :
+// celui ou le profil a ete cree, puis le dernier ou le code de sauvegarde a ete saisi. Saisir le code sur un nouvel appareil
+// deconnecte donc tous les autres pour de bon (reponse 410 : le jeu y oublie le code et repasse en invite) ; pour y revenir,
+// il faut y saisir le code a nouveau. Sur l'appareil autorise, un seul onglet a la fois (session, voir plus haut).
+const devOk = v => typeof v === 'string' && /^[A-Za-z0-9_-]{8,40}$/.test(v);
 const newSid = () => crypto.randomBytes(12).toString('base64url');
 function sessOk(id, sid) {
   if (typeof sid !== 'string' || !sid || sid.length > 40) return false;
@@ -214,7 +257,7 @@ function apply(P, r, opt) {
 
 // ---------- creation (avec reprise du profil local de l'etape 1, plafonnee) ----------
 const created = new Map();   // limite de creations par adresse (20 par heure)
-function create(name, mig, ip) {
+function create(name, mig, ip, dev) {
   const now = Date.now(), h = created.get(ip) || [];
   const recent = h.filter(t => now - t < 3600000);
   if (recent.length >= 20) return null;
@@ -223,6 +266,7 @@ function create(name, mig, ip) {
   const s = crypto.randomBytes(15).toString('base64url');
   const m = mig && typeof mig === 'object' ? mig : {};
   const P = { id, sk: sha(s), n: cleanName(name), xp: num(m.xp, 3000), g: num(m.g, 100), w: num(m.w, 100), k: num(m.k, 2000), d: num(m.d, 2000), mvp: num(m.mvp, 50), day: '', sd: '', sx: 0, st: 0, c: now, ls: now };
+  if (devOk(dev)) P.dev = dev;
   DB[id] = P; save();
   const sid = newSid(); SESS.set(id, { sid, t: now });
   return { id, s, sid, prof: pub(P) };
@@ -253,7 +297,7 @@ async function http(req, res, url) {
   const op = url.slice('/api/profile/'.length);
   const ip = String(req.headers['fly-client-ip'] || req.socket.remoteAddress || '');
   if (op === 'new') {
-    const r = create(m.n, m.mig, ip);
+    const r = create(m.n, m.mig, ip, m.dev);
     return r ? out(res, 200, r) : out(res, 429, { err: 'limit' });
   }
   if (op === 'award') {
@@ -265,14 +309,33 @@ async function http(req, res, url) {
     if (m.key !== KEY) return out(res, 403, { err: 'key' });
     return out(res, 200, peekLocal(m.id, m.s, m.sid));
   }
-  // catalogue : prix et etat de la boutique (sans profil, pour que les invites voient les prix)
+  // boutique du moment : les 4 skins proposes, leurs prix et l'heure du prochain changement (sans profil : les invites la voient aussi)
   if (op === 'shop') {
-    const prices = {}; for (const c in SHOP) { prices[c] = {}; for (const id in SHOP[c]) prices[c][id] = PRICE[SHOP[c][id][0]]; }
-    return out(res, 200, { on: STRIPE_KEY || SHOP_FREE || SKINS_ALL ? 1 : 0, free: SHOP_FREE || SKINS_ALL ? 1 : 0, cur: SHOP_CUR, prices });
+    const sl = slotNow();
+    return out(res, 200, { on: STRIPE_KEY || SHOP_FREE || SKINS_ALL ? 1 : 0, free: SHOP_FREE || SKINS_ALL ? 1 : 0, cur: SHOP_CUR, curs: SHOP_CURS, items: rotation(sl), now: Date.now(), next: (Math.floor(Date.now() / ROT_MS) + 1) * ROT_MS });
   }
   const P = auth(m.id, m.s);
   if (!P) return out(res, 404, { err: 'profile' });
   if (op === 'get') return out(res, 200, { prof: pub(P) });
+  // appareil autorise : la saisie du code (login avec imp) le change ; tout autre appareil est refuse (410)
+  const dev = devOk(m.dev) ? m.dev : '';
+  // PIN oublie, demande depuis un appareil non autorise (avec le code) : nouveau PIN possible 24 heures plus tard.
+  // Le joueur, sur son appareil, en est averti et annule la demande en entrant son PIN.
+  if (op === 'pin' && m.a === 'forgot' && P.dev && dev !== P.dev) { if (P.pin && !P.pinr) { P.pinr = Date.now(); save(); } return out(res, 200, { pinr: P.pinr ? P.pinr + PIN_WAIT : 0 }); }
+  if (op === 'login' && m.imp && dev) {
+    // nouvel appareil : le code de sauvegarde ne suffit pas si le profil a un code PIN
+    if (P.pin && P.dev && P.dev !== dev) {
+      const info = { pinr: P.pinr ? P.pinr + PIN_WAIT : 0 };
+      if (P.pinr && Date.now() - P.pinr >= PIN_WAIT) {   // delai du PIN oublie ecoule : le joueur choisit un nouveau PIN
+        if (!pinOk(m.npin)) return out(res, 403, Object.assign({ err: 'newpin' }, info));
+        P.pin = pinHash(P, m.npin); delete P.pinr; PINF.delete(P.id + '|own'); PINF.delete(P.id + '|imp');
+      } else if (typeof m.pin !== 'string' || !m.pin) return out(res, 403, Object.assign({ err: 'needpin' }, info));
+      else { const r = pinTry(P, m.pin, 'imp'); if (!r.ok) return out(res, 403, Object.assign(r, info)); delete P.pinr; }
+    }
+    P.dev = dev; save(); m.take = true;
+  }
+  else if (P.dev && dev !== P.dev) return out(res, 410, { err: 'device' });
+  else if (!P.dev && dev) { P.dev = dev; save(); }   // profil d'avant cette regle : le premier appareil qui se presente le garde
   // ouvrir le profil sur cet appareil : refuse (409 busy) s'il est en cours d'utilisation ailleurs, sauf reprise (take)
   if (op === 'login') {
     const S = SESS.get(P.id), now = Date.now();
@@ -294,14 +357,15 @@ async function http(req, res, url) {
     const c = String(m.c || ''), id = String(m.it || ''), pr = priceOf(c, id);
     if (!pr) return out(res, 400, { err: 'item' });
     if (owns(P.own, c, id)) return out(res, 409, { err: 'owned' });
+    if (!inRotation(c, id)) return out(res, 409, { err: 'rotation' });   // la boutique a change : le jeu recharge la liste
     if (!STRIPE_KEY) return out(res, 503, { err: 'shop' });
     const ret = retUrl(m.ret);
     if (!ret) return out(res, 400, { err: 'ret' });
-    const [r, name] = SHOP[c][id], md = { pid: P.id, c, id };
+    const [r, name] = SHOP[c][id], md = { pid: P.id, c, id }, cur = SHOP_CURS.includes(m.cur) ? m.cur : SHOP_CUR;
     const q = {
       mode: 'payment', locale: 'auto', client_reference_id: P.id,
       success_url: ret + '?shop=ok&cs={CHECKOUT_SESSION_ID}', cancel_url: ret + '?shop=cancel',
-      'line_items[0][quantity]': '1', 'line_items[0][price_data][currency]': SHOP_CUR, 'line_items[0][price_data][unit_amount]': String(pr),
+      'line_items[0][quantity]': '1', 'line_items[0][price_data][currency]': cur, 'line_items[0][price_data][unit_amount]': String(pr),
       'line_items[0][price_data][product_data][name]': 'Detonate – ' + name,
       'line_items[0][price_data][product_data][description]': CATN[c] + ' (' + RARN[r] + '). Skin cosmétique, sans avantage de jeu.',
       'custom_text[submit][message]': 'Contenu numérique livré immédiatement dans le jeu. En payant, tu demandes cette livraison immédiate et renonces au droit de rétractation de 14 jours.'
@@ -321,6 +385,19 @@ async function http(req, res, url) {
     const g = fromSession(o);
     if (!g || g.pid !== P.id) return out(res, 404, { err: 'cs' });
     return out(res, 200, { st: g.st, c: g.c, it: g.id, prof: pub(P) });
+  }
+  // code PIN du profil : set (choisir ou changer), check (verifier), forgot (demander un nouveau PIN dans 24 h)
+  if (op === 'pin') {
+    const now = Date.now();
+    if (m.a === 'check') { if (!P.pin) return out(res, 200, { ok: 1, prof: pub(P) }); const r = pinTry(P, m.pin); if (r.ok && P.pinr) { delete P.pinr; save(); } return out(res, r.ok ? 200 : 403, Object.assign(r, { prof: pub(P) })); }
+    if (m.a === 'forgot') { if (P.pin && !P.pinr) { P.pinr = now; save(); } return out(res, 200, { prof: pub(P) }); }
+    if (m.a === 'set') {
+      if (!pinOk(m.pin)) return out(res, 400, { err: 'format' });
+      if (P.pin && !(P.pinr && now - P.pinr >= PIN_WAIT)) { const r = pinTry(P, m.old); if (!r.ok) return out(res, 403, Object.assign(r, { prof: pub(P) })); }
+      P.pin = pinHash(P, m.pin); delete P.pinr; PINF.delete(P.id + '|own'); PINF.delete(P.id + '|imp'); save();
+      return out(res, 200, { ok: 1, prof: pub(P) });
+    }
+    return out(res, 400, { err: 'action' });
   }
   if (op === 'name') { const n = cleanName(m.n); if (n !== P.n) { P.n = n; save(); } return out(res, 200, { prof: pub(P) }); }
   if (op === 'solo') {
@@ -461,4 +538,4 @@ async function peek(id, s, sid) {
   return j && typeof j.lvl === 'number' ? j : { lvl: 0 };
 }
 
-module.exports = { http, webhook, award, peek, flush, lvlOf, xpFrom, cleanSkins, IS_PRIMARY, PRIMARY };
+module.exports = { rotation, http, webhook, award, peek, flush, lvlOf, xpFrom, cleanSkins, IS_PRIMARY, PRIMARY };
