@@ -11176,8 +11176,8 @@ const SKIN=(()=>{
  const SPR=(k,c,op)=>M(k,()=>new THREE.SpriteMaterial({map:starTex,color:c,transparent:true,opacity:op,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));
  // boite englobante des pieces de l'arme, dans le repere de « par »
  const _m4=new THREE.Matrix4(),_i4=new THREE.Matrix4();
- function localBox(par,list,skip){par.updateMatrixWorld(true);_i4.copy(par.matrixWorld).invert();const bb=new THREE.Box3();
-  for(const o of list)o.traverse(q=>{if(!q.isMesh||skip.has(q))return;const gq=q.geometry;if(!gq.boundingBox)gq.computeBoundingBox();bb.union(gq.boundingBox.clone().applyMatrix4(_m4.multiplyMatrices(_i4,q.matrixWorld)))});return bb}
+ function localBox(par,list,skip,body){par.updateMatrixWorld(true);_i4.copy(par.matrixWorld).invert();const bb=new THREE.Box3();
+  for(const o of list)o.traverse(q=>{if(!q.isMesh||skip.has(q))return;if(body&&(q.geometry.type==='CylinderGeometry'||q.geometry.type==='ConeGeometry'))return;const gq=q.geometry;if(!gq.boundingBox)gq.computeBoundingBox();bb.union(gq.boundingBox.clone().applyMatrix4(_m4.multiplyMatrices(_i4,q.matrixWorld)))});return bb}
  // contours de toutes les pieces de l'arme, en tubes fins reunis dans une seule geometrie (aspect neon / arete polie)
  const EDG=new Map();
  function edgeTubes(par,list,skip,t){par.updateMatrixWorld(true);_i4.copy(par.matrixWorld).invert();const P=[],a=new THREE.Vector3(),b=new THREE.Vector3(),d=new THREE.Vector3(),u=new THREE.Vector3(),v=new THREE.Vector3(),up=new THREE.Vector3(0,1,0),side=new THREE.Vector3(0,0,1);
@@ -11187,6 +11187,12 @@ const SKIN=(()=>{
     const C=[];for(const p of[a,b])for(const[s1,s2]of[[-1,-1],[1,-1],[1,1],[-1,1]])C.push([p.x+u.x*s1+v.x*s2,p.y+u.y*s1+v.y*s2,p.z+u.z*s1+v.z*s2]);
     for(const[i0,i1,i2,i3]of[[0,1,5,4],[1,2,6,5],[2,3,7,6],[3,0,4,7],[0,3,2,1],[4,5,6,7]])P.push(...C[i0],...C[i1],...C[i2],...C[i0],...C[i2],...C[i3])}});
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));return g}
+ function shineSurf(par,list,skip,bd){par.updateMatrixWorld(true);_i4.copy(par.matrixWorld).invert();const P=[],U=[],v=new THREE.Vector3(),n=new THREE.Vector3(),nm=new THREE.Matrix3(),x0=bd.min.x,L_=Math.max(1,bd.max.x-bd.min.x),yc=(bd.min.y+bd.max.y)/2;
+  for(const o of list)o.traverse(q=>{if(!q.isMesh||skip.has(q))return;const gq=q.geometry;if(gq.type==='CylinderGeometry'||gq.type==='ConeGeometry'||(q.material.isMeshBasicMaterial&&q.material.blending===THREE.AdditiveBlending))return;
+   _m4.multiplyMatrices(_i4,q.matrixWorld);nm.getNormalMatrix(_m4);const pos=gq.attributes.position,nor=gq.attributes.normal,idx=gq.index;const cnt=idx?idx.count:pos.count;
+   for(let i=0;i<cnt;i++){const k=idx?idx.getX(i):i;v.fromBufferAttribute(pos,k).applyMatrix4(_m4);if(nor){n.fromBufferAttribute(nor,k).applyMatrix3(nm).normalize();v.addScaledVector(n,.06)}P.push(v.x,v.y,v.z);U.push((v.x-x0+(v.y-yc)*.7)/L_,.5)}});
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));return g}
+ const shineTex=tex('fx_shine',(x,S)=>{const g=x.createLinearGradient(0,0,S,0);g.addColorStop(0,'rgba(255,255,255,0)');g.addColorStop(.43,'rgba(255,255,255,0)');g.addColorStop(.49,'rgba(255,255,255,.9)');g.addColorStop(.5,'rgba(255,255,255,1)');g.addColorStop(.51,'rgba(255,255,255,.9)');g.addColorStop(.57,'rgba(255,255,255,0)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,S,S)},256);
  // halo en croix (a plat et debout) autour de l'arme, reflet qui la balaie, eclats qui scintillent
  function gunGlow(g,bb,mat,k){const c=bb.getCenter(new THREE.Vector3()),sz=bb.getSize(new THREE.Vector3()),L_=sz.x*1.3,w=Math.max(sz.y,sz.z)*(k||3.4);
   const h1=mesh(g,G('pl'+L_.toFixed(1)+'_'+w.toFixed(1),()=>new THREE.PlaneGeometry(L_,w)),mat,c.x,c.y,c.z);h1.rotation.x=-Math.PI/2;const h2=mesh(g,h1.geometry,mat,c.x,c.y,c.z);return{c,sz,h1,h2}}
@@ -11212,19 +11218,43 @@ const SKIN=(()=>{
  const HAT={
   casquette:{n:['Casquette','Cap'],lv:3,b(g){const a=L('h_cp',0x1f3a6e),d=L('h_cp2',0x16294d),w=L('h_wht',0xf2ead8);sph(g,6.5,a,0,1,0,1.5);cyl(g,5.5,5.5,.9,16,d,6.4,1.5,0);sph(g,1,w,0,7.6,0);bx(g,.7,2.6,3.6,w,6.2,3.8,0)}},
   bonnet:{n:['Bonnet gamer','Gamer beanie'],lv:8,b(g){
-    // bonnet cotele anthracite un peu tombant dans le dos, revers a cotes, etiquette orange devant, casque audio aux ecouteurs lumineux
-    const kn=LT('h_bn',(x,S)=>{x.fillStyle='#2c3038';x.fillRect(0,0,S,S);for(let i=0;i<S;i+=4){x.fillStyle='rgba(255,255,255,.06)';x.fillRect(i,0,2,S);x.fillStyle='rgba(0,0,0,.18)';x.fillRect(i+2,0,1,S)}}),
-     cu=LT('h_bn_c',(x,S)=>{x.fillStyle='#23262d';x.fillRect(0,0,S,S);for(let i=0;i<S;i+=3){x.fillStyle='rgba(255,255,255,.1)';x.fillRect(i,0,1.4,S)}}),
-     hb=P('h_bn_h',0x15171b,60,{specular:0x555555}),pd=L('h_bn_p',0x2a2d33),or=L('h_bn_o',0xff6a1a),led=GLOW('h_bn_l',0x3ff0ff,.95);
-    const top=sph(g,6.7,kn,-.3,1.2,0,1.62);top.scale.set(1.02,1.24,1);top.rotation.z=.24;
-    const cf=mesh(g,G('bncf',()=>new THREE.CylinderGeometry(6.95,6.85,3,22,1,true)),M('h_bn_cd',()=>new THREE.MeshLambertMaterial({map:cu.map,side:THREE.DoubleSide})),0,1.4,0);
-    bx(g,.7,1.8,3,or,6.85,1.5,0);bx(g,.75,.5,2.2,L('h_wht',0xf2ead8),6.9,1.7,0);
-    // casque audio : arceau par-dessus le bonnet, oreillettes sur les cotes avec un anneau lumineux
-    const band=mesh(g,G('bnbd',()=>new THREE.TorusGeometry(7.6,.75,6,24,Math.PI)),hb,0,.4,0);band.rotation.y=Math.PI/2;
-    for(const z of[-1,1]){const cup=cyl(g,2.9,2.9,2.2,16,hb,0,-.4,z*7.2);cup.rotation.x=Math.PI/2;const pad=cyl(g,2.5,2.5,1,16,pd,0,-.4,z*6.2);pad.rotation.x=Math.PI/2;
-     const r=mesh(g,G('bnld',()=>new THREE.TorusGeometry(2.1,.32,6,20)),led,0,-.4,z*8.35);r.rotation.y=0;bx(g,1.4,1.4,.4,or,0,-.4,z*8.45)}
-    const mic=cyl(g,.35,.35,4.6,6,hb,2.4,-2.6,7.5);mic.rotation.z=Math.PI/2.2;sph(g,.85,L('h_bn_m',0x3a3f48),4.7,-2.95,7.3)}},
-  beret:{n:['Béret','Beret'],lv:13,b(g){const a=L('h_br',0x7a1c2a),d=L('h_br2',0x2a0a10);const q=sph(g,7.8,a,-.6,2.6,1.8);q.scale.set(1,.42,1);tor(g,5.7,1,d,0,1.5,0);cyl(g,.5,.5,1.8,6,d,-.6,6,1.8);bx(g,.8,2.4,2.4,gold(),5.6,2.4,-2.4)}},
+    // bonnet cotele anthracite (cotes qui montent jusqu'au sommet), revers epais et moelleux avec une rayure turquoise,
+    // etiquette orange tissee ; casque audio fin par-dessus : arceau plat, curseurs metal, oreillettes arrondies a anneau lumineux
+    const rib=(c0,c1,c2,n)=>(x,S)=>{x.fillStyle=c0;x.fillRect(0,0,S,S);const w=S/n;for(let i=0;i<n;i++){const g_=x.createLinearGradient(i*w,0,i*w+w,0);g_.addColorStop(0,c2);g_.addColorStop(.5,c1);g_.addColorStop(1,c2);x.fillStyle=g_;x.fillRect(i*w,0,w,S)}
+     x.fillStyle='rgba(0,0,0,.08)';for(let j=0;j<S;j+=3)x.fillRect(0,j,S,1)};
+    const kn=LT('h_bn2',rib('#2a2e36','#3a3f49','#1e2128',16)),cu=LT('h_bn2c',rib('#262a31','#353a43','#1b1e24',22)),
+     hb=P('h_bn_h',0x17191e,70,{specular:0x666666}),mt=P('h_bn_mt',0xaab2bc,120,{specular:0xffffff}),pd=L('h_bn_p',0x32363e),
+     st_=L('h_bn_st',0x22b8c6),or=L('h_bn_o',0xff6a1a),led=GLOW('h_bn_l',0x3ff0ff,.95);
+    kn.map.repeat.set(2,1);cu.map.repeat.set(3,1);
+    const top=mesh(g,G('bntop',()=>new THREE.SphereGeometry(6.55,28,14,0,TAU,0,1.66)),kn,-.2,.9,0);top.scale.set(1.03,1.15,1.03);top.rotation.z=.1;
+    const cf=mesh(g,G('bncf2',()=>new THREE.CylinderGeometry(7.05,6.95,3.2,32,1,true)),M('h_bn_cd2',()=>new THREE.MeshLambertMaterial({map:cu.map,side:THREE.DoubleSide})),0,1.1,0);
+    tor(g,7.02,.55,cu,0,2.7,0);tor(g,6.95,.45,cu,0,-.5,0);tor(g,7.1,.2,st_,0,1.75,0);
+    {const a=-.42,tg=new THREE.Group();tg.position.set(Math.cos(a)*7.15,1.1,Math.sin(a)*7.15);tg.rotation.y=-a;g.add(tg);bx(tg,.35,1.7,2.6,or,0,0,0);bx(tg,.4,.42,1.9,L('h_wht',0xf2ead8),0,.25,0);bx(tg,.4,.2,1.9,L('h_wht'),0,-.35,0)}
+    // casque audio
+    const band=mesh(g,G('bnbd2',()=>new THREE.TorusGeometry(8.45,.42,8,36,Math.PI)),hb,0,.55,0);band.rotation.y=Math.PI/2;band.scale.set(1,1,2.6);
+    const lth=mesh(g,G('bnbd3',()=>new THREE.TorusGeometry(7.98,.32,6,30,Math.PI*.56)),pd,0,.55,0);lth.rotation.set(0,Math.PI/2,Math.PI*.22);lth.scale.set(1,1,2.4);
+    for(const z of[-1,1]){bx(g,1.25,2.6,.6,mt,0,.25,z*8.3);
+     const cup=cyl(g,3,3,2.2,22,hb,0,-1.2,z*7.55);cup.rotation.x=Math.PI/2;const bev=tor(g,2.62,.42,hb,0,-1.2,z*8.65);bev.rotation.x=0;
+     const pl=cyl(g,2.3,2.3,.3,22,P('h_bn_pl',0x0e0f12,140,{specular:0xffffff}),0,-1.2,z*8.9);pl.rotation.x=Math.PI/2;
+     const r=tor(g,2.28,.2,led,0,-1.2,z*9.06);r.rotation.x=0;const lg=cyl(g,.75,.75,.2,6,or,0,-1.2,z*9.1);lg.rotation.x=Math.PI/2;
+     const cs=cyl(g,2.75,2.75,1.2,22,pd,0,-1.2,z*6.25);cs.rotation.x=Math.PI/2}}},
+  beret:{n:['Béret','Beret'],lv:13,b(g){
+    // beret de feutre bordeaux qui retombe sur le cote droit, bandeau de cuir et noeud a l'arriere, petite tige au sommet,
+    // insigne sur le cote gauche : ecusson sombre, etoile doree et cercle dore
+    const fe=M('h_br2v',()=>new THREE.MeshPhongMaterial({map:tex('h_brf',(x,S,r)=>{x.fillStyle='#6c1727';x.fillRect(0,0,S,S);for(let i=0;i<900;i++){x.fillStyle=r()<.5?'rgba(0,0,0,.05)':'rgba(255,190,190,.035)';x.beginPath();x.arc(r()*S,r()*S,.6+r()*1.2,0,TAU);x.fill()}},128),shininess:8,specular:0x2a0c14})),
+     le=P('h_br_le',0x2a1a10,40,{specular:0x553322}),au=gold();
+    const cr=new THREE.Group();cr.position.set(-.3,2.45,.7);cr.rotation.set(.17,0,.07);g.add(cr);
+    const dome=mesh(cr,G('brdm',()=>new THREE.SphereGeometry(8.2,30,14)),fe,0,.6,0);dome.scale.set(1,.34,1);
+    mesh(cr,G('brlp',()=>new THREE.TorusGeometry(7.6,.9,8,36)),fe,0,.1,0).rotation.x=Math.PI/2;
+    cyl(cr,.32,.42,1.1,8,fe,0,3.4,0);
+    tor(g,6.12,.48,le,0,.55,0);
+    for(const s_ of[-1,1]){const rb=bx(g,.3,2.4,.7,le,-6.35,-1,s_*.6);rb.rotation.x=s_*.25}bx(g,.6,.7,1.4,le,-6.4,.2,0);
+    // insigne (cote gauche du front)
+    const bd=new THREE.Group();bd.position.set(6.75,.25,-3.55);bd.rotation.set(0,.48,-.12);bd.scale.setScalar(.9);cr.add(bd);
+    const pt=mesh(bd,G('brpt',()=>new THREE.SphereGeometry(1,16,10)),P('h_br_pt',0x14080c,30),.5,0,0);pt.scale.set(.28,1.85,1.55);
+    tor(bd,1.35,.12,au,.78,0,0).rotation.set(0,Math.PI/2,0);
+    const sh=new THREE.Shape();for(let i=0;i<10;i++){const a=Math.PI/2+i*Math.PI/5,r_=i%2?.42:1;i?sh.lineTo(Math.cos(a)*r_,Math.sin(a)*r_):sh.moveTo(Math.cos(a)*r_,Math.sin(a)*r_)}
+    const sg=mesh(bd,G('brst',()=>new THREE.ExtrudeGeometry(sh,{depth:.3,bevelEnabled:true,bevelThickness:.08,bevelSize:.06,bevelSegments:1})),au,.8,0,0);sg.rotation.y=Math.PI/2}},
   ranger:{n:['Chapeau ranger','Ranger hat'],lv:17,b(g){const a=L('h_rg',0x9a8250),d=L('h_rg2',0x3a2c18);cyl(g,10.6,10.6,.9,20,a,0,2.2,0);cyl(g,5.2,6.1,5.4,16,a,0,5.2,0);cyl(g,6.2,6.25,1.4,16,d,0,3.4,0);cyl(g,3.4,3.4,.5,12,L('h_rg3',0x7d6a3e),0,8,0);bx(g,.7,1.8,1.8,gold(),6.3,3.5,0)}},
   viking:{n:['Casque à cornes','Horned helmet'],lv:22,b(g){const st=P('h_vk',0x7d848e,28,{specular:0x2a2a2a}),br=P('h_vk2',0xb08a3a,80),iv=L('h_vk3',0xf0e6cc);sph(g,6.6,st,0,1,0,1.5);tor(g,6.4,.9,br,0,1.2,0);bx(g,11.5,1.2,1.6,br,0,7.2,0);bx(g,1,4.6,1.5,br,6.4,-.3,0);
     for(const s of[-1,1]){const a=cone(g,2,7,8,iv,0,6,s*8);a.rotation.x=s*.85;const t=cone(g,1.2,5.5,8,iv,0,10.6,s*10.6);t.rotation.x=s*.25;cyl(g,2.3,2.3,1.6,10,br,0,4.2,s*6).rotation.x=s*.85}}},
@@ -11242,10 +11272,12 @@ const SKIN=(()=>{
   lave:{n:['Lave','Lava'],lv:24,bd:()=>M('g_lav',()=>new THREE.MeshLambertMaterial({map:tex('g_lav',cracks('#241a16','#5a2a14')),emissiveMap:tex('g_lav_e',cracks('#000000','#ffffff')),emissive:0xff5a10})),ac:()=>B('g_lav_a',0xff7a20),gl:()=>B('g_lav_a',0xff7a20)},
   or:{n:['Or massif','Solid gold'],lv:28,bd:()=>M('g_or',()=>new THREE.MeshPhongMaterial({map:tex('g_or',engrave),emissiveMap:tex('g_or',engrave),emissive:0x8a5c08,shininess:160,specular:0xffffff})),ac:()=>L('g_or_a',0x1a1a1e),gl:()=>B('g_or_g',0x1a1a1e),tp:()=>M('gold_hi',()=>new THREE.MeshPhongMaterial({color:0xffd86a,emissive:0x8a6010,shininess:160,specular:0xffffff})),
    // aretes polies, halo dore, reflet qui balaie l'arme et eclats qui scintillent
-   fx(g,bb,edges){mesh(g,edges(.22),GLOW('g_or_e',0xfff0b8,.7));const H=gunGlow(g,bb,GLOW('g_or_h',0xffc84a,.42,capTex),3.2);
-    const sw=mesh(g,G('orsw',()=>new THREE.BoxGeometry(1,1,1)),GLOW('g_or_w',0xfffbe8,.95),0,H.c.y,H.c.z);sw.scale.set(1.4,H.sz.y*1.25,H.sz.z*1.25);sw.rotation.z=-.45;
-    const sp=[...Array(5)].map((_,i)=>{const q=new THREE.Sprite(SPR('g_or_s',0xfff2c0,1));g.add(q);q.userData.p=[bb.min.x+(bb.max.x-bb.min.x)*((i*.37+.1)%1),bb.min.y+(bb.max.y-bb.min.y)*(i%2?.85:.4),i%2?bb.max.z+.3:bb.min.z-.3];return q});
-    return t=>{const k=(t%2.2)/.55;sw.visible=k<1;if(k<1)sw.position.x=bb.min.x+(bb.max.x-bb.min.x+2)*k-1;
+   fx(g,bb,edges,bd,shine){mesh(g,edges(.22),GLOW('g_or_e',0xfff0b8,.7));gunGlow(g,bb,GLOW('g_or_h',0xffc84a,.42,capTex),3.2);
+    // reflet : une bande de lumiere qui glisse sur le metal du corps de l'arme (crosse, carcasse, poignee), jamais sur le canon
+    const sm=M('g_or_w',()=>{const t_=shineTex.clone();t_.needsUpdate=true;t_.wrapS=t_.wrapT=THREE.ClampToEdgeWrapping;return new THREE.MeshBasicMaterial({map:t_,color:0xfff6dc,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2})});
+    mesh(g,shine(),sm);const sz=bd.getSize(new THREE.Vector3()),x0=bd.min.x+.8,x1=bd.max.x-1.4;
+    const sp=[...Array(5)].map((_,i)=>{const q=new THREE.Sprite(SPR('g_or_s',0xfff2c0,1));g.add(q);q.userData.p=[x0+(x1-x0)*((i*.37+.1)%1),bd.min.y+sz.y*(i%2?.85:.4),i%2?bd.max.z+.3:bd.min.z-.3];return q});
+    return t=>{
      sp.forEach((q,i)=>{const f=Math.max(0,Math.sin(t*2.6+i*2.3));q.position.set(...q.userData.p);q.scale.setScalar(.4+4.2*f*f*f)})}}}}; const BAG={
   tactique:{n:['Sac tactique','Tactical pack'],lv:5,b(g){const a=L('b_tac',0x4d5a34),d=L('b_tac2',0x343d22),t=L('b_tac3',0x9a8a5a);bx(g,6,13,11,a,-3,1,0);bx(g,6.4,2.4,11.4,d,-3,7.4,0);const r=cyl(g,2.2,2.2,12.4,10,t,-3,10.4,0);r.rotation.x=Math.PI/2;for(const s of[-1,1]){bx(g,3.4,6,2.6,d,-3,-1,s*6.6);bx(g,4.8,4.8,.8,d,-3,10.4,s*3.4)}bx(g,2,6,7,d,-6.8,-1,0)}},
   sport:{n:['Sac de sport','Duffel bag'],lv:10,b(g){const a=L('b_spo',0xc8322a),w=L('h_wht',0xf2ead8),d=L('b_spo2',0x8a1f1a);const c=cyl(g,4.2,4.2,15,14,a,-4.4,2.6,0);c.rotation.x=Math.PI/2;for(const s of[-1,1]){const k=cyl(g,4.35,4.35,1.2,14,w,-4.4,2.6,s*3.6);k.rotation.x=Math.PI/2;const e=cyl(g,3.6,3.6,.8,14,d,-4.4,2.6,s*7.6);e.rotation.x=Math.PI/2}bx(g,1.2,1,13,L('b_spo3',0x1e2126),-4.4,7,0);bx(g,2,3,4,w,-8.3,2.6,0)}},
@@ -11306,13 +11338,13 @@ const SKIN=(()=>{
    if(R.gtop)s.g.push(bx(R.gun[0],R.gtop[3],.8,1.3,W.tp?W.tp():ac,R.gtop[0],R.gtop[1],R.gtop[2]));
    // effets lumineux (or, neon) : un groupe par arme (le survivant du mode Zombie en change), dans le repere de l'arme
    if(W.fx){const sets=R.gun.every(q=>q.isGroup)?R.gun.map(q=>[q,[q]]):[[R.gun[0].parent,R.gun]],skip=new Set();
-    for(const[par,list]of sets){const bb=localBox(par,list,skip);if(bb.isEmpty())continue;const fg=new THREE.Group();s.fx.push(W.fx(fg,bb,t=>edgeTubes(par,list,skip,t)));par.add(fg);s.g.push(fg);fg.traverse(q=>{if(q.isMesh)skip.add(q)})}}}
+    for(const[par,list]of sets){const bb=localBox(par,list,skip);if(bb.isEmpty())continue;let bd_=localBox(par,list,skip,1);if(bd_.isEmpty())bd_=bb;const fg=new THREE.Group();s.fx.push(W.fx(fg,bb,t=>edgeTubes(par,list,skip,t),bd_,()=>shineSurf(par,list,skip,bd_)));par.add(fg);s.g.push(fg);fg.traverse(q=>{if(q.isMesh)skip.add(q)})}}}
   const A=AUR[sel.a];if(A){s.aura=grp(m.grp);s.tk=A.b(s.aura)}
   ACT.push(s)}
  // animation : materiaux partages (neon, lave, cristaux, lignes de la tenue furtive) puis auras
  function tick(t){const pu=.5+.5*Math.sin(t*3.2);
   if(MAT.g_neo_a){const hu=.5+.33*(.5+.5*Math.sin(t*1.1));MAT.g_neo_a.color.setHSL(hu,1,.62);MAT.g_neo_t&&MAT.g_neo_t.color.setHSL(hu,1,.6);if(MAT.g_neo_h){MAT.g_neo_h.color.setHSL(hu,1,.55);MAT.g_neo_h.opacity=.42+.25*pu}if(MAT.g_neo)MAT.g_neo.emissive.setHSL(hu,.8,.1+.06*pu)}
-  if(MAT.g_or_h)MAT.g_or_h.opacity=.34+.16*pu;if(MAT.g_or)MAT.g_or.emissiveIntensity=.85+.3*pu;
+  if(MAT.g_or_h)MAT.g_or_h.opacity=.34+.16*pu;if(MAT.g_or_w){const k=(t%2.2)/.75;MAT.g_or_w.map.offset.x=.5-(-.25+1.5*Math.min(1,k));MAT.g_or_w.visible=k<1}if(MAT.g_or)MAT.g_or.emissiveIntensity=.85+.3*pu;
   if(MAT.g_lav){MAT.g_lav.emissiveIntensity=.55+.45*pu;MAT.g_lav_a&&MAT.g_lav_a.color.setHSL(.06+.03*pu,1,.5+.08*pu)}
   if(MAT.o_fur_n)MAT.o_fur_n.color.setHSL(.5,1,.42+.28*pu);
   if(MAT.b_cri_c){MAT.b_cri_c.emissiveIntensity=.75+.5*pu;MAT.b_cri_k.opacity=.65+.35*pu;MAT.b_cri_h.opacity=.55+.3*pu;MAT.b_cri_l.opacity=.55+.45*pu}
@@ -11333,7 +11365,7 @@ const SKIN=(()=>{
  // ---------- casier : apercu 3D et choix des skins ----------
  const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
  let PV=null,CAT='o',RAF=0,TH={};
- const VIEW={o:[0,27,0,96,.75,.42],h:[0,47,0,50,.7,.5],g:[26,31,1,64,1.15,.6],b:[-12,30,0,62,2.55,.5],a:[0,12,0,112,.8,.72]};
+ const VIEW={o:[0,27,0,96,.75,.42],h:[0,47,0,50,-.75,.5],g:[26,31,1,64,1.15,.6],b:[-12,30,0,62,2.55,.5],a:[0,12,0,112,.8,.72]};
  function pvInit(){if(PV)return PV;const cvs=$('skCv'),ren2=new THREE.WebGLRenderer({canvas:cvs,antialias:true,alpha:true});ren2.setPixelRatio(Math.min(2,devicePixelRatio||1));
   const scn=new THREE.Scene();scn.add(new THREE.HemisphereLight(0xdfe6ff,0x2a2e38,.95));const d=new THREE.DirectionalLight(0xffffff,.75);d.position.set(60,120,80);scn.add(d);
   const fl=new THREE.Mesh(new THREE.CircleGeometry(36,40),new THREE.MeshBasicMaterial({color:0x151a26,transparent:true,opacity:.85}));fl.rotation.x=-Math.PI/2;scn.add(fl);
@@ -11345,7 +11377,7 @@ const SKIN=(()=>{
  function pvLoop(){RAF=requestAnimationFrame(pvLoop);if(!PV)return;const t=performance.now()/1000,w=Object.assign({},worn(),TRY),k=keyOf(w);if(k!==PV.key){apply(PV.man,w);PV.key=k}
   pvSize();if(!PV.drag)PV.az+=.006;tick(t);const as=PV.w&&PV.h?PV.w/PV.h:1;pvCam([0,30,0,128*Math.max(1,.8/as),0,.36],PV.az,PV.top);PV.ren.render(PV.scn,PV.cam)}
  // vignette d'un skin : le mannequin ne porte que ce skin, cadre sur la bonne partie du corps
- function thumb(c,id,S,top,sel){S=S||132;const k=c+id+S+(top?'t':'');if(!sel&&TH[k])return TH[k];const P_=pvInit();apply(P_.man,sel||{[c]:id});P_.key='';tick(7.3);P_.ren.setPixelRatio(1);P_.ren.setSize(S,S,false);P_.cam.aspect=1;P_.cam.updateProjectionMatrix();const v=VIEW[top?'o':c];pvCam(v,top?0:v[4],top);P_.ren.render(P_.scn,P_.cam);
+ function thumb(c,id,S,top,sel,tt){S=S||132;const k=c+id+S+(top?'t':'');if(!sel&&TH[k])return TH[k];const P_=pvInit();apply(P_.man,sel||{[c]:id});P_.key='';tick(tt==null?7.3:tt);P_.ren.setPixelRatio(1);P_.ren.setSize(S,S,false);P_.cam.aspect=1;P_.cam.updateProjectionMatrix();const v=VIEW[top?'o':c];pvCam(v,top?0:v[4],top);P_.ren.render(P_.scn,P_.cam);
   const u=$('skCv').toDataURL('image/png');P_.ren.setPixelRatio(Math.min(2,devicePixelRatio||1));P_.w=P_.h=0;return TH[k]=u}
  const LGn=n=>LG(n[0],n[1]);
  function list(){const D=DEF[CAT],lv=lvlNow(),cur=Object.assign({},worn(),TRY)[CAT],ids=Object.keys(D).sort((a,b)=>D[a].lv-D[b].lv);
