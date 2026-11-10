@@ -73,6 +73,8 @@ const server = http.createServer((req, res) => {
 
   // profils des joueurs : creation, XP des parties solo, code de sauvegarde (voir profiles.js)
   if (url.startsWith('/api/profile/') && req.method !== 'OPTIONS') return PROFILES.http(req, res, url);
+  // boutique : Stripe previent ici qu'un paiement est fait, rembourse ou conteste (voir profiles.js)
+  if (url === '/api/stripe/webhook') return PROFILES.webhook(req, res);
 
   // Pre-requete du navigateur (jeu ouvert depuis GitHub Pages) : on autorise l'en-tete de routage Fly
   if (req.method === 'OPTIONS') {
@@ -264,7 +266,7 @@ function freeSlot(room, preferTeam) {
 
 const publicPlayers = room => room.players.map(p => ({
   id: p.id, name: p.name, slot: p.slot, team: teamOf(room, p.slot), host: p.id === room.hostId,
-  ready: !!p.ready, off: !p.ws, vote: p.vote || null, lvl: p.lvl || 0, sk: p.pid && p.sk ? p.sk : null
+  ready: !!p.ready, off: !p.ws, vote: p.vote || null, lvl: p.lvl || 0, sk: p.sk || null
 }));
 
 // profil du joueur (identifiant + secret envoyes par le jeu) : son niveau s'affiche dans le salon et a la fin de la partie
@@ -273,12 +275,13 @@ function setProfile(room, p, m) {
   if (!pidOk(m.pid) || !pidOk(m.ps) || !pidOk(m.psid)) return;
   p.pid = m.pid; p.ps = m.ps; p.psid = m.psid;
   PROFILES.peek(p.pid, p.ps, p.psid).then(r => {
-    if (r.lvl < 0) { if (p.psid === m.psid) { p.pid = p.ps = p.psid = null; p.lvl = 0; p.sk = null; } }   // profil ouvert sur un autre appareil : joue en invite
-    else { p.lvl = r.lvl; p.sk = r.sk || null; }
+    if (r.lvl < 0) { if (p.psid === m.psid) noProfile(p); }   // profil ouvert sur un autre appareil : joue en invite
+    else { p.lvl = r.lvl; p.sk = r.sk || null; p.own = r.own || []; }
     if (room.players.includes(p)) lobby(room);
   }).catch(() => {});
 }
-const noProfile = p => { p.pid = p.ps = p.psid = null; p.lvl = 0; p.sk = null; };
+// sans profil (invite) : seuls les skins de la boutique restent (gratuits pendant les tests), les skins de niveau sont retires
+const noProfile = p => { p.pid = p.ps = p.psid = null; p.lvl = 0; p.own = null; p.sk = p.sk ? PROFILES.cleanSkins(p.sk, 0, null) : null; };
 // statistiques d'une place (pour retirer ce que l'IA a fait pendant l'absence du joueur)
 const REP_F = ['k', 'd', 'p', 'df', 'fl', 'zc', 'cr', 'zk'];
 const repOf = (g, slot) => { try { return g.report(slot); } catch (e) { return null; } };
@@ -396,7 +399,7 @@ function toLobby(room, reason) {
 // joueur parti : on garde son jeton (il pourra revenir), sa place se libere
 function ghost(room, p) {
   room.players = room.players.filter(x => x !== p);
-  room.ghosts.set(p.tok, { id: p.id, name: p.name, slot: p.slot, vote: p.vote, pid: p.pid, ps: p.ps, psid: p.psid, lvl: p.lvl, sk: p.sk });
+  room.ghosts.set(p.tok, { id: p.id, name: p.name, slot: p.slot, vote: p.vote, pid: p.pid, ps: p.ps, psid: p.psid, lvl: p.lvl, sk: p.sk, own: p.own });
 }
 
 function launch(room) {
@@ -448,7 +451,7 @@ function join(ws, m) {
     let slot = gh && !used.has(gh.slot) && gh.slot < capOf(room.map) ? gh.slot : freeSlot(room);
     if (slot === undefined) return send(ws, { type: 'error', message: 'Le salon est plein (' + capOf(room.map) + ' joueurs).' });
     p = { id: gh ? gh.id : newId(), tok: gh ? tok : newTok(), name: cleanName(m.name || (gh && gh.name)), slot, ws, ready: false, vote: gh ? gh.vote : null,
-      pid: gh && gh.pid, ps: gh && gh.ps, psid: gh && gh.psid, lvl: gh ? gh.lvl : 0, sk: gh ? gh.sk : null };
+      pid: gh && gh.pid, ps: gh && gh.ps, psid: gh && gh.psid, lvl: gh ? gh.lvl : 0, sk: gh ? gh.sk : null, own: gh ? gh.own : null };
     if (gh) room.ghosts.delete(tok);
     room.players.push(p);
   }
@@ -566,11 +569,21 @@ wss.on('connection', ws => {
         return toLobby(room, 'end');
       }
 
-      // skins equipes depuis le casier : verifies avec le niveau du joueur, puis montres a tout le salon (salon et partie en cours)
+      // skins equipes : verifies avec le niveau du joueur, puis montres a tout le salon (salon et partie en cours).
+      // Un invite (sans profil) est au niveau 0 : seuls les skins de la boutique passent, gratuits pendant les tests.
       case 'sk': {
-        if (!room || !p || !p.pid) return;
-        p.sk = PROFILES.cleanSkins(m.sk, p.lvl || 0);
-        return lobby(room);
+        if (!room || !p) return;
+        p.skReq = m.sk;
+        const use = () => {
+          if (!room.players.includes(p)) return;
+          const sk = PROFILES.cleanSkins(p.skReq, p.pid ? p.lvl || 0 : 0, p.pid ? p.own : null);
+          if (JSON.stringify(sk) === JSON.stringify(p.sk)) return;   // rien de nouveau : pas de diffusion
+          p.sk = sk; lobby(room);
+        };
+        // avec profil : niveau et skins possedes relus (un skin vient peut-etre d'etre achete)
+        if (p.pid) PROFILES.peek(p.pid, p.ps, p.psid).then(r => { if (r.lvl > 0) { p.lvl = r.lvl; p.own = r.own || []; } use(); }).catch(use);
+        else use();
+        return;
       }
 
       case 'leave':
