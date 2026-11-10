@@ -323,6 +323,21 @@ body.inmenu #muteBtn svg,body.inmenu #fsBtn svg{width:20px;height:20px}
 #profBox .ppIL div:first-child{border-top:0}
 #profBox .ppIL b{flex:none;font:700 13px/1.2 var(--fd);color:#eef2f8;text-align:right}
 #profChip.guest .pbg{background:linear-gradient(#5a6170,#3a404c)}#profChip.guest .pbg b{color:#eef2f8;font-size:20px}#profChip.guest .pbar{display:none}#profChip.guest .pl{color:#ffcf5a}#profChip.busy .pl{color:#ff8a7a}
+/* code de sauvegarde masque + message de prevention */
+#profBox #profCode.msk{letter-spacing:.18em;color:#7d8798}
+#profBox .ppB2{background:none;border:1px solid rgba(255,255,255,.2);color:#dfe5ee;padding:0 14px}
+#profBox .ppKeep{margin:10px 0 0;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,174,43,.45);background:rgba(255,174,43,.08);font-size:12px;line-height:1.4;color:#d5dbe6}
+#profBox .ppKeep b{display:block;margin-bottom:4px;color:#ffbf52;font:700 12.5px/1.25 var(--fd)}
+#profBox .ppKeep p{margin:4px 0 0}
+/* code PIN demande pour voir ou copier le code de sauvegarde */
+#profBox .ppPin{display:none;margin:10px 0 0;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04)}
+#profBox .ppPin.on{display:block}
+#profBox .ppPinT{margin:0 0 8px;font-size:12.5px;line-height:1.35;color:#dfe5ee}
+#profBox #profPinI{letter-spacing:.5em;text-align:center;font-size:18px}
+#profBox .ppPinF{margin:8px 0 0;padding:0;border:0;background:none;color:#9aa6b9;font-size:12px;text-decoration:underline;cursor:pointer}
+#profBox .ppImpPin{display:none;margin:10px 0 0}
+#profBox .ppImpPin.on{display:block}
+#profBox #profImpPin{letter-spacing:.5em;text-align:center;font-size:18px}
 
 /* ===== V3.7 : casier des skins (apercu 3D a gauche, categories et skins a droite) ===== */
 #skinBox{--fd:'Chakra Petch','Bahnschrift','DIN Alternate',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;position:fixed;inset:0;z-index:81;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,7,13,.78);font:400 14px/1.4 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#eef2f8}
@@ -438,6 +453,21 @@ body.inmenu #muteBtn svg,body.inmenu #fsBtn svg{width:20px;height:20px}
 #skinBox .skBuyX{flex:none;height:36px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:none;color:#c8d0dd;font:600 12.5px/1 var(--fd);cursor:pointer}
 @media (max-height:500px) and (orientation:landscape){#skinBox .skBuy{padding:6px 10px}#skinBox .skBuyT small{display:none}}
 #skinBox .skMsg:empty:has(+ .skBuy.on){display:none}
+/* boutique : en-tete avec compte a rebours, 4 grandes cartes, etiquette « Possede » */
+#skinBox .shHead{flex:1;display:flex;flex-direction:column;gap:3px;padding:2px 2px 4px}
+#skinBox .shHead b{font:700 14px/1.2 var(--fd);color:#eef2f8}
+#skinBox .shHead b span{color:#ffd76a}
+#skinBox .shHead small{font-size:11.5px;color:#8d99ab}
+#skinBox.shop .skGrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+#skinBox .skK{font-size:10.5px;color:#8d99ab;margin:-2px 0 2px}
+#skinBox .skOwn{position:absolute;top:4px;right:4px;z-index:1;padding:4px 7px 3px;border-radius:7px;background:rgba(9,12,20,.82);color:#7fe8a2;font:700 10px/1 var(--fd)}
+#skinBox .shEmpty{grid-column:1/-1;padding:30px 10px;text-align:center;color:#8d99ab;font-size:13px}
+@media (max-width:700px){#skinBox.shop .skGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-height:500px) and (orientation:landscape){#skinBox.shop .skGrid{gap:8px}#skinBox .shHead{flex-direction:row;align-items:baseline;gap:10px}#skinBox .shHead small{display:none}#skinBox .skK{display:none}}
+/* boutique : choix de la devise */
+#skinBox .shCur{flex:none;align-self:center;display:flex;padding:3px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04)}
+#skinBox .shCur button{height:28px;padding:0 11px;border:0;border-radius:999px;background:none;color:#9aa6b9;font:700 11.5px/1 var(--fd);cursor:pointer}
+#skinBox .shCur button.on{background:#ffd76a;color:#1b1406}
 </style></head><body>
 <div id="menu" data-v="mainMenu"><div id="mfade"></div><div class="panel">
 <header class="mtop"><h1 class="logo">DETONATE<span class="ver">V3.7</span></h1><div class="mtopR"><a id="founder" href="https://x.com/Revo_YHWH" target="_blank" rel="noopener noreferrer" aria-label="Revo sur X (@Revo_YHWH)"><span class="av"><img alt="Revo" width="40" height="40" src="data:image/webp;base64,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"></span><span class="who"><span class="role">Fondateur</span><span class="nm">Revo</span></span><span class="xl"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Suivre</span></a><div id="langSel"><button data-lang="fr">FR</button><button data-lang="en">EN</button></div></div></header>
@@ -11049,6 +11079,7 @@ const PROF=(()=>{
  const KI='detonate_pid@'+SRV,KI0='detonate_pid',KH='detonate_pid_old',KC='detonate_prof@'+SRV,KC0='detonate_profile';
  const KS='detonate_sid@'+SRV;   // session de cet onglet (sessionStorage : garde au rechargement, propre a l'onglet)
  const P0={n:'',xp:0,lvl:1,g:0,w:0,k:0,d:0,mvp:0};
+ let PRW=0;let CSHOW=false,CTM=0;const CMASK='••••••••••••••••••••';
  let I=null,SID='',ST='guest',P=Object.assign({},P0),MIG=null;   // ST : 'guest' invite, '?' connexion, 'on' profil actif, 'busy' ouvert sur un autre appareil, 'off' serveur injoignable
  const get=k=>{try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}},put=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}};
  const sget=k=>{try{return sessionStorage.getItem(k)||''}catch(e){return''}},sput=(k,v)=>{try{v?sessionStorage.setItem(k,v):sessionStorage.removeItem(k)}catch(e){}};
@@ -11059,22 +11090,33 @@ const PROF=(()=>{
   if(!I&&c&&c.v===1)MIG={xp:c.xp,g:c.g,w:c.w,k:c.k,d:c.d,mvp:c.mvp};   // profil local de l'etape 1 : repris a la creation du profil (plafonne par le serveur)
   if(!P.n)P.n=gname()}
  const old=q=>{if(!q||!q.id)return;const h=(get(KH)||[]).filter(x=>x&&x.id!==q.id);h.unshift({id:q.id,s:q.s,srv:SRV,t:Date.now()});put(KH,h.slice(0,10))};   // anciens codes de cet appareil
- const keep=pr=>{if(!pr)return;P={n:pr.n||'',xp:pr.xp||0,lvl:pr.lvl||lvlOf(pr.xp||0),g:pr.g||0,w:pr.w||0,k:pr.k||0,d:pr.d||0,mvp:pr.mvp||0,sk:pr.sk||null,ska:pr.ska?1:0,own:Array.isArray(pr.own)?pr.own:[]};put(KC,Object.assign({v:2},P));
-  if(typeof SKIN!=='undefined'&&SKIN.fromProf)SKIN.fromProf(P.sk);ui()};   // skins equipes : ceux enregistres sur le serveur font foi
+ const keep=pr=>{if(!pr)return;P={n:pr.n||'',xp:pr.xp||0,lvl:pr.lvl||lvlOf(pr.xp||0),g:pr.g||0,w:pr.w||0,k:pr.k||0,d:pr.d||0,mvp:pr.mvp||0,sk:pr.sk||null,ska:pr.ska?1:0,own:Array.isArray(pr.own)?pr.own:[],pin:pr.pin?1:0,pinr:+pr.pinr||0};put(KC,Object.assign({v:2},P));
+  if(typeof SKIN!=='undefined'&&SKIN.fromProf)SKIN.fromProf(P.sk);
+  // quelqu'un a demande un nouveau PIN pour ce profil : le joueur est averti et peut annuler en entrant son PIN
+  if(P.pinr&&!PRW&&!HEADLESS){PRW=1;try{netBanner(LG('Un nouveau code PIN a été demandé pour ton profil. Si ce n’est pas toi : ouvre ton profil, appuie sur « Voir » et entre ton PIN pour annuler la demande.','A new PIN was requested for your profile. If it was not you: open your profile, press “Show” and enter your PIN to cancel the request.'),12000)}catch(e){}}else if(!P.pinr)PRW=0;
+  ui()};   // skins equipes : ceux enregistres sur le serveur font foi
  async function api(op,b){const c=new AbortController(),t=setTimeout(()=>c.abort(),25000);
-  try{const r=await fetch(httpBase()+'/api/profile/'+op,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(b),cache:'no-store',signal:c.signal});const j=await r.json().catch(()=>({}));j._st=r.status;return j}finally{clearTimeout(t)}}
- const isOn=()=>ST==='on'&&!!I&&!!SID,idb=o=>Object.assign({id:I.id,s:I.s,sid:SID},o||{});
+  try{const r=await fetch(httpBase()+'/api/profile/'+op,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(b),cache:'no-store',signal:c.signal});const j=await r.json().catch(()=>({}));j._st=r.status;if(r.status===410&&I&&b&&b.id===I.id)gone();return j}finally{clearTimeout(t)}}
+ // identifiant de cet appareil (ce navigateur) : le serveur n'autorise le profil que sur un appareil a la fois
+ const DV=(()=>{let d='';try{d=localStorage.getItem('detonate_dev')||''}catch(e){}if(!/^[A-Za-z0-9_-]{8,40}$/.test(d)){d='';const a=new Uint8Array(15);try{crypto.getRandomValues(a)}catch(e){for(let i=0;i<15;i++)a[i]=Math.random()*256}for(const v of a)d+='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'[v&63];try{localStorage.setItem('detonate_dev',d)}catch(e){}}return d})();
+ const isOn=()=>ST==='on'&&!!I&&!!SID,idb=o=>Object.assign({id:I.id,s:I.s,sid:SID,dev:DV},o||{});
  function setSt(v){const was=ST;ST=v;
-  if(was==='on'&&v==='busy'&&!HEADLESS){try{netBanner(LG('Ton profil vient d’être ouvert sur un autre appareil : tu joues maintenant en invité.','Your profile was just opened on another device: you are now playing as a guest.'),5000)}catch(e){}}
+  if(was==='on'&&v==='busy'&&!HEADLESS){try{netBanner(LG('Ton profil vient d’être ouvert dans un autre onglet : tu joues ici en invité.','Your profile was just opened in another tab: you are playing as a guest here.'),5000)}catch(e){}}
   ui()}
  // profil inconnu du serveur : l'ancien code est garde dans l'historique de l'appareil, le joueur repasse en invite
+ // profil ouvert sur un autre appareil (le code y a ete saisi) : cet appareil est deconnecte pour de bon. Il oublie le code
+ // et repasse en invite ; pour revenir sur le profil ici, il faut y saisir le code de sauvegarde a nouveau.
+ function gone(){if(!I)return;const id=I.id;try{put(KH,(get(KH)||[]).filter(x=>x&&x.id!==id));localStorage.removeItem(KI);localStorage.removeItem(KI0);localStorage.removeItem(KC)}catch(e){}
+  I=null;SID='';sput(KS,'');P=Object.assign({},P0,{n:gname()});ST='guest';
+  if(!HEADLESS){try{netBanner(LG('Ton profil a été ouvert sur un autre appareil : celui-ci est déconnecté et passe en invité. Pour y revenir, saisis ton code de sauvegarde (Profil → « J’ai déjà un code »).','Your profile was opened on another device: this one is signed out and switches to guest. To come back, enter your save code (Profile → “I already have a code”).'),9000)}catch(e){}try{fill()}catch(e){}}
+  ui()}
  function lost(){old(I);I=null;SID='';sput(KS,'');try{localStorage.removeItem(KI)}catch(e){}P=Object.assign({},P0,{n:gname()});setSt('guest')}
  // ouvrir le profil sur cet onglet (take : le reprendre a un autre appareil)
  let SYNC=null;
  function sync(take){if(SYNC&&!take)return SYNC;const run=(async()=>{await 0;try{
    if(!I)return setSt('guest');
    if(SID&&!take){const j=await api('ping',idb());if(j.ok){keep(j.prof);return setSt('on')}if(j._st===404)return lost();if(j._st!==409)return setSt('off')}
-   const j=await api('login',{id:I.id,s:I.s,sid:SID,take:!!take});
+   const j=await api('login',{id:I.id,s:I.s,sid:SID,take:!!take,dev:DV});if(!I)return;
    if(j.sid){SID=j.sid;sput(KS,SID);keep(j.prof);setSt('on')}
    else if(j._st===409)setSt('busy');else if(j._st===404)lost();else setSt('off')
   }catch(e){setSt('off')}finally{if(SYNC===run)SYNC=null}})();SYNC=run;return run}
@@ -11102,7 +11144,7 @@ const PROF=(()=>{
   HUI.T(String(n),cx,cy+.5,Math.max(7,Math.round(r*.95)),'#1a1206','center',700,1)}
  const NOTE={short:()=>LG('partie trop courte (90 s minimum)','game too short (90 s minimum)'),nostart:()=>LG('début de partie non reçu par le serveur','game start not received by the server'),rate:()=>LG('XP plafonnée : 60 XP par minute en solo','XP capped: 60 XP per minute in solo')};
  const ERR={offline:()=>LG('XP non comptée : serveur du jeu injoignable','XP not counted: game server unreachable'),remote:()=>LG('XP non reçue du serveur','XP not received from the server'),late:()=>LG('XP non comptée : arrivé moins d’une minute avant la fin','XP not counted: joined less than a minute before the end'),
-  session:()=>LG('XP non comptée : ton profil est ouvert sur un autre appareil','XP not counted: your profile is open on another device'),left:()=>LG('XP non comptée : partie quittée','XP not counted: you left the game')};
+  session:()=>LG('XP non comptée : ton profil est ouvert ailleurs','XP not counted: your profile is open elsewhere'),left:()=>LG('XP non comptée : partie quittée','XP not counted: you left the game')};
  ERR.profile=()=>LG('Partie en invité : XP non sauvegardée · crée ton profil dans le menu','Guest game: XP not saved · create your profile in the menu');
  function drawXP(y,R){if(!R)return y;const mob=H<500,now=performance.now(),w=Math.min(W-16,640),x=W/2-w/2,h=mob?48:56,r=mob?15:19,bx=x+14+r,tx=bx+r+14,tw_=x+w-16-tx,ty=y+(mob?15:19),by=y+(mob?31:37),bh=mob?6:8;
   const gst=R.err==='profile';HUI.box(x,y,w,h,{r:12,bar:R.err&&!gst?'#ff8a7a':'#ffcf5a'});
@@ -11124,7 +11166,7 @@ const PROF=(()=>{
  function ui(){if(HEADLESS)return;const c=$('profChip');if(!c)return;const[lv,cur,nd]=prog(P.xp),gs=!I;c.classList.toggle('guest',gs);c.classList.toggle('busy',ST==='busy');
   const nw=typeof SKIN!=='undefined'&&SKIN.unseen?SKIN.unseen():0;c.classList.toggle('new',nw>0);{const sb=$('profSkinB');if(sb)sb.innerHTML=LG('Skins','Skins')+(nw?' <i>'+nw+'</i>':'')}
   c.querySelector('.pbg b').textContent=gs?'+':lv;c.querySelector('.pn').textContent=gs?LG('Invité','Guest'):nm();
-  c.querySelector('.pl').textContent=gs?LG('Créer un profil','Create a profile'):ST==='busy'?LG('Ouvert sur un autre appareil','Open on another device'):lv>=LMAX?LG('Niveau max','Max level'):LG('Niv. ','Lv. ')+lv+' · '+cur+' / '+nd;
+  c.querySelector('.pl').textContent=gs?LG('Créer un profil','Create a profile'):ST==='busy'?LG('Ouvert dans un autre onglet','Open in another tab'):lv>=LMAX?LG('Niveau max','Max level'):LG('Niv. ','Lv. ')+lv+' · '+cur+' / '+nd;
   c.querySelector('.pbar i').style.width=(gs?0:nd?Math.round(cur/nd*1000)/10:100)+'%';
   if($('profBox')&&$('profBox').classList.contains('on'))fill()}
  // bareme affiche par le bouton « Calcul de l'XP » (le serveur compte avec le meme, profiles.js)
@@ -11143,7 +11185,7 @@ const PROF=(()=>{
   b.querySelector('.ppXp').textContent=lv>=LMAX?LG('Niveau maximum atteint · ','Max level reached · ')+fr(P.xp)+' XP':fr(cur)+' / '+fr(nd)+' XP · '+LG('encore ','')+fr(nd-cur)+LG(' XP pour le niveau ',' XP to level ')+(lv+1);
   const S=[[LG('Parties','Games'),fr(P.g)],[LG('Victoires','Wins'),fr(P.w)],[LG('Éliminations','Eliminations'),fr(P.k)],[LG('Ratio K/D','K/D ratio'),kd()],['MVP',fr(P.mvp)],[LG('XP totale','Total XP'),fr(P.xp)]];
   b.querySelector('.ppStats').innerHTML=S.map(s=>'<div><b>'+esc(s[1])+'</b><span>'+esc(s[0])+'</span></div>').join('');
-  $('profCode').value=code();const nn=$('profNew');if(nn&&!nn.value&&document.activeElement!==nn)nn.value=gname();
+  $('profCode').value=CSHOW?code():CMASK;const nn=$('profNew');if(nn&&!nn.value&&document.activeElement!==nn)nn.value=gname();
   const mg=b.querySelector('.ppMig');mg.style.display=MIG?'block':'none';if(MIG)mg.textContent=LG('Ta progression précédente sera reprise (niveau ','Your previous progress will be carried over (level ')+lvlOf(Math.min(3000,+MIG.xp||0))+').';
   $('profImpB').textContent=I?LG('Changer de profil','Switch profile'):LG('J’ai déjà un code','I have a code')}
  function info(){const b=$('profBox');b.querySelector('.ppInfo').innerHTML=XPT().map(([t,rows])=>'<div class="ppIT">'+esc(t)+'</div><div class="ppIL">'+rows.map(r=>'<div><span>'+esc(r[0])+'</span><b>'+esc(r[1])+'</b></div>').join('')+'</div>').join('');
@@ -11156,23 +11198,32 @@ const PROF=(()=>{
  let NT=0;const setName=v=>{try{localStorage.setItem('detonate_name',v)}catch(e){}const ip=$('nameInput');if(ip&&ip.value!==v)ip.value=v;if(!I)return;
   P.n=v;put(KC,Object.assign({v:2},P));ui();clearTimeout(NT);NT=setTimeout(()=>{if(isOn())api('name',idb({n:v})).then(j=>{if(j.prof)keep(j.prof)}).catch(()=>{})},800)};
  async function make(){const n=$('profNew').value.trim().slice(0,14);if(!n)return msg(LG('Choisis d’abord un pseudo.','Choose a name first.'),0);
-  msg(LG('Création…','Creating…'),1);try{const j=await api('new',{n,mig:MIG});
+  msg(LG('Création…','Creating…'),1);try{const j=await api('new',{n,mig:MIG,dev:DV});
    if(!(j.id&&j.s&&j.sid))return msg(j._st===429?LG('Trop de profils créés depuis ta connexion : réessaie dans une heure.','Too many profiles created from your connection: try again in an hour.'):UNR(),0);
    I={id:j.id,s:j.s};put(KI,I);SID=j.sid;sput(KS,SID);if(MIG){MIG=null;const c0=get(KC0);if(c0&&c0.v===1)put(KC0,Object.assign(c0,{v:0}))}
    keep(j.prof);setName(P.n);setSt('on');$('profBox').classList.remove('imp');fill();msg(LG('Profil créé ! Copie ton code de sauvegarde et garde-le.','Profile created! Copy your save code and keep it.'),1)}catch(e){msg(UNR(),0)}}
  // reprendre son profil ouvert sur un autre appareil (l'autre passe en invite)
  async function take(){msg(LG('Connexion…','Connecting…'),1);await sync(true);fill();
-  if(ST==='on')msg(LG('Ton profil est maintenant actif ici. L’autre appareil passe en invité.','Your profile is now active here. The other device switches to guest.'),1);else msg(UNR(),0)}
+  if(ST==='on')msg(LG('Ton profil est maintenant actif ici. L’autre onglet passe en invité.','Your profile is now active here. The other tab switches to guest.'),1);else msg(UNR(),0)}
  // importer un code : le profil s'ouvre sur cet appareil (s'il est ouvert ailleurs : bouton « Jouer ici »)
+ let IPM='',IPQ='';   // saisie du code sur un nouvel appareil : '' sans PIN, 'pin' PIN demande, 'new' nouveau PIN a choisir (apres un oubli)
  async function imp(){const q=parse($('profImp').value);if(!q)return msg(LG('Code invalide : vérifie qu’il est complet (il commence par DTN2.).','Invalid code: check that it is complete (it starts with DTN2.).'),0);
   if(I&&q.id===I.id){if(ST==='on')return msg(LG('C’est déjà le profil de cet appareil.','This is already this device’s profile.'),1);return take()}
-  msg(LG('Vérification…','Checking…'),1);try{const j=await api('login',{id:q.id,s:q.s,take:false});
+  const pb=$('profImpPinBox'),pv=$('profImpPin').value.trim(),pinAsk=(mode,t)=>{IPM=mode;IPQ=q.id;pb.classList.add('on');$('profImpPinT').textContent=t;$('profImpF').style.display=mode==='pin'?'':'none';$('profImpPin').value='';try{$('profImpPin').focus()}catch(e){}};
+  if(IPQ!==q.id){IPM='';pb.classList.remove('on')}
+  if(IPM&&!/^[0-9]{4}$/.test(pv))return msg(LG('Le code PIN fait 4 chiffres.','The PIN is 4 digits.'),0);
+  msg(LG('Vérification…','Checking…'),1);try{const j=await api('login',Object.assign({id:q.id,s:q.s,take:true,imp:1,dev:DV},IPM==='pin'?{pin:pv}:IPM==='new'?{npin:pv}:{}));
+   if(j._st===403){
+    if(j.err==='newpin'){pinAsk('new',LG('Le délai est passé : choisis ton nouveau code PIN à 4 chiffres, puis appuie sur « Importer ».','The waiting time is over: choose your new 4-digit PIN, then press “Import”.'));return msg('',1)}
+    if(j.err==='needpin'){pinAsk('pin',LG('Ce profil est protégé par un code PIN. Entre-le, puis appuie sur « Importer », pour l’ouvrir sur cet appareil.','This profile is protected by a PIN. Enter it, then press “Import”, to open it on this device.'));return msg('',1)}
+    $('profImpPin').value='';return msg(j.err==='locked'?LG('Trop d’essais : réessaie dans ','Too many tries: try again in ')+Math.ceil((j.wait||300)/60)+' min.':LG('Code PIN incorrect. Essais restants : ','Wrong PIN. Tries left: ')+(j.left||0)+'.',0)}
+   IPM='';IPQ='';pb.classList.remove('on');$('profImpPin').value='';
    if(j._st===404)return msg(LG('Aucun profil ne correspond à ce code.','No profile matches this code.'),0);
    if(!j.sid&&j._st!==409)return msg(UNR(),0);
    const prev=code();old(I);I=q;put(KI,I);P=Object.assign({},P0);MIG=null;
    if(j.sid){SID=j.sid;sput(KS,SID);keep(j.prof);setSt('on')}else{SID='';sput(KS,'');setSt('busy')}
    const ip=$('nameInput');if(ip&&P.n)ip.value=P.n;$('profBox').classList.remove('imp');fill();$('profImp').value='';
-   msg((j.sid?LG('Profil récupéré : niveau ','Profile restored: level ')+lvlOf(P.xp)+'.':LG('Profil récupéré, mais il est ouvert sur un autre appareil : « Jouer ici » pour l’utiliser sur celui-ci.','Profile restored, but it is open on another device: “Play here” to use it on this one.'))+(prev?LG(' Ancien code de cet appareil (toujours valable) : ',' Previous code of this device (still valid): ')+prev:''),1)}catch(e){msg(UNR(),0)}}
+   msg((j.sid?LG('Profil récupéré : niveau ','Profile restored: level ')+lvlOf(P.xp)+LG('. Il n’est plus accessible sur tes autres appareils : ils passent en invité.','. It is no longer available on your other devices: they switch to guest.'):LG('Profil récupéré, mais il est ouvert sur un autre appareil : « Jouer ici » pour l’utiliser sur celui-ci.','Profile restored, but it is open on another device: “Play here” to use it on this one.'))+(prev?LG(' Ancien code de cet appareil (toujours valable) : ',' Previous code of this device (still valid): ')+prev:''),1)}catch(e){msg(UNR(),0)}}
  function init(){if(HEADLESS)return;load();
   const logo=document.querySelector('#menu .logo');if(!logo)return;
   const c=document.createElement('button');c.id='profChip';c.type='button';c.setAttribute('aria-label',LG('Mon profil','My profile'));
@@ -11182,14 +11233,18 @@ const PROF=(()=>{
    '<div class="ppHome">'+
     '<div class="ppGuest"><span class="ppGBadge"><b>+</b></span><p>'+LG('Crée ton profil pour sauvegarder ton XP.','Create your profile to save your XP.')+'</p>'+
      '<div class="ppRow"><input id="profNew" maxlength="14" autocomplete="off" placeholder="'+LG('Ton pseudo','Your name')+'"><button class="ppB" id="profMake">'+LG('Créer','Create')+'</button></div><p class="ppMig"></p></div>'+
-    '<div class="ppBusyBox"><p>'+LG('Ton profil est ouvert sur un autre appareil.','Your profile is open on another device.')+'</p><button class="ppB ppWide" id="profTake">'+LG('Jouer ici avec mon profil','Play here with my profile')+'</button></div>'+
+    '<div class="ppBusyBox"><p>'+LG('Ton profil est ouvert dans un autre onglet ou une autre fenêtre de cet appareil.','Your profile is open in another tab or window on this device.')+'</p><button class="ppB ppWide" id="profTake">'+LG('Jouer ici avec mon profil','Play here with my profile')+'</button></div>'+
     '<div class="ppMain"><div class="ppHead"><span class="ppBadge"><b>1</b></span><div class="ppId"><label for="profName">'+LG('Pseudo','Name')+'</label><input id="profName" maxlength="14" autocomplete="off" placeholder="'+LG('Joueur','Player')+'"><span class="ppLv"></span></div></div>'+
      '<div class="ppBar"><i></i></div><div class="ppXp"></div><div class="ppNext"></div><div class="ppStats"></div>'+
-     '<div class="ppCodeBox"><div class="ppT">'+LG('Code de sauvegarde','Save code')+'</div><div class="ppRow"><input id="profCode" readonly><button class="ppB" id="profCopy">'+LG('Copier','Copy')+'</button></div>'+
-      '<p class="ppHint">'+LG('Il ne change jamais : garde-le pour retrouver ton profil sur un autre appareil.','It never changes: keep it to get your profile back on another device.')+'</p></div></div>'+
+     '<div class="ppCodeBox"><div class="ppT">'+LG('Code de sauvegarde','Save code')+'</div><div class="ppRow"><input id="profCode" readonly autocomplete="off" spellcheck="false"><button class="ppB ppB2" id="profShow">'+LG('Voir','Show')+'</button><button class="ppB" id="profCopy">'+LG('Copier','Copy')+'</button></div>'+
+      '<div class="ppPin" id="profPin"><p class="ppPinT"></p><div class="ppRow"><input id="profPinI" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="• • • •"><button class="ppB" id="profPinOk">OK</button><button class="ppB ppB2" id="profPinNo">'+LG('Annuler','Cancel')+'</button></div><button class="ppPinF" id="profPinF">'+LG('PIN oublié ?','Forgot PIN?')+'</button></div>'+
+      '<div class="ppKeep"><b>'+LG('Garde ce code secret et en lieu sûr.','Keep this code secret and safe.')+'</b>'+
+       '<p>'+LG('C’est la seule clé de ton profil : XP, niveau et skins achetés. Sans lui, ton profil est perdu si tu changes d’appareil ou si les données du navigateur sont effacées.','It is the only key to your profile: XP, level and purchased skins. Without it, your profile is lost if you change device or if the browser data is cleared.')+'</p>'+
+       '<p>'+LG('Ne le donne à personne et ne le montre pas en vidéo ou en direct : quiconque l’a peut prendre ton profil. Il ne change jamais.','Never give it to anyone and never show it on video or stream: anyone who has it can take your profile. It never changes.')+'</p><p>'+LG('Un seul appareil à la fois : saisir ce code sur un autre appareil déconnecte celui-ci.','One device at a time: entering this code on another device signs this one out.')+'</p></div></div></div>'+
     '<button class="ppSkin" id="profSkinB">'+LG('Skins','Skins')+'</button>'+
     '<div class="ppLinks"><button class="ppL" id="profInfoB">'+LG('Calcul de l’XP','How XP is counted')+'</button><button class="ppL" id="profImpB"></button></div>'+
-    '<div class="ppImp"><div class="ppRow"><input id="profImp" placeholder="DTN2.…" autocomplete="off"><button class="ppB" id="profGo">'+LG('Importer','Import')+'</button></div></div>'+
+    '<div class="ppImp"><div class="ppRow"><input id="profImp" placeholder="DTN2.…" autocomplete="off"><button class="ppB" id="profGo">'+LG('Importer','Import')+'</button></div>'+
+     '<div class="ppImpPin" id="profImpPinBox"><p class="ppPinT" id="profImpPinT"></p><div class="ppRow"><input id="profImpPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="• • • •"></div><button class="ppPinF" id="profImpF">'+LG('PIN oublié ?','Forgot PIN?')+'</button></div></div>'+
     '<div class="ppWarn">'+LG('Serveur du jeu injoignable : profil affiché = dernière copie.','Game server unreachable: profile shown = last copy.')+'</div><div id="profMsg" class="ppMsg"></div>'+
    '</div><div class="ppInfo"></div></div>';
   document.body.appendChild(b);
@@ -11197,7 +11252,31 @@ const PROF=(()=>{
   $('profInfoB').onclick=info;$('profSkinB').onclick=()=>{close();SKIN.open()};$('profImpB').onclick=()=>{b.classList.toggle('imp');if(b.classList.contains('imp'))$('profImp').focus()};addEventListener('keydown',e=>{if(e.key==='Escape'&&b.classList.contains('on'))b.dataset.v==='info'?home():close()});
   const ni=$('profName');for(const k of['input','change'])ni.addEventListener(k,()=>{const v=ni.value.trim().slice(0,14);if(v!==P.n)setName(v)});   // enregistre a chaque lettre (Tab est reservee au tableau des scores)
   $('profMake').onclick=make;$('profNew').addEventListener('keydown',e=>{if(e.key==='Enter')make()});$('profTake').onclick=take;$('profGo').onclick=imp;
-  $('profCopy').onclick=async()=>{const t=$('profCode');if(!I)return;try{await navigator.clipboard.writeText(t.value);msg(LG('Code copié. Garde-le précieusement.','Code copied. Keep it safe.'),1)}catch(e){t.select();try{document.execCommand('copy');msg(LG('Code copié.','Code copied.'),1)}catch(x){msg(LG('Sélectionne le code et copie-le.','Select the code and copy it.'),0)}}};
+  // code de sauvegarde masque par defaut (personne ne le lit par-dessus l'epaule ou en direct) : « Voir » l'affiche 15 secondes
+  const showC=v=>{CSHOW=!!v&&!!I;clearTimeout(CTM);const t=$('profCode');t.value=CSHOW?code():CMASK;t.classList.toggle('msk',!CSHOW);$('profShow').textContent=CSHOW?LG('Masquer','Hide'):LG('Voir','Show');if(CSHOW)CTM=setTimeout(()=>showC(0),15000)};
+  // code PIN (4 chiffres, garde par le serveur) : demande pour voir ou copier le code ; valable 60 secondes une fois accepte
+  let UNL=0,PTHEN=null,PMODE='';const pinBox=$('profPin'),pinI=$('profPinI'),pinT=pinBox.querySelector('.ppPinT');
+  const pinHide=()=>{pinBox.classList.remove('on');PTHEN=null;pinI.value=''};
+  const pinAsk=(mode)=>{PMODE=mode;pinI.value='';$('profPinF').style.display=mode==='ask'?'':'none';
+   pinT.textContent=mode==='new'?LG('Choisis un code PIN à 4 chiffres. Il sera demandé pour voir ou copier ton code de sauvegarde : retiens-le bien.','Choose a 4-digit PIN. It will be asked to show or copy your save code: remember it.'):mode==='reset'?LG('Choisis ton nouveau code PIN à 4 chiffres.','Choose your new 4-digit PIN.'):LG('Entre ton code PIN pour voir ou copier ton code de sauvegarde.','Enter your PIN to show or copy your save code.');
+   pinBox.classList.add('on');try{pinI.focus()}catch(e){}};
+  const needPin=then=>{if(!I)return;if(Date.now()<UNL)return then();if(!isOn()){msg(LG('Serveur du jeu injoignable : impossible de vérifier ton code PIN pour le moment.','Game server unreachable: your PIN cannot be checked right now.'),0);return}
+   PTHEN=then;pinAsk(!P.pin?'new':P.pinr&&Date.now()>=P.pinr?'reset':'ask')};
+  const when=t=>{try{return new Date(t).toLocaleString(LANG==='en'?'en-US':'fr-FR',{weekday:'long',hour:'2-digit',minute:'2-digit'})}catch(e){return''}};
+  const pinGo=async()=>{const v=pinI.value.trim();if(!/^[0-9]{4}$/.test(v)){msg(LG('Le code PIN fait 4 chiffres.','The PIN is 4 digits.'),0);return}
+   let j;try{j=await api('pin',idb(PMODE==='ask'?{a:'check',pin:v}:{a:'set',pin:v}))}catch(e){j={}}if(j.prof)keep(j.prof);
+   if(j.ok){UNL=Date.now()+60000;const th=PTHEN;pinHide();msg(PMODE==='ask'?'':LG('Code PIN enregistré.','PIN saved.'),1);if(th)th();return}
+   pinI.value='';msg(j.err==='locked'?LG('Trop d’essais : réessaie dans ','Too many tries: try again in ')+Math.ceil((j.wait||300)/60)+' min.':j.err==='pin'?LG('Code PIN incorrect. Essais restants : ','Wrong PIN. Tries left: ')+(j.left||0)+'.':j._st===409?LG('Ton profil est ouvert sur un autre appareil.','Your profile is open on another device.'):LG('Vérification impossible pour le moment.','Cannot check right now.'),0)};
+  $('profPinOk').onclick=pinGo;pinI.addEventListener('keydown',e=>{if(e.key==='Enter')pinGo()});$('profPinNo').onclick=()=>{pinHide();msg('',1)};
+  $('profPinF').onclick=async()=>{let j;try{j=await api('pin',idb({a:'forgot'}))}catch(e){j={}}if(j.prof)keep(j.prof);
+   if(P.pinr&&Date.now()>=P.pinr){pinAsk('reset');return}
+   pinHide();msg(P.pinr?LG('Par sécurité, tu pourras choisir un nouveau code PIN 24 heures après ta demande : ','For safety, you can choose a new PIN 24 hours after your request: ')+when(P.pinr)+LG('. Reviens à ce moment-là et appuie sur « Voir ».','. Come back then and press “Show”.'):LG('Demande impossible pour le moment.','Request unavailable right now.'),0)};
+  $('profShow').onclick=()=>CSHOW?showC(0):needPin(()=>showC(1));showC(0);
+  // PIN oublie sur un nouvel appareil : demande faite avec le code ; nouveau PIN possible 24 heures plus tard
+  $('profImpF').onclick=async()=>{const q=parse($('profImp').value);if(!q)return;let j;try{j=await api('pin',{id:q.id,s:q.s,a:'forgot',dev:DV})}catch(e){j={}}
+   msg(j.pinr?LG('Par sécurité, tu pourras choisir un nouveau code PIN 24 heures après ta demande : ','For safety, you can choose a new PIN 24 hours after your request: ')+when(j.pinr)+LG('. Reviens à ce moment-là et saisis ton code de sauvegarde ici.','. Come back then and enter your save code here.'):UNR(),j.pinr?1:0)};setInterval(()=>{if(!b.classList.contains('on')){if(CSHOW)showC(0);if(pinBox.classList.contains('on'))pinHide();UNL=0}},400);
+  $('profCopy').onclick=()=>needPin(doCopy);const doCopy=async()=>{const t=$('profCode');if(!I)return;const okT=LG('Code copié. Colle-le dans un endroit sûr et privé (notes, gestionnaire de mots de passe).','Code copied. Paste it somewhere safe and private (notes, password manager).');
+   try{await navigator.clipboard.writeText(code());msg(okT,1)}catch(e){const was=CSHOW;t.value=code();t.select();try{document.execCommand('copy');msg(okT,1)}catch(x){msg(LG('Code PIN accepté : appuie de nouveau sur « Copier ».','PIN accepted: press “Copy” again.'),1)}try{getSelection().removeAllRanges()}catch(x){}if(!was)showC(0)}};
   const ip=$('nameInput');if(ip){if(!ip.value&&P.n)ip.value=P.n;ip.addEventListener('change',()=>{const v=ip.value.trim().slice(0,14);if(v&&v!==P.n)setName(v)})}
   // en ligne : le profil (avec la session de cet onglet) est annonce au serveur en creant ou en rejoignant un salon ; invite : rien
   {const sn=sendNet;sendNet=function(o){if(o&&(o.type==='create'||o.type==='join')&&isOn()){o.pid=I.id;o.ps=I.s;o.psid=SID}return sn.apply(this,arguments)}}
@@ -11216,9 +11295,9 @@ const PROF=(()=>{
  function saveSkins(sel){try{if(netMode&&netSocket&&netSocket.readyState===1)sendNet({type:'sk',sk:sel})}catch(e){}
   if(!isOn())return Promise.resolve(false);return api('skins',idb({sk:sel})).then(j=>{if(j.prof){keep(j.prof);return true}if(j._st===409)setSt('busy');return false}).catch(()=>false)}
  // boutique : prix (sans profil), achat (le serveur ouvre la page de paiement Stripe), retour de paiement (le serveur verifie)
- let SHOPJ=null;
- function shopInfo(){if(SHOPJ)return Promise.resolve(SHOPJ);return api('shop',{}).then(j=>{if(j&&j.prices){SHOPJ=j;return j}return{on:0,prices:{}}}).catch(()=>({on:0,prices:{}}))}
- function buy(c,it){if(!isOn())return Promise.resolve({err:I?'session':'guest'});return api('buy',idb({c,it,ret:location.origin+location.pathname})).catch(()=>({err:'net'}))}
+ let SHOPJ=null;   // boutique du moment ; « end » : heure locale du prochain changement
+ function shopInfo(force){if(SHOPJ&&!force&&Date.now()<SHOPJ.end)return Promise.resolve(SHOPJ);return api('shop',{}).then(j=>{if(j&&Array.isArray(j.items)){j.end=Date.now()+Math.max(1000,(j.next||0)-(j.now||0));SHOPJ=j;return j}return{on:0,items:[],end:0}}).catch(()=>({on:0,items:[],end:0}))}
+ function buy(c,it,cur){if(!isOn())return Promise.resolve({err:I?'session':'guest'});return api('buy',idb({c,it,cur,ret:location.origin+location.pathname})).catch(()=>({err:'net'}))}
  function claim(cs){if(!isOn())return Promise.resolve({err:'session'});return api('claim',idb({cs})).then(j=>{if(j.prof)keep(j.prof);if(j._st===409)setSt('busy');return j}).catch(()=>({err:'net'}))}
  return{init,award,drawXP,ui,open,prog,need,TOT,LMAX,get:()=>P,code,report,hexBadge,lvlOfSlot,onXP,KD,state:()=>ST,saveSkins,isOn,lvlOf,shopInfo,buy,claim}})();
 // ===================== V3.7 : SKINS (tenue, bonnet, arme, sac, aura) =====================
@@ -11759,28 +11838,40 @@ const SKIN=(()=>{
   T_.fl.visible=!!sel;T_.ren.render(T_.scn,T_.cam);T_.fl.visible=true;const u=T_.ren.domElement.toDataURL('image/png');clear(T_.man);return sel?u:TH[k]=u}
  const LGn=n=>LG(n[0],n[1]);
  const PX='data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
- function list(){TQ=[];const D=DEF[CAT],lv=lvlNow(),cur=Object.assign({},worn(),TRY)[CAT],ids=Object.keys(D).sort((a,b)=>(D[a].shop||0)-(D[b].shop||0)||(D[a].shop?D[a].r-D[b].r:D[a].lv-D[b].lv));let sep=0;
+ function list(){TQ=[];const D=DEF[CAT],lv=lvlNow(),cur=Object.assign({},worn(),TRY)[CAT],ids=Object.keys(D).filter(id=>!D[id].shop||owned(CAT,id)).sort((a,b)=>(D[a].shop||0)-(D[b].shop||0)||(D[a].shop?D[a].r-D[b].r:D[a].lv-D[b].lv));let sep=0;if(MODE==='shop')return listShop();
   $('skTabs').innerHTML=CATS.map(c=>'<button class="skTab'+(c[0]===CAT?' on':'')+'" data-c="'+c[0]+'">'+esc(LGn(c[1]))+'</button>').join('');
   $('skGrid').innerHTML='<button class="skC def'+(cur?'':' on')+'" data-id=""><span class="skI skNo">∅</span><span class="skN">'+LG('Par défaut','Default')+'</span><span class="skL"> </span></button>'+
-   ids.map(id=>{const it=D[id],ok=unl(CAT,id),r=rarOf(it),nw=ok&&!it.shop&&!SEEN.has(CAT+':'+id),on=cur===id,hd=it.shop&&!sep++?'<div class="skSep"><b>'+LG('Boutique','Shop')+'</b><span>'+(!SHOPI?'…':SHOPI.free?LG('gratuit sur ce serveur de test','free on this test server'):SHOPI.on?LG('paiement sécurisé par Stripe','secure payment by Stripe'):LG('bientôt disponible','coming soon'))+'</span></div>':'',pr=it.shop&&!ok?priceOf(CAT,id):0;
-    return hd+'<button class="skC r'+r+(on?' on':'')+(ok?'':it.shop?' sale':' lock')+'" data-id="'+id+'" style="'+RSTY(r)+'">'+(nw?'<span class="skNew">'+LG('NOUVEAU','NEW')+'</span>':'')+
-     (on&&ok?'<span class="skOn">✓</span>':ok?'':it.shop?'<span class="skPr">'+(SHOPI&&SHOPI.on&&pr?money(pr):'…')+'</span>':'<span class="skLk">🔒 '+LG('Niv. ','Lv. ')+it.lv+'</span>')+
+   ids.map(id=>{const it=D[id],ok=unl(CAT,id),r=rarOf(it),nw=ok&&!it.shop&&!SEEN.has(CAT+':'+id),on=cur===id,hd=it.shop&&!sep++?'<div class="skSep"><b>'+LG('Achetés','Purchased')+'</b><span>'+LG('skins de la boutique','shop skins')+'</span></div>':'';
+    return hd+'<button class="skC r'+r+(on?' on':'')+(ok?'':' lock')+'" data-id="'+id+'" style="'+RSTY(r)+'">'+(nw?'<span class="skNew">'+LG('NOUVEAU','NEW')+'</span>':'')+
+     (on&&ok?'<span class="skOn">✓</span>':ok?'':'<span class="skLk">🔒 '+LG('Niv. ','Lv. ')+it.lv+'</span>')+
      (TH[CAT+id+132]?'<img class="skI" alt="" src="'+TH[CAT+id+132]+'">':(TQ.push({c:CAT,id}),'<img class="skI ld" alt="" data-k="'+CAT+id+'" src="'+PX+'">'))+'<span class="skN">'+esc(LGn(it.n))+'</span><span class="skL">'+esc(LGn(RARN[r]))+'</span></button>'}).join('');
   $('skTabs').querySelectorAll('.skTab').forEach(t=>t.classList.toggle('nw',unseen(t.dataset.c)>0&&t.dataset.c!==CAT));
   if(lv)for(const id of ids)if(!D[id].shop&&lv>=D[id].lv)SEEN.add(CAT+':'+id);saveSeen();if(typeof PROF!=='undefined')PROF.ui()}
  // skins debloques pas encore vus dans le casier (point dore sur la pastille du profil)
  function unseen(c){const lv=lvlNow();if(!lv)return 0;let n=0;for(const k in DEF)if(!c||c===k)for(const id in DEF[k])if(!DEF[k][id].shop&&lv>=DEF[k][id].lv&&!SEEN.has(k+':'+id))n++;return n}
  function say(t,ok){const m=$('skMsg');m.textContent=t;m.className='skMsg'+(ok?' ok':'')}
- function pick(id){const D=DEF[CAT];hideBuy();if(!id){SEL[CAT]='';delete TRY[CAT];save();push();say(LG('Skin retiré.','Skin removed.'),1)}
+ function pick(id,c){if(MODE==='shop')return pickShop(c,id);const D=DEF[CAT];hideBuy();if(!id){SEL[CAT]='';delete TRY[CAT];save();push();say(LG('Skin retiré.','Skin removed.'),1)}
   else if(unl(CAT,id)){SEL[CAT]=id;delete TRY[CAT];save();push();say(LGn(D[id].n)+LG(' : équipé.',': equipped.'),1)}
-  else if(D[id].shop){TRY[CAT]=id;say('',1);buyBar(CAT,id,0)}
   else{TRY[CAT]=id;say(LGn(D[id].n)+LG(' : essai. Se débloque au niveau ',': preview. Unlocks at level ')+D[id].lv+(lvlNow()?'.':LG(' (crée ton profil pour gagner des niveaux).',' (create your profile to earn levels).')),0)}
   list()}
  // ---------- boutique : achat d'un skin (paiement sur la page de Stripe, puis retour dans le jeu) ----------
- let SHOPI=null,BUY=null;   // SHOPI : prix et etat de la boutique (serveur) ; BUY : { c, id, step 0 prix | 1 confirmation | 2 ouverture }
- const priceOf=(c,id)=>SHOPI&&SHOPI.prices&&SHOPI.prices[c]&&SHOPI.prices[c][id]||0;
- const money=v=>{try{return new Intl.NumberFormat(LANG==='en'?'en-US':'fr-FR',{style:'currency',currency:String(SHOPI&&SHOPI.cur||'eur').toUpperCase()}).format(v/100)}catch(e){return(v/100).toFixed(2)+' €'}};
- function shopLoad(){if(typeof PROF==='undefined'||!PROF.shopInfo||(SHOPI&&SHOPI.prices&&Object.keys(SHOPI.prices).length))return;PROF.shopInfo().then(j=>{SHOPI=j;const b=$('skinBox');if(b&&b.classList.contains('on')){list();if(BUY)buyBar(BUY.c,BUY.id,BUY.step)}})}
+ let SHOPI=null,BUY=null,MODE='lock',SHT=0;   // SHOPI : boutique du moment (serveur) ; BUY : { c, id, step 0 prix | 1 confirmation | 2 ouverture } ; MODE : 'lock' casier, 'shop' boutique
+ const priceOf=(c,id)=>{const it=SHOPI&&SHOPI.items&&SHOPI.items.find(x=>x.c===c&&x.id===id);return it?it.p:0};
+ const left=()=>{const s=Math.max(0,Math.round(((SHOPI&&SHOPI.end||0)-Date.now())/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+' h '+String(m).padStart(2,'0')+' min':m?m+' min '+String(s%60).padStart(2,'0')+' s':s+' s'};
+ // boutique : 8 skins, deux par rarete, tires au hasard toutes les 8 heures (par le serveur)
+ function listShop(){const L=SHOPI&&SHOPI.items||[],cur=Object.assign({},worn(),TRY),on_=SHOPI&&SHOPI.on;
+  $('skTabs').innerHTML='<div class="shHead"><b>'+LG('Nouveaux skins dans ','New skins in ')+'<span id="shLeft">'+(SHOPI&&SHOPI.end?left():'…')+'</span></b><small>'+(!SHOPI?'':SHOPI.free?LG('gratuit sur ce serveur de test','free on this test server'):on_?LG('8 skins, deux par rareté · paiement sécurisé par Stripe','8 skins, two per rarity · secure payment by Stripe'):LG('boutique bientôt disponible','shop coming soon'))+'</small></div>'+
+   '<div class="shCur" role="group" aria-label="'+LG('Devise','Currency')+'"><button data-cur="eur" class="'+(CUR==='eur'?'on':'')+'">€ EUR</button><button data-cur="usd" class="'+(CUR==='usd'?'on':'')+'">$ USD</button></div>';
+  $('skGrid').innerHTML=L.length?L.filter(q=>DEF[q.c]&&DEF[q.c][q.id]).map(q=>{const it=DEF[q.c][q.id],r=rarOf(it),own=owned(q.c,q.id),on=cur[q.c]===q.id,k=q.c+q.id+132;
+    return'<button class="skC r'+r+(on?' on':'')+'" data-c="'+q.c+'" data-id="'+q.id+'" style="'+RSTY(r)+'">'+(own?'<span class="skOwn">'+LG('Possédé','Owned')+'</span>':'<span class="skPr">'+(on_?money(q.p):'…')+'</span>')+
+     (TH[k]?'<img class="skI" alt="" src="'+TH[k]+'">':(TQ.push({c:q.c,id:q.id}),'<img class="skI ld" alt="" data-k="'+q.c+q.id+'" src="'+PX+'">'))+'<span class="skN">'+esc(LGn(it.n))+'</span><span class="skK">'+esc(LGn(CATN[q.c]))+'</span><span class="skL">'+esc(LGn(RARN[r]))+'</span></button>'}).join(''):'<div class="shEmpty">'+(SHOPI?LG('Boutique indisponible pour le moment.','Shop unavailable right now.'):LG('Chargement…','Loading…'))+'</div>'}
+ function pickShop(c,id){hideBuy();if(!c||!DEF[c]||!DEF[c][id])return;
+  if(owned(c,id)){TRY={};SEL[c]=id;save();push();say(LGn(DEF[c][id].n)+LG(' : équipé.',': equipped.'),1)}else{TRY={[c]:id};say('',1);buyBar(c,id,0)}
+  list()}
+ function openShop(){MODE='shop';open()}
+ const money=v=>{try{return new Intl.NumberFormat(LANG==='en'?'en-US':'fr-FR',{style:'currency',currency:CUR.toUpperCase(),currencyDisplay:'narrowSymbol'}).format(v/100)}catch(e){return(v/100).toFixed(2)+(CUR==='usd'?' $':' €')}};
+ let CUR='eur';try{if(localStorage.getItem('detonate_cur')==='usd')CUR='usd'}catch(e){}   // devise d'affichage et de paiement : euro par defaut, dollar americain au choix
+ function shopLoad(force){if(typeof PROF==='undefined'||!PROF.shopInfo)return;PROF.shopInfo(force).then(j=>{const ch=!SHOPI||JSON.stringify(j.items)!==JSON.stringify(SHOPI.items)||j.on!==SHOPI.on;SHOPI=j;const b=$('skinBox');if(ch&&b&&b.classList.contains('on')&&MODE==='shop'){TRY={};hideBuy();list()}})}
  function hideBuy(){BUY=null;const b=$('skBuy');if(b){b.className='skBuy';b.innerHTML=''}}
  function buyBar(c,id,step){const b=$('skBuy');if(!b)return;BUY={c,id,step:step||0};const pr=priceOf(c,id),nm=esc(LGn(DEF[c][id].n)),gs=typeof PROF==='undefined'||!PROF.code();let h;
   if(!SHOPI||!SHOPI.on||!pr)h='<span class="skBuyT">'+nm+LG(' : essai. Boutique bientôt disponible.',': preview. Shop coming soon.')+'</span>';
@@ -11795,11 +11886,14 @@ const SKIN=(()=>{
   if(a==='no')return buyBar(c,id,0);
   if(a!=='pay')return;
   if(!PROF.isOn()){say(LG('Ton profil n’est pas connecté sur cet appareil : réessaie dans un instant.','Your profile is not connected on this device: try again in a moment.'),0);return}
-  buyBar(c,id,2);const j=await PROF.buy(c,id);
+  buyBar(c,id,2);const j=await PROF.buy(c,id,CUR);
   if(j&&typeof j.url==='string'&&/^(https:\/\/|http:\/\/localhost[:/])/.test(j.url)){location.href=j.url;return}
+  if(j&&j.err==='rotation'){hideBuy();TRY={};say(LG('La boutique vient de changer : voici les nouveaux skins.','The shop just changed: here are the new skins.'),0);shopLoad(1);return}
   buyBar(c,id,0);say(j&&j.err==='owned'?LG('Tu possèdes déjà ce skin.','You already own this skin.'):j&&j.err==='shop'?LG('La boutique n’est pas encore ouverte sur ce serveur.','The shop is not open on this server yet.'):LG('Paiement impossible pour le moment. Réessaie plus tard.','Payment unavailable right now. Try again later.'),0)}
- function open(){const b=$('skinBox');if(!b)return;TRY={};hideBuy();shopLoad();b.classList.add('on');pvInit();PV.zm=PV.zmT=1;PV.cur=null;list();say(lvlNow()?'':LG('Crée ton profil pour débloquer des skins en montant de niveau.','Create your profile to unlock skins as you level up.'),0);cancelAnimationFrame(RAF);pvLoop();try{uiClick()}catch(e){}}
- function close(){const b=$('skinBox');b.classList.remove('on');cancelAnimationFrame(RAF);TRY={};TQ=[];hideBuy();if(PV){apply(PV.man,null);PV.key='x';PV.lt=0}}
+ function open(){const b=$('skinBox');if(!b)return;TRY={};hideBuy();if(MODE==='shop')shopLoad();b.classList.toggle('shop',MODE==='shop');b.querySelector('.skTitle').textContent=MODE==='shop'?LG('Boutique','Shop'):LG('Skins','Skins');b.classList.add('on');pvInit();PV.zm=PV.zmT=1;PV.cur=null;list();say(MODE==='shop'||lvlNow()?'':LG('Crée ton profil pour débloquer des skins en montant de niveau.','Create your profile to unlock skins as you level up.'),0);cancelAnimationFrame(RAF);pvLoop();
+  // boutique : compte a rebours ; a zero, la nouvelle selection est chargee
+  clearInterval(SHT);if(MODE==='shop')SHT=setInterval(()=>{const e=$('shLeft');if(e&&SHOPI&&SHOPI.end){e.textContent=left();if(Date.now()>=SHOPI.end+1500)shopLoad(1)}},1000);try{uiClick()}catch(e){}}
+ function close(){const b=$('skinBox');b.classList.remove('on');cancelAnimationFrame(RAF);clearInterval(SHT);MODE='lock';TRY={};TQ=[];hideBuy();if(PV){apply(PV.man,null);PV.key='x';PV.lt=0}}
  function init(){const b=document.createElement('div');b.id='skinBox';b.innerHTML='<div class="skPanel" role="dialog" aria-modal="true"><div class="skTop"><span class="skTitle">'+LG('Skins','Skins')+'</span><button class="skX" aria-label="'+LG('Fermer','Close')+'">✕</button></div>'+
    '<div class="skBody"><div class="skView"><canvas id="skCv"></canvas><button class="skVw" id="skVw">'+LG('Vue de jeu','Game view')+'</button></div>'+
    '<div class="skSide"><div class="skTabs" id="skTabs"></div><div class="skGrid" id="skGrid"></div><div class="skMsg" id="skMsg"></div><div class="skBuy" id="skBuy"></div></div></div></div>';
@@ -11807,8 +11901,8 @@ const SKIN=(()=>{
   // le casier garde ses appuis : sans cela, le jeu capturait le pointeur pour son propre canevas et l'apercu ne recevait plus les mouvements
   for(const k of['pointerdown','pointermove','pointerup','pointercancel'])b.addEventListener(k,e=>e.stopPropagation());
   addEventListener('keydown',e=>{if(e.key==='Escape'&&b.classList.contains('on'))close()});
-  $('skTabs').addEventListener('click',e=>{const t=e.target.closest('.skTab');if(t){CAT=t.dataset.c;hideBuy();list();say('',1)}});
-  $('skGrid').addEventListener('click',e=>{const t=e.target.closest('.skC');if(t)pick(t.dataset.id)});
+  $('skTabs').addEventListener('click',e=>{const cb=e.target.closest('button[data-cur]');if(cb){CUR=cb.dataset.cur==='usd'?'usd':'eur';try{localStorage.setItem('detonate_cur',CUR)}catch(x){}list();if(BUY)buyBar(BUY.c,BUY.id,BUY.step===2?0:BUY.step);return}const t=e.target.closest('.skTab');if(t){CAT=t.dataset.c;hideBuy();list();say('',1)}});
+  $('skGrid').addEventListener('click',e=>{const t=e.target.closest('.skC');if(t)pick(t.dataset.id,t.dataset.c)});
   $('skBuy').addEventListener('click',e=>{const t=e.target.closest('button[data-a]');if(t)buyAct(t.dataset.a)});
   $('skVw').onclick=()=>{PV.top=PV.top?0:1;$('skVw').textContent=PV.top?LG('Vue 3/4','3/4 view'):LG('Vue de jeu','Game view')};
   // rotation au doigt ou a la souris : gauche-droite fait tourner, haut-bas incline la vue 3/4 ; elan au lacher
@@ -11847,11 +11941,15 @@ const SKIN=(()=>{
   // la carte se ferme toute seule quand l'ecran de fin disparait
   setInterval(()=>{if(b.classList.contains('on')&&typeof st!=='undefined'&&st.s!=='end')shut()},500)}
  init();initRew();
+ // bouton « Boutique » du menu principal, sous « Partie privée »
+ {const pb=document.getElementById('privateBtn');if(pb){const sb=document.createElement('button');sb.className='menuBtn big';sb.id='shopBtn';
+   sb.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg><span class="bt"><span>'+LG('Boutique','Shop')+'</span><small>'+LG('8 skins, renouvelés toutes les 8 h','8 skins, refreshed every 8 h')+'</small></span>';
+   pb.insertAdjacentElement('afterend',sb);sb.addEventListener('click',()=>openShop())}}
  // retour de la page de paiement Stripe (?shop=ok&cs=... ou ?shop=cancel) : le serveur verifie le paiement aupres de Stripe,
  // puis le skin achete est equipe et le casier s'ouvre dessus
  {let q=null;try{q=new URLSearchParams(location.search)}catch(e){}const sh=q&&q.get('shop'),cs=q&&q.get('cs')||'';
   if(sh){try{history.replaceState(null,'',location.pathname+location.hash)}catch(e){}
-   const done=(c,t,ok)=>{if(c&&DEF[c])CAT=c;open();say(t,ok)};
+   const done=(c,t,ok)=>{if(c&&DEF[c]){CAT=c;MODE='lock'}else MODE='shop';open();say(t,ok)};
    if(sh==='cancel')setTimeout(()=>done('',LG('Paiement annulé : aucun montant n’a été prélevé.','Payment cancelled: you were not charged.'),0),600);
    else if(sh==='ok'&&/^cs_[A-Za-z0-9_]+$/.test(cs)){let n=0;const tryC=async()=>{n++;
      if(typeof PROF==='undefined'||!PROF.isOn()){if(n<40)return setTimeout(tryC,500);return done('',LG('Paiement reçu. Ouvre ton profil sur cet appareil pour récupérer ton skin.','Payment received. Open your profile on this device to get your skin.'),0)}
@@ -11865,7 +11963,7 @@ const SKIN=(()=>{
  {let NK='';setInterval(()=>{try{const on=typeof netMode!=='undefined'&&netMode&&typeof netSocket!=='undefined'&&netSocket&&netSocket.readyState===1&&netRoomCode,k=on?netRoomCode+'|'+keyOf(SEL):'';if(k&&k!==NK)sendNet({type:'sk',sk:Object.assign({},SEL)});NK=k}catch(e){}},600)}
  // pendant que le casier est ouvert, le decor du menu (cache derriere) n'est plus redessine : la carte graphique sert a l'apercu
  if(typeof MENU!=='undefined'&&typeof MENU.frame==='function'){const f0=MENU.frame;let sw=0,sh=0;MENU.frame=function(){const b=$('skinBox'),o=b&&b.classList.contains('on');if(o&&innerWidth===sw&&innerHeight===sh)return;sw=innerWidth;sh=innerHeight;return f0.apply(this,arguments)}}
- return{sync,open,close,apply,clear,tick,thumb,CATS,DEF,worn,sel:()=>SEL,set:(c,id)=>{SEL[c]=id;save()},pv:()=>PV,tv:()=>tvInit(),RAR,rarOf,fromProf,announce,rewards,nextReward,unseen}})();
+ return{sync,open,close,apply,clear,tick,thumb,CATS,DEF,worn,sel:()=>SEL,set:(c,id)=>{SEL[c]=id;save()},pv:()=>PV,tv:()=>tvInit(),openShop,RAR,rarOf,fromProf,announce,rewards,nextReward,unseen}})();
 MENU.init();PROF.init();if(!HEADLESS)modeHint();
 if(HEADLESS)loadMap('neon');else MENU.boot();
 // le serveur (game_sim.js) coupe le script a partir de « newRound();let last » : la boucle d'affichage ne tourne pas chez lui
