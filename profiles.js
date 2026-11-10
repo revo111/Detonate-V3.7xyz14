@@ -95,21 +95,36 @@ const SKIN_LV = {
   a: { braise: 6, givre: 11, toxique: 16, electrique: 20, ombre: 25, royale: 30 }
 };
 const SKINS_ALL = process.env.SKINS_ALL === '1';
-// Skins de la boutique (meme liste que le jeu : « shop:1 »). La boutique n'existe pas encore :
-// pendant les tests, ils sont gratuits pour tous les profils, quel que soit le niveau.
-const SKIN_SHOP = {
-  o: ['costard', 'squelette', 'astronaute', 'samourai', 'hologramme'],
-  h: ['bandana', 'kabuto', 'bulle', 'kitsune', 'aureole'],
-  g: ['bambou', 'graffiti', 'circuit', 'galaxie', 'prisme'],
-  b: ['carapace', 'katanas', 'drone', 'demon', 'ange'],
-  a: ['notes', 'petales', 'orbite', 'cercle', 'spectre']
+// ---------- boutique : skins vendus a l'unite, paiement par Stripe (page de paiement hebergee par Stripe) ----------
+// Meme liste que le jeu (« shop:1 » dans index.html) : [rarete 0 commun..3 legendaire, nom affiche sur la page de paiement].
+// Un skin de la boutique n'est accepte (equipe, montre aux autres joueurs) que s'il est possede : liste « own » du profil.
+// Secrets Fly : STRIPE_SECRET_KEY (cle sk_test_... ou sk_live_...), STRIPE_WEBHOOK_SECRET (cle whsec_... du webhook).
+// SHOP_FREE=1 (serveur de test) : skins de la boutique gratuits pour tout le monde, comme avant la boutique.
+const SHOP = {
+  o: { costard: [0, 'Costard'], squelette: [1, 'Squelette'], astronaute: [1, 'Astronaute'], samourai: [2, 'Samouraï'], hologramme: [3, 'Hologramme'] },
+  h: { bandana: [0, 'Bandana'], kabuto: [1, 'Casque de samouraï'], bulle: [1, 'Casque spatial'], kitsune: [2, 'Masque de kitsune'], aureole: [3, 'Auréole'] },
+  g: { bambou: [0, 'Bambou'], graffiti: [1, 'Graffiti'], circuit: [2, 'Circuit'], galaxie: [2, 'Galaxie'], prisme: [3, 'Prisme'] },
+  b: { carapace: [0, 'Carapace'], katanas: [1, 'Katanas croisés'], drone: [2, 'Drone compagnon'], demon: [2, 'Ailes de démon'], ange: [3, "Ailes d'ange"] },
+  a: { notes: [0, 'Mélodie'], petales: [1, 'Pétales de cerisier'], orbite: [2, 'Orbite'], cercle: [2, "Cercle d'énergie"], spectre: [3, 'Flammes spectrales'] }
 };
-function cleanSkins(sel, lvl) {
+// prix en centimes selon la rarete (commun, rare, epique, legendaire) et devise
+const PRICE = [99, 199, 399, 699], SHOP_CUR = 'eur';
+const CATN = { o: 'Tenue', h: 'Bonnet', g: 'Arme', b: 'Sac', a: 'Aura' }, RARN = ['commun', 'rare', 'épique', 'légendaire'];
+const SHOP_FREE = process.env.SHOP_FREE === '1';
+const STRIPE_KEY = process.env.STRIPE_SECRET_KEY || '', STRIPE_WH = process.env.STRIPE_WEBHOOK_SECRET || '';
+const STRIPE_API = process.env.STRIPE_API || 'https://api.stripe.com';   // STRIPE_API : faux Stripe pour les tests sur ordinateur
+const SHOP_ALL = []; for (const c in SHOP) for (const id in SHOP[c]) SHOP_ALL.push(c + ':' + id);
+const priceOf = (c, id) => SHOP[c] && Object.prototype.hasOwnProperty.call(SHOP[c], id) ? PRICE[SHOP[c][id][0]] : 0;
+const owns = (own, c, id) => SHOP_FREE || SKINS_ALL || (Array.isArray(own) && own.includes(c + ':' + id));
+function cleanSkins(sel, lvl, own) {
   const o = {};
-  for (const c in SKIN_LV) { const id = sel && typeof sel[c] === 'string' ? sel[c] : ''; o[c] = (SKIN_LV[c][id] && (SKINS_ALL || lvl >= SKIN_LV[c][id])) || SKIN_SHOP[c].includes(id) ? id : ''; }
+  for (const c in SKIN_LV) {
+    const id = sel && typeof sel[c] === 'string' ? sel[c] : '';
+    o[c] = (SKIN_LV[c][id] && (SKINS_ALL || lvl >= SKIN_LV[c][id])) || (priceOf(c, id) && owns(own, c, id)) ? id : '';
+  }
   return o;
 }
-const pub = P => { const l = lvlOf(P.xp); return { id: P.id, n: P.n, xp: P.xp, lvl: l, g: P.g, w: P.w, k: P.k, d: P.d, mvp: P.mvp, sk: cleanSkins(P.skn, l), ska: SKINS_ALL ? 1 : 0 }; };
+const pub = P => { const l = lvlOf(P.xp); return { id: P.id, n: P.n, xp: P.xp, lvl: l, g: P.g, w: P.w, k: P.k, d: P.d, mvp: P.mvp, sk: cleanSkins(P.skn, l, P.own), ska: SKINS_ALL ? 1 : 0, own: SHOP_FREE || SKINS_ALL ? SHOP_ALL.slice() : (P.own || []).slice() }; };
 function auth(id, s) {
   const P = typeof id === 'string' && DB[id];
   if (!P || typeof s !== 'string' || sha(s) !== P.sk) return null;
@@ -250,6 +265,11 @@ async function http(req, res, url) {
     if (m.key !== KEY) return out(res, 403, { err: 'key' });
     return out(res, 200, peekLocal(m.id, m.s, m.sid));
   }
+  // catalogue : prix et etat de la boutique (sans profil, pour que les invites voient les prix)
+  if (op === 'shop') {
+    const prices = {}; for (const c in SHOP) { prices[c] = {}; for (const id in SHOP[c]) prices[c][id] = PRICE[SHOP[c][id][0]]; }
+    return out(res, 200, { on: STRIPE_KEY || SHOP_FREE || SKINS_ALL ? 1 : 0, free: SHOP_FREE || SKINS_ALL ? 1 : 0, cur: SHOP_CUR, prices });
+  }
   const P = auth(m.id, m.s);
   if (!P) return out(res, 404, { err: 'profile' });
   if (op === 'get') return out(res, 200, { prof: pub(P) });
@@ -268,7 +288,40 @@ async function http(req, res, url) {
   // debut d'une partie solo : le serveur note l'heure et le mode (la duree de la partie est mesuree par lui)
   if (op === 'start') { SOLO.set(P.id, { t: Date.now(), mode: MODES.has(m.mode) ? m.mode : 'bomb' }); return out(res, 200, { ok: 1 }); }
   // skins equipes : enregistres dans le profil (seulement ceux que le niveau du joueur debloque)
-  if (op === 'skins') { P.skn = cleanSkins(m.sk, lvlOf(P.xp)); save(); return out(res, 200, { prof: pub(P) }); }
+  if (op === 'skins') { P.skn = cleanSkins(m.sk, lvlOf(P.xp), P.own); save(); return out(res, 200, { prof: pub(P) }); }
+  // achat : le serveur ouvre une page de paiement Stripe pour ce skin et ce profil, le jeu y envoie le joueur
+  if (op === 'buy') {
+    const c = String(m.c || ''), id = String(m.it || ''), pr = priceOf(c, id);
+    if (!pr) return out(res, 400, { err: 'item' });
+    if (owns(P.own, c, id)) return out(res, 409, { err: 'owned' });
+    if (!STRIPE_KEY) return out(res, 503, { err: 'shop' });
+    const ret = retUrl(m.ret);
+    if (!ret) return out(res, 400, { err: 'ret' });
+    const [r, name] = SHOP[c][id], md = { pid: P.id, c, id };
+    const q = {
+      mode: 'payment', locale: 'auto', client_reference_id: P.id,
+      success_url: ret + '?shop=ok&cs={CHECKOUT_SESSION_ID}', cancel_url: ret + '?shop=cancel',
+      'line_items[0][quantity]': '1', 'line_items[0][price_data][currency]': SHOP_CUR, 'line_items[0][price_data][unit_amount]': String(pr),
+      'line_items[0][price_data][product_data][name]': 'Detonate – ' + name,
+      'line_items[0][price_data][product_data][description]': CATN[c] + ' (' + RARN[r] + '). Skin cosmétique, sans avantage de jeu.',
+      'custom_text[submit][message]': 'Contenu numérique livré immédiatement dans le jeu. En payant, tu demandes cette livraison immédiate et renonces au droit de rétractation de 14 jours.'
+    };
+    for (const k in md) { q['metadata[' + k + ']'] = md[k]; q['payment_intent_data[metadata][' + k + ']'] = md[k]; }
+    const cs = await stripe('POST', 'checkout/sessions', q);
+    if (!cs || typeof cs.url !== 'string') return out(res, 502, { err: 'stripe' });
+    return out(res, 200, { url: cs.url });
+  }
+  // retour de la page de paiement : le serveur demande a Stripe si ce paiement est bien passe (sans attendre le webhook)
+  if (op === 'claim') {
+    const cs = String(m.cs || '');
+    if (!/^cs_[A-Za-z0-9_]{8,250}$/.test(cs)) return out(res, 400, { err: 'cs' });
+    if (!STRIPE_KEY) return out(res, 503, { err: 'shop' });
+    const o = await stripe('GET', 'checkout/sessions/' + cs);
+    if (!o) return out(res, 502, { err: 'stripe' });
+    const g = fromSession(o);
+    if (!g || g.pid !== P.id) return out(res, 404, { err: 'cs' });
+    return out(res, 200, { st: g.st, c: g.c, it: g.id, prof: pub(P) });
+  }
   if (op === 'name') { const n = cleanName(m.n); if (n !== P.n) { P.n = n; save(); } return out(res, 200, { prof: pub(P) }); }
   if (op === 'solo') {
     const r = cleanReport(m.r, true);
@@ -276,6 +329,87 @@ async function http(req, res, url) {
     return out(res, 200, { res: res_, prof: pub(P) });
   }
   return out(res, 404, { err: 'op' });
+}
+
+// ---------- boutique : Stripe ----------
+// adresse de retour apres paiement : la page du jeu (https, ou http://localhost pour les tests), sans parametres
+function retUrl(u) {
+  try { const x = new URL(String(u || '')); if (x.protocol === 'https:' || (x.protocol === 'http:' && /^(localhost|127\.0\.0\.1)$/.test(x.hostname))) return x.origin + x.pathname; } catch (e) {}
+  return '';
+}
+async function stripe(method, pth, params) {
+  const c = new AbortController(), t = setTimeout(() => c.abort(), 20000);
+  try {
+    const r = await fetch(STRIPE_API + '/v1/' + pth, { method, headers: { Authorization: 'Bearer ' + STRIPE_KEY, 'Content-Type': 'application/x-www-form-urlencoded' }, body: params ? new URLSearchParams(params).toString() : undefined, signal: c.signal });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) { console.error('Boutique : Stripe refuse (' + r.status + ') : ' + (j.error && j.error.message || '?')); return null; }
+    return j;
+  } catch (e) { console.error('Boutique : Stripe injoignable : ' + e.message); return null; } finally { clearTimeout(t); }
+}
+// skin achete : ajoute au profil une seule fois par paiement (le retour du joueur et le webhook peuvent arriver tous les deux)
+function grant(P, c, id, info) {
+  if (!Array.isArray(P.buy)) P.buy = [];
+  if (P.buy.some(b => b.cs === info.cs)) return false;
+  P.buy.push({ cs: info.cs, pi: info.pi || '', c, id, amt: info.amt | 0, cur: info.cur || '', t: Date.now(), st: 'paid' });
+  if (!Array.isArray(P.own)) P.own = [];
+  if (!P.own.includes(c + ':' + id)) P.own.push(c + ':' + id);
+  save(); console.log('Boutique : achat ' + c + ':' + id + ' (' + ((info.amt | 0) / 100) + ' ' + (info.cur || '') + ') profil ' + P.id);
+  return true;
+}
+// session de paiement Stripe -> { pid, c, id, st } ; donne le skin si le paiement est fait
+function fromSession(o) {
+  const md = o && o.metadata || {}, P = typeof md.pid === 'string' && DB[md.pid], c = String(md.c || ''), id = String(md.id || '');
+  if (!P || !priceOf(c, id) || typeof o.id !== 'string') return null;
+  if (o.payment_status === 'paid') {
+    grant(P, c, id, { cs: o.id, pi: typeof o.payment_intent === 'string' ? o.payment_intent : (o.payment_intent && o.payment_intent.id) || '', amt: o.amount_total, cur: o.currency });
+    return { pid: P.id, c, id, st: 'paid' };
+  }
+  return { pid: P.id, c, id, st: o.status === 'expired' ? 'expired' : 'pending' };
+}
+// paiement rembourse en entier ou conteste : le skin est retire (s'il n'a pas ete paye une autre fois)
+function revoke(pi, why) {
+  if (typeof pi !== 'string' || !pi) return 0;
+  let n = 0;
+  for (const k in DB) {
+    const P = DB[k];
+    if (!Array.isArray(P.buy)) continue;
+    for (const b of P.buy) {
+      if (b.pi !== pi || b.st !== 'paid') continue;
+      b.st = why; n++;
+      if (!P.buy.some(x => x.st === 'paid' && x.c === b.c && x.id === b.id)) {
+        P.own = (P.own || []).filter(x => x !== b.c + ':' + b.id);
+        if (P.skn && P.skn[b.c] === b.id) P.skn[b.c] = '';
+      }
+      console.log('Boutique : ' + (why === 'refunded' ? 'remboursement' : 'litige') + ', skin ' + b.c + ':' + b.id + ' retire, profil ' + P.id);
+    }
+  }
+  if (n) save();
+  return n;
+}
+// signature du webhook (en-tete Stripe-Signature : t=...,v1=...) : HMAC SHA-256 du texte exact recu, 5 minutes de tolerance
+function sigOk(raw, h) {
+  if (!STRIPE_WH || typeof h !== 'string') return false;
+  let t = 0; const v1 = [];
+  for (const kv of h.split(',')) { const i = kv.indexOf('='), k = kv.slice(0, i).trim(), v = kv.slice(i + 1).trim(); if (k === 't') t = +v; else if (k === 'v1') v1.push(v); }
+  if (!t || !v1.length || Math.abs(Date.now() / 1000 - t) > 300) return false;
+  const exp = Buffer.from(crypto.createHmac('sha256', STRIPE_WH).update(t + '.').update(raw).digest('hex'));
+  return v1.some(v => { const b = Buffer.from(v); return b.length === exp.length && crypto.timingSafeEqual(b, exp); });
+}
+// webhook Stripe (/api/stripe/webhook) : paiement fait, rembourse ou conteste
+async function webhook(req, res) {
+  if (!IS_PRIMARY && !req.headers['fly-replay-src']) { res.writeHead(307, { 'fly-replay': 'region=' + PRIMARY + ';timeout=20s', 'Content-Length': '0' }); return res.end(); }
+  if (!IS_PRIMARY || !STORE_OK) return out(res, 503, { err: 'storage' });   // Stripe renvoie plus tard
+  if (req.method !== 'POST') return out(res, 405, { err: 'method' });
+  if (!STRIPE_WH) { console.error('Boutique : webhook recu mais STRIPE_WEBHOOK_SECRET manque'); return out(res, 503, { err: 'config' }); }
+  const raw = await new Promise(ok => { const ch = []; let n = 0; req.on('data', c => { n += c.length; if (n > 524288) { req.destroy(); return ok(null); } ch.push(c); }); req.on('end', () => ok(Buffer.concat(ch))); req.on('error', () => ok(null)); });
+  if (!raw) return out(res, 400, { err: 'body' });
+  if (!sigOk(raw, req.headers['stripe-signature'])) return out(res, 400, { err: 'signature' });
+  let ev; try { ev = JSON.parse(raw.toString('utf8')); } catch (e) { return out(res, 400, { err: 'json' }); }
+  const o = ev && ev.data && ev.data.object || {}, piOf = v => typeof v === 'string' ? v : (v && v.id) || '';
+  if (ev.type === 'checkout.session.completed' || ev.type === 'checkout.session.async_payment_succeeded') fromSession(o);
+  else if (ev.type === 'charge.refunded') { if (o.refunded) revoke(piOf(o.payment_intent), 'refunded'); }
+  else if (ev.type === 'charge.dispute.created') revoke(piOf(o.payment_intent), 'dispute');
+  return out(res, 200, { ok: 1 });
 }
 
 // ---------- appels entre serveurs ----------
@@ -317,7 +451,7 @@ function peekLocal(id, s, sid) {
   if (!P) return { lvl: 0 };
   if (!sessOk(P.id, sid)) return { lvl: -1 };
   const l = lvlOf(P.xp);
-  return { lvl: l, sk: cleanSkins(P.skn, l) };
+  return { lvl: l, sk: cleanSkins(P.skn, l, P.own), own: (P.own || []).slice() };
 }
 async function peek(id, s, sid) {
   if (!id || !s) return { lvl: 0 };
@@ -327,4 +461,4 @@ async function peek(id, s, sid) {
   return j && typeof j.lvl === 'number' ? j : { lvl: 0 };
 }
 
-module.exports = { http, award, peek, flush, lvlOf, xpFrom, cleanSkins, IS_PRIMARY, PRIMARY };
+module.exports = { http, webhook, award, peek, flush, lvlOf, xpFrom, cleanSkins, IS_PRIMARY, PRIMARY };
