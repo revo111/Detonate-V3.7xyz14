@@ -338,6 +338,9 @@ body.inmenu #muteBtn svg,body.inmenu #fsBtn svg{width:20px;height:20px}
 #profBox .ppImpPin{display:none;margin:10px 0 0}
 #profBox .ppImpPin.on{display:block}
 #profBox #profImpPin{letter-spacing:.5em;text-align:center;font-size:18px}
+#profBox .ppRow2{margin-top:8px}
+#profBox .ppPinH{margin:8px 0 0;font-size:11.5px;line-height:1.35;color:#9aa6b9;text-align:left}
+#profBox .ppGuest p.ppPinH{margin:8px 0 0;font:400 11.5px/1.4 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#9aa6b9;text-align:left}
 
 /* ===== V3.7 : casier des skins (apercu 3D a gauche, categories et skins a droite) ===== */
 #skinBox{--fd:'Chakra Petch','Bahnschrift','DIN Alternate',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;position:fixed;inset:0;z-index:81;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,7,13,.78);font:400 14px/1.4 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#eef2f8}
@@ -11205,7 +11208,8 @@ const PROF=(()=>{
  let NT=0;const setName=v=>{try{localStorage.setItem('detonate_name',v)}catch(e){}const ip=$('nameInput');if(ip&&ip.value!==v)ip.value=v;if(!I)return;
   P.n=v;put(KC,Object.assign({v:2},P));ui();clearTimeout(NT);NT=setTimeout(()=>{if(isOn())api('name',idb({n:v})).then(j=>{if(j.prof)keep(j.prof)}).catch(()=>{})},800)};
  async function make(){const n=$('profNew').value.trim().slice(0,14);if(!n)return msg(LG('Choisis d’abord un pseudo.','Choose a name first.'),0);
-  msg(LG('Création…','Creating…'),1);try{const j=await api('new',{n,mig:MIG,dev:DV});
+  const pin=$('profNewPin').value.trim();if(!/^[0-9]{4}$/.test(pin))return msg(LG('Choisis un code PIN à 4 chiffres pour protéger ton profil.','Choose a 4-digit PIN to protect your profile.'),0);
+  msg(LG('Création…','Creating…'),1);try{const j=await api('new',{n,mig:MIG,dev:DV,pin});$('profNewPin').value='';
    if(!(j.id&&j.s&&j.sid))return msg(j._st===429?LG('Trop de profils créés depuis ta connexion : réessaie dans une heure.','Too many profiles created from your connection: try again in an hour.'):UNR(),0);
    I={id:j.id,s:j.s};put(KI,I);SID=j.sid;sput(KS,SID);if(MIG){MIG=null;const c0=get(KC0);if(c0&&c0.v===1)put(KC0,Object.assign(c0,{v:0}))}
    keep(j.prof);setName(P.n);setSt('on');$('profBox').classList.remove('imp');fill();msg(LG('Profil créé ! Copie ton code de sauvegarde et garde-le.','Profile created! Copy your save code and keep it.'),1)}catch(e){msg(UNR(),0)}}
@@ -11239,7 +11243,9 @@ const PROF=(()=>{
    '<div class="ppTop"><button class="ppBack" aria-label="'+LG('Retour','Back')+'">‹</button><span class="ppTitle"></span><button class="ppX" aria-label="'+LG('Fermer','Close')+'">✕</button></div>'+
    '<div class="ppHome">'+
     '<div class="ppGuest"><span class="ppGBadge"><b>+</b></span><p>'+LG('Crée ton profil pour sauvegarder ton XP.','Create your profile to save your XP.')+'</p>'+
-     '<div class="ppRow"><input id="profNew" maxlength="14" autocomplete="off" placeholder="'+LG('Ton pseudo','Your name')+'"><button class="ppB" id="profMake">'+LG('Créer','Create')+'</button></div><p class="ppMig"></p></div>'+
+     '<div class="ppRow"><input id="profNew" maxlength="14" autocomplete="off" placeholder="'+LG('Ton pseudo','Your name')+'"></div>'+
+     '<div class="ppRow ppRow2"><input id="profNewPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="'+LG('Code PIN (4 chiffres)','PIN (4 digits)')+'"><button class="ppB" id="profMake">'+LG('Créer','Create')+'</button></div>'+
+     '<p class="ppPinH">'+LG('Le code PIN protège ton profil : il sera demandé pour voir ton code de sauvegarde et pour ouvrir ton profil sur un autre appareil. Retiens-le bien.','The PIN protects your profile: it is asked to show your save code and to open your profile on another device. Remember it.')+'</p><p class="ppMig"></p></div>'+
     '<div class="ppBusyBox"><p>'+LG('Ton profil est ouvert dans un autre onglet ou une autre fenêtre de cet appareil.','Your profile is open in another tab or window on this device.')+'</p><button class="ppB ppWide" id="profTake">'+LG('Jouer ici avec mon profil','Play here with my profile')+'</button></div>'+
     '<div class="ppMain"><div class="ppHead"><span class="ppBadge"><b>1</b></span><div class="ppId"><label for="profName">'+LG('Pseudo','Name')+'</label><input id="profName" maxlength="14" autocomplete="off" placeholder="'+LG('Joueur','Player')+'"><span class="ppLv"></span></div></div>'+
      '<div class="ppBar"><i></i></div><div class="ppXp"></div><div class="ppNext"></div><div class="ppStats"></div>'+
@@ -11863,14 +11869,14 @@ const SKIN=(()=>{
   list()}
  // ---------- boutique : achat d'un skin (paiement sur la page de Stripe, puis retour dans le jeu) ----------
  let SHOPI=null,BUY=null,MODE='lock',SHT=0;   // SHOPI : boutique du moment (serveur) ; BUY : { c, id, step 0 prix | 1 confirmation | 2 ouverture } ; MODE : 'lock' casier, 'shop' boutique
- const priceOf=(c,id)=>{const it=SHOPI&&SHOPI.items&&SHOPI.items.find(x=>x.c===c&&x.id===id);return it?it.p:0};
+ const priceOf=(c,id)=>{const it=SHOPI&&SHOPI.items&&SHOPI.items.find(x=>x.c===c&&x.id===id);return it?(CUR==='usd'&&it.pu?it.pu:it.p):0};   // dollars : prix converti par le serveur au cours du jour
  const left=()=>{const s=Math.max(0,Math.round(((SHOPI&&SHOPI.end||0)-Date.now())/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+' h '+String(m).padStart(2,'0')+' min':m?m+' min '+String(s%60).padStart(2,'0')+' s':s+' s'};
  // boutique : 8 skins, deux par rarete, tires au hasard toutes les 8 heures (par le serveur)
  function listShop(){const L=SHOPI&&SHOPI.items||[],cur=Object.assign({},worn(),TRY),on_=SHOPI&&SHOPI.on;
-  $('skTabs').innerHTML='<div class="shHead"><b>'+LG('Nouveaux skins dans ','New skins in ')+'<span id="shLeft">'+(SHOPI&&SHOPI.end?left():'…')+'</span></b><small>'+(!SHOPI?'':SHOPI.free?LG('gratuit sur ce serveur de test','free on this test server'):on_?LG('8 skins, deux par rareté · paiement sécurisé par Stripe','8 skins, two per rarity · secure payment by Stripe'):LG('boutique bientôt disponible','shop coming soon'))+'</small></div>'+
+  $('skTabs').innerHTML='<div class="shHead"><b>'+LG('Nouveaux skins dans ','New skins in ')+'<span id="shLeft">'+(SHOPI&&SHOPI.end?left():'…')+'</span></b><small>'+(!SHOPI?'':SHOPI.free?LG('gratuit sur ce serveur de test','free on this test server'):on_?(CUR==='usd'&&SHOPI.fx?LG('Prix convertis au cours du jour : 1 € = ','Prices converted at today’s rate: €1 = ')+new Intl.NumberFormat(LANG==='en'?'en-US':'fr-FR',{minimumFractionDigits:4,maximumFractionDigits:4}).format(SHOPI.fx.usd)+' $':LG('8 skins, deux par rareté · paiement sécurisé par Stripe','8 skins, two per rarity · secure payment by Stripe')):LG('boutique bientôt disponible','shop coming soon'))+'</small></div>'+
    '<div class="shCur" role="group" aria-label="'+LG('Devise','Currency')+'"><button data-cur="eur" class="'+(CUR==='eur'?'on':'')+'">€ EUR</button><button data-cur="usd" class="'+(CUR==='usd'?'on':'')+'">$ USD</button></div>';
   $('skGrid').innerHTML=L.length?L.filter(q=>DEF[q.c]&&DEF[q.c][q.id]).map(q=>{const it=DEF[q.c][q.id],r=rarOf(it),own=owned(q.c,q.id),on=cur[q.c]===q.id,k=q.c+q.id+132;
-    return'<button class="skC r'+r+(on?' on':'')+'" data-c="'+q.c+'" data-id="'+q.id+'" style="'+RSTY(r)+'">'+(own?'<span class="skOwn">'+LG('Possédé','Owned')+'</span>':'<span class="skPr">'+(on_?money(q.p):'…')+'</span>')+
+    return'<button class="skC r'+r+(on?' on':'')+'" data-c="'+q.c+'" data-id="'+q.id+'" style="'+RSTY(r)+'">'+(own?'<span class="skOwn">'+LG('Possédé','Owned')+'</span>':'<span class="skPr">'+(on_?money(CUR==='usd'&&q.pu?q.pu:q.p):'…')+'</span>')+
      (TH[k]?'<img class="skI" alt="" src="'+TH[k]+'">':(TQ.push({c:q.c,id:q.id}),'<img class="skI ld" alt="" data-k="'+q.c+q.id+'" src="'+PX+'">'))+'<span class="skN">'+esc(LGn(it.n))+'</span><span class="skK">'+esc(LGn(CATN[q.c]))+'</span><span class="skL">'+esc(LGn(RARN[r]))+'</span></button>'}).join(''):'<div class="shEmpty">'+(SHOPI?LG('Boutique indisponible pour le moment.','Shop unavailable right now.'):LG('Chargement…','Loading…'))+'</div>'}
  function pickShop(c,id){hideBuy();if(!c||!DEF[c]||!DEF[c][id])return;
   if(owned(c,id)){TRY={};SEL[c]=id;save();push();say(LGn(DEF[c][id].n)+LG(' : équipé.',': equipped.'),1)}else{TRY={[c]:id};say('',1);buyBar(c,id,0)}
