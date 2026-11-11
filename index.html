@@ -3535,7 +3535,14 @@ async function netReconnect(){if(netRecon)return;netRecon=1;
   try{await wsConnect(netRegion);sendNet({type:'join',code:netRoomCode,tok:netTok,name:''});const t0=performance.now();while(netRecon&&performance.now()-t0<6000)await new Promise(r=>setTimeout(r,200));if(!netRecon)return}catch(e){}
   if(netRecon)await new Promise(r=>setTimeout(r,1200+k*900))}
  if(netRecon&&!netBye){netRecon=0;netBye=true;netBanner(LG('Impossible de se reconnecter — retour au menu (le salon est dans « Salons récents »)…','Could not reconnect — back to the menu (the room is in “Recent rooms”)…'),4000)}}
+function dropSock(){try{if(netSocket){netSocket.onclose=null;netSocket.close()}}catch(e){}netSocket=null;netConnected=false}
+// message discret en bas de l'ecran, sans recharger la page (ms : il disparait tout seul)
 function srvUpd(t){let d=$('srvupd');if(!d){d=document.createElement('div');d.id='srvupd';d.style.cssText='position:fixed;bottom:96px;left:50%;transform:translateX(-50%);max-width:min(520px,88vw);z-index:59;background:rgba(10,14,24,.88);border:1px solid rgba(255,215,106,.5);border-radius:12px;color:#ffe9a8;font:600 13px/1.35 system-ui;padding:9px 14px;text-align:center;pointer-events:none';document.body.appendChild(d)}d.textContent=t}
+function netToast(t,ms){srvUpd(t);const d=$('srvupd');clearTimeout(d._t);if(ms)d._t=setTimeout(()=>d.remove(),ms)}
+const BUILD='2026-11-11T14:07Z';   // version du jeu (date de construction, UTC)
+setTimeout(()=>{if(HEADLESS)return;const d=document.createElement('div');d.id='buildTag';d.style.cssText='position:fixed;right:30px;top:116px;z-index:70;font:600 10.5px/1 system-ui;color:#7d8899;pointer-events:none;letter-spacing:.02em;text-shadow:0 1px 2px #000';
+ d.textContent=LG('Version du ','Version ')+new Date(BUILD).toLocaleString(LANG==='en'?'en-US':'fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});document.body.appendChild(d);
+ setInterval(()=>{d.style.display=menu.classList.contains('hidden')?'none':''},700)},0);   // apres le chargement complet du script (LG, LANG)
 function netBannerOff(){const d=$('netb');if(d)d.remove()}
 // fin de partie (ou partie arretee) : retour dans le salon, sans recharger la page
 function backToLobby(){netStarted=false;rematchAsked=false;ENDT0=0;SBO=false;ENDR.length=0;netBannerOff();try{quitBox.style.display='none'}catch(e){}try{for(const k in keys)keys[k]=0;mouse.down=0}catch(e){}
@@ -3564,6 +3571,8 @@ function netMessage(m){
  if(m.type==='peer_join'){netPlayers=netPlayers.filter(p=>p.slot!==m.slot&&p.id!==m.id).concat([{slot:m.slot,name:m.name,id:m.id}]);if(netStarted){NM[m.slot]=slotName(m.slot);if(isHost&&E&&E[m.slot]){E[m.slot].p=1;E[m.slot].tk=0;delete netInputs[m.slot]}}return}
  if(m.type==='tolobby'){if(netStarted||menu.classList.contains('hidden'))backToLobby();return}
  if(m.type==='peer_left'){netPlayers=netPlayers.filter(p=>p.slot!==m.slot);if(netStarted){NM[m.slot]='IA';if(isHost&&E&&E[m.slot]){E[m.slot].p=0;E[m.slot].tk=0;delete netInputs[m.slot]}}else renderLobby();return}
+ // connexion ouverte d'avance par le menu (partie solo, menu) : une mise a jour du serveur ne coupe rien
+ if((m.type==='srvupd'||m.type==='closed')&&!(netMode&&netRoomCode)){dropSock();return}
  // serveur en cours de mise a jour : la partie en cours va jusqu'au bout, la suivante se jouera sur la nouvelle version
  if(m.type==='srvupd'){srvUpd(LG('Mise à jour du serveur : la partie continue jusqu’à la fin, puis le jeu se rechargera sur la nouvelle version.','Server update: this game carries on to the end, then the game reloads on the new version.'));return}
  if(m.type==='closed'){netBye=true;netBanner(m.upd?LG('Le serveur vient d’être mis à jour — rechargement du jeu…','The server has just been updated — reloading the game…'):LG("La partie s'est arrêtée — retour au menu…",'The game has stopped — back to menu…'),m.upd?2500:3500);return}
@@ -3710,7 +3719,7 @@ document.querySelectorAll('.ambBtn').forEach(b=>{b.classList.toggle('sel',(b.dat
 document.querySelectorAll('.modeBtn').forEach(b=>b.onclick=()=>{modeChoice=b.dataset.mode;document.querySelectorAll('.modeBtn').forEach(x=>x.classList.toggle('sel',x===b));modeHint()});
 function soloNames(){if(ZMB())return zNames();if(CRM())return crNames();return Array.from({length:2*TS},(_,i)=>i===0?'Vous':(i<TS?'Allié '+i:'Ennemi '+(i-TS+1)))}
 function menuShowMap(v){$('mapPick').classList.toggle('hidden',!v)}
-$('aiBtn').onclick=()=>{GM=mapChoice==='guerre'||mapChoice==='tetris'?'obj':(mapChoice==='neige'||mapChoice==='foret'?'obj':modeChoice);loadMap(mapId());netMode=false;isHost=false;netStarted=false;localSlot=0;menu.classList.add('hidden');score=[0,0];HEAT=[0,0,0];PRES=[0,0,0];round=0;NM=soloNames();newRound()};
+$('aiBtn').onclick=()=>{if(!netRoomCode)dropSock();GM=mapChoice==='guerre'||mapChoice==='tetris'?'obj':(mapChoice==='neige'||mapChoice==='foret'?'obj':modeChoice);loadMap(mapId());netMode=false;isHost=false;netStarted=false;localSlot=0;menu.classList.add('hidden');score=[0,0];HEAT=[0,0,0];PRES=[0,0,0];round=0;NM=soloNames();newRound()};
 $('privateBtn').onclick=()=>{menuShow('privateMenu');menuMessage('');renderRecent()};$('readyBtn').onclick=()=>{const me=netPlayers.find(p=>p.id===netPlayerId);sendNet({type:'ready',on:!(me&&me.ready)})};
 if(!HEADLESS){try{const nm=localStorage.getItem('detonate_name');if(nm&&$('nameInput'))$('nameInput').value=nm}catch(e){}setTimeout(()=>{try{renderRecent()}catch(e){}},0)}$('backBtn').onclick=()=>{menuShow('mainMenu');menuMessage('')};$('createBtn').onclick=createRoom;$('joinBtn').onclick=joinRoom;$('startBtn').onclick=startOnline;
 $('teamBtn').onclick=()=>sendNet({type:'switch'});
@@ -11147,7 +11156,7 @@ const PROF=(()=>{
  // et repasse en invite ; pour revenir sur le profil ici, il faut y saisir le code de sauvegarde a nouveau.
  function gone(){if(!I)return;const id=I.id;try{put(KH,(get(KH)||[]).filter(x=>x&&x.id!==id));localStorage.removeItem(KI);localStorage.removeItem(KI0);localStorage.removeItem(KC)}catch(e){}
   I=null;SID='';sput(KS,'');P=Object.assign({},P0,{n:gname()});ST='guest';
-  if(!HEADLESS){try{netBanner(LG('Ton profil a été ouvert sur un autre appareil : celui-ci est déconnecté et passe en invité. Pour y revenir, saisis ton code de sauvegarde (Profil → « J’ai déjà un code »).','Your profile was opened on another device: this one is signed out and switches to guest. To come back, enter your save code (Profile → “I already have a code”).'),9000)}catch(e){}try{fill()}catch(e){}}
+  if(!HEADLESS){try{const t_=LG('Ton profil a été ouvert sur un autre appareil : celui-ci est déconnecté et passe en invité. Pour y revenir, saisis ton code de sauvegarde (Profil → « J’ai déjà un code »).','Your profile was opened on another device: this one is signed out and switches to guest. To come back, enter your save code (Profile → “I already have a code”).');if(typeof netToast==='function')netToast(t_,12000);else netBanner(t_,9000)}catch(e){}try{fill()}catch(e){}}
   ui()}
  function lost(){old(I);I=null;SID='';sput(KS,'');try{localStorage.removeItem(KI)}catch(e){}P=Object.assign({},P0,{n:gname()});setSt('guest')}
  // ouvrir le profil sur cet onglet (take : le reprendre a un autre appareil)
