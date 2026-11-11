@@ -104,7 +104,7 @@ const SHOP = {
   h: { bandana: [0, 'Bandana'], kabuto: [1, 'Casque de samouraï'], bulle: [1, 'Casque spatial'], kitsune: [2, 'Masque de kitsune'], aureole: [3, 'Auréole'], laurier: [1, 'Laurier doré'], crane: [2, 'Crâne ardent'], eclats: [2, 'Cristaux gravitants'], couronne: [3, 'Couronne de cristal'] },
   g: { bambou: [0, 'Bambou'], graffiti: [1, 'Graffiti'], circuit: [2, 'Circuit'], galaxie: [2, 'Galaxie'], prisme: [3, 'Prisme'] },
   b: { carapace: [0, 'Carapace'], katanas: [1, 'Katanas croisés'], drone: [2, 'Drone compagnon'], demon: [2, 'Ailes de démon'], ange: [3, "Ailes d'ange"] },
-  a: { notes: [0, 'Mélodie'], petales: [1, 'Pétales de cerisier'], orbite: [2, 'Orbite'], cercle: [2, "Cercle d'énergie"], spectre: [3, 'Flammes spectrales'] }
+  a: { notes: [0, 'Mélodie'], petales: [1, 'Pétales de cerisier'], orbite: [2, 'Orbite'], cercle: [2, "Cercle d'énergie"], spectre: [3, 'Flammes spectrales'], trainee: [2, 'Traînée ardente'], puissance: [3, 'Aura de puissance'], dragon: [3, 'Dragon céleste'] }
 };
 // prix en centimes selon la rarete (commun, rare, epique, legendaire)
 // prix fixes en euros : 0,99 / 1,49 / 1,99 / 2,99 ; au choix du joueur, prix en dollars americains convertis au cours du jour (voir FX)
