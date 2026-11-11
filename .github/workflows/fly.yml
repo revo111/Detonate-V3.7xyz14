@@ -1,5 +1,8 @@
 # Fly.io depuis le site GitHub, sans terminal :
-#   onglet « Actions » du depot -> « Fly : serveurs, volumes et déploiement » -> « Run workflow ».
+#   le deploiement se lance tout seul a chaque modification du jeu sur la branche principale (index.html, server.js, profiles.js, fly.toml...) ;
+#   une modification du README seul ne relance rien. Pour le relancer a la main : onglet « Actions » du depot
+#   -> « Fly : serveurs, volumes et déploiement » -> « Run workflow ».
+#   Plusieurs fichiers modifies coup sur coup : les lancements passent l'un apres l'autre, le dernier met en ligne la version complete.
 # Il faut une seule fois le secret GitHub FLY_API_TOKEN (jeton cree sur fly.io : l'application -> Tokens).
 # L'application, la region principale et les regions sont lues dans fly.toml (app, primary_region, REGIONS).
 # A chaque lancement :
@@ -12,6 +15,12 @@
 name: "Fly : serveurs, volumes et déploiement"
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'README.md'
+      - '**.md'
+      - '.gitignore'
 jobs:
   fly:
     runs-on: ubuntu-latest
