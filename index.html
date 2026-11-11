@@ -11343,8 +11343,9 @@ const PROF=(()=>{
  let SHOPJ=null;   // boutique du moment ; « end » : heure locale du prochain changement
  function shopInfo(force){if(SHOPJ&&!force&&Date.now()<SHOPJ.end)return Promise.resolve(SHOPJ);return api('shop',{}).then(j=>{if(j&&Array.isArray(j.items)){j.end=Date.now()+Math.max(1000,(j.next||0)-(j.now||0));SHOPJ=j;return j}return{on:0,items:[],end:0}}).catch(()=>({on:0,items:[],end:0}))}
  function buy(c,it,cur){if(!isOn())return Promise.resolve({err:I?'session':'guest'});return api('buy',idb({c,it,cur,ret:location.origin+location.pathname})).catch(()=>({err:'net'}))}
+ function test(key){if(!isOn())return Promise.resolve({err:I?'session':'guest'});return api('test',idb({key})).then(j=>{if(j.prof)keep(j.prof);return j}).catch(()=>({err:'net'}))}
  function claim(cs){if(!isOn())return Promise.resolve({err:'session'});return api('claim',idb({cs})).then(j=>{if(j.prof)keep(j.prof);if(j._st===409)setSt('busy');return j}).catch(()=>({err:'net'}))}
- return{init,award,drawXP,ui,open,prog,need,TOT,LMAX,get:()=>P,code,report,hexBadge,lvlOfSlot,onXP,KD,state:()=>ST,saveSkins,isOn,lvlOf,shopInfo,buy,claim}})();
+ return{init,award,drawXP,ui,open,prog,need,TOT,LMAX,get:()=>P,code,report,hexBadge,lvlOfSlot,onXP,KD,state:()=>ST,saveSkins,isOn,lvlOf,shopInfo,buy,claim,test}})();
 // ===================== V3.7 : SKINS (tenue, bonnet, arme, sac, aura) =====================
 // 29 skins en 5 categories, une recompense par niveau (du niveau 2 au niveau 30), plus 25 skins de la boutique (skins_shop.js).
 // Les modeles sont faits pour la vue du jeu (camera presque au-dessus) : coiffes, epaules, sac dans le dos, arme, aura au sol.
@@ -11824,6 +11825,84 @@ const SKIN=(()=>{
      F2.forEach(([f,o,s_])=>{f.rotation.y=s_*(.05+.16*Math.sin(t*1.6-.5));o.rotation.y=s_*(.06+.2*Math.sin(t*1.6-1.3))});gem.rotation.x=t*.7;
      DU.forEach((q,i)=>{const p=(t*.14+i/6)%1,k=Math.sin(p*Math.PI);q.position.set(-9-6*Math.sin(i*2.3)+2*Math.sin(t+i),12-34*p,(i%2?1:-1)*(7+((i*7.1)%20))+3*Math.sin(t*1.3+i*2));q.rotation.set(t*1.4+i,t*.9+i*2,1+Math.sin(t*2+i));q.scale.set(2.6*k,.9*k,.9*k)});
      sp.forEach((q,i)=>{const f=Math.max(0,Math.sin(t*2.3+i*1.4)),s_=i%2?1:-1;q.position.set(-8-3*Math.sin(i*2.1),4+7*Math.sin(i*1.3),s_*(8+((i*5.3)%22)));q.scale.setScalar(.4+3.6*f*f)})}}}});
+ // ---------- BONNETS DE LA BOUTIQUE, serie 2 : laurier dore, crane ardent, cristaux gravitants, couronne de cristal ----------
+ const sprGlow=(k,c,o)=>M(k,()=>new THREE.SpriteMaterial({map:radTex,color:c,transparent:true,opacity:o,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));
+ // feuille pliee le long de sa nervure (deux pans a facettes), posee a plat, pointe vers +x
+ const leafGeo=()=>G('leafG',()=>{const X=[0,.14,.34,.58,.8,1],Wd=[0,.3,.47,.42,.24,0],P=[],R=k=>[X[k],.16*Math.sin(Math.PI*X[k]),0],S=(k,s)=>[X[k],0,s*Wd[k]];
+   for(let k=0;k<5;k++)for(const s of[-1,1]){const a=R(k),b=R(k+1),c=S(k,s),d=S(k+1,s);if(s>0)P.push(...a,...c,...d,...a,...d,...b);else P.push(...a,...d,...c,...a,...b,...d)}
+   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.computeVertexNormals();return g});
+ // cristal a six pans, pointe en haut (base en 0, pointe en 1)
+ const cryGeo=()=>G('cryG',()=>new THREE.LatheGeometry([new THREE.Vector2(0,0),new THREE.Vector2(.5,.1),new THREE.Vector2(.46,.62),new THREE.Vector2(0,1)],6));
+ const skullTex=(x,S,r)=>{const g=x.createLinearGradient(0,0,0,S);g.addColorStop(0,'#e4d9c0');g.addColorStop(.55,'#d6c9aa');g.addColorStop(1,'#a8997a');x.fillStyle=g;x.fillRect(0,0,S,S);x.strokeStyle='rgba(70,56,40,.3)';x.lineWidth=1;x.lineJoin='round';
+   // sutures en zigzag sur le dessus, quelques felures
+   x.beginPath();for(let i=0;i<=S;i+=4)x.lineTo(i,S*.2+(i/4%2?1.2:-1.2)+2*Math.sin(i*.09));x.stroke();
+   for(const u of[.25,.75]){x.beginPath();for(let j=0;j<=S*.2;j+=4)x.lineTo(S*u+(j/4%2?2:-2),j);x.stroke()}
+   x.strokeStyle='rgba(60,46,32,.4)';for(let k=0;k<5;k++){let cx=r()*S,cy=S*(.24+r()*.2);x.beginPath();x.moveTo(cx,cy);for(let j=0;j<4;j++){cx+=(r()-.5)*12;cy+=4+r()*8;x.lineTo(cx,cy)}x.stroke()}};
+ Object.assign(HAT,{
+  // couronne de laurier : deux rameaux de feuilles d'or qui partent de la nuque et se rejoignent presque sur le front
+  laurier:{n:['Laurier doré','Golden laurel'],lv:0,shop:1,r:1,vw:[0,48,0,54,-.75,.62],b(g){hair(g,0x2e2118);const au=M('h_lau',()=>new THREE.MeshPhongMaterial({color:0xd9a02a,emissive:0x2e1e02,shininess:70,specular:0xffe9a0,side:THREE.DoubleSide})),W=new THREE.Group(),lf=leafGeo(),R_=6.05;W.position.set(-.3,2.5,0);W.rotation.z=-.16;g.add(W);
+    const st=mesh(W,G('lau_st',()=>new THREE.TorusGeometry(R_,.22,5,44,TAU-.9)),au);st.rotation.set(Math.PI/2,0,.45);
+    for(const s_ of[-1,1])for(let i=0;i<8;i++){const be=.2+i*(Math.PI-.2-.6)/7,th=Math.PI-s_*be,k=new THREE.Group(),sc=1-.34*i/7;k.position.set(Math.cos(th)*R_,0,Math.sin(th)*R_);k.rotation.y=Math.atan2(s_*Math.cos(th),s_*Math.sin(th));W.add(k);
+      for(const j of[-1,1]){const q=mesh(k,lf,au,.2,.1,j*.25);q.rotation.set(j*.75,j*-.36,.5);q.scale.set(3.1*sc,2.4*sc,2.2*sc)}
+      }
+    // noeud et rubans sur la nuque
+    sph(W,.75,au,-R_-.1,0,0);for(const s_ of[-1,1]){const t=bx(W,.22,3.4,.9,au,-R_-.5,-1.8,s_*.6);t.rotation.set(s_*.28,0,-.22)}
+    const sp=[...Array(3)].map(()=>{const q=new THREE.Sprite(SPR('h_lau_s',0xfff2c0,1));W.add(q);return q});
+    return t=>sp.forEach((q,i)=>{const f=Math.max(0,Math.sin(t*1.9+i*2.1)),a=1.2+i*1.9;q.position.set(Math.cos(a)*R_,1.2,Math.sin(a)*R_);q.scale.setScalar(.3+2.8*f*f*f)})}},
+  // crane : os ivoire, orbites noires ou brulent deux braises, machoire a dents, grande flamme vive au sommet
+  crane:{n:['Crâne ardent','Blazing skull'],lv:0,shop:1,r:2,vw:[0,52,0,72,-.7,.5],tz:1.12,b(g){
+    const bone=M('h_cra',()=>new THREE.MeshPhongMaterial({map:tex('h_cra',skullTex,128),color:0xe2dccb,emissive:0x16130e,shininess:24,specular:0x3a342a})),bn=P('h_cra2',0xc9bea2,24,{specular:0x3a342a,emissive:0x16130e}),dk=P('h_cra3',0xa39577,20,{specular:0x221c14}),bk=B('h_cra_k',0x0b090b),em=B('h_cra_e',0xff8a1a,{fog:false}),th=L('h_cra_t',0xe6dfcc,{emissive:0x1c1a14});
+    const cr=mesh(g,G('cra_s',()=>new THREE.SphereGeometry(6.35,26,18)),bone,-.35,1.35,0);cr.scale.set(1.07,1,.98);
+    for(const s_ of[-1,1]){const so=sph(g,1.85,bk,4.85,1.15,s_*2.4);so.scale.set(.72,1,1.08);so.rotation.x=s_*-.25;sph(g,.62,em,5.72,1,s_*2.4);const eg=new THREE.Sprite(sprGlow('h_cra_eg',0xff6a10,.75));eg.scale.set(3.4,3.4,1);eg.position.set(6.3,1,s_*2.4);g.add(eg);
+     const br=bx(g,1.2,.7,3.2,bn,5.35,3.05,s_*2.35);br.rotation.set(s_*.22,s_*-.2,.2);   // arcade sourciliere
+     const cb=sph(g,1.55,bn,4.35,-1.55,s_*3.7);cb.scale.set(1,.62,1);   // pommette
+     bx(g,2.4,2.6,.8,dk,3.2,-3.6,s_*2.75)}
+    const ns=bx(g,.5,1.25,1.25,bk,6.02,-.95,0);ns.rotation.x=Math.PI/4;ns.scale.set(1,1.25,.8);
+    // machoires : os, fond sombre, deux rangees de dents
+    bx(g,3.1,1.5,5.5,bn,4.2,-2.95,0);bx(g,2.9,1.2,5,bn,4.1,-5.15,0);bx(g,.4,1.5,4.7,bk,5.6,-4,0);
+    for(let i=-3;i<=3;i++){bx(g,.5,.95,.52,th,5.78,-3.55,i*.66);if(Math.abs(i)<3)bx(g,.5,.8,.5,th,5.7,-4.5,i*.66)}
+    // flamme : trois nappes emboitees, collerette de petites flammes, langues qui montent, braises
+    const fl=flameGeo(),F=new THREE.Group();F.position.set(-1.6,6.1,0);g.add(F);
+    const L3=[[0xff2c08,.75,4.5,13],[0xff9214,.85,3.1,9.2],[0xfff0a0,.95,1.7,5.4]].map(([c,o,w,h],i)=>{const q=mesh(F,fl,GLOW('h_cra_f'+i,c,o));q.userData.s=[w,h];return q});
+    const CO=[...Array(7)].map((_,i)=>{const a=i/7*TAU,k=new THREE.Group();k.position.set(Math.cos(a)*2.9,-.9,Math.sin(a)*2.9);k.rotation.set(Math.sin(a)*.5,0,-Math.cos(a)*.5);F.add(k);mesh(k,fl,MAT.h_cra_f0);mesh(k,fl,MAT.h_cra_f1).scale.setScalar(.6);return k});
+    const ft=tex('a_sp_f',flameSpr,64),FM=[0xff5a14,0xffb030].map((c,j)=>M('h_cra_s'+j,()=>new THREE.SpriteMaterial({map:ft,color:c,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}))),FS=[...Array(8)].map((_,i)=>{const q=new THREE.Sprite(FM[i%2]);F.add(q);return q});
+    const EM=[...Array(6)].map(()=>{const q=new THREE.Sprite(SPR('h_cra_b',0xffb040,1));F.add(q);return q}),hl=new THREE.Sprite(sprGlow('h_cra_h',0xff5a10,.5));hl.scale.set(24,24,1);hl.position.y=4;F.add(hl);
+    AN('cra',t=>{const f=.75+.25*Math.sin(t*7)*Math.sin(t*3.1);MAT.h_cra_e.color.setRGB(1,.42+.25*f,.06+.1*f);MAT.h_cra_eg.opacity=.5+.35*f;MAT.h_cra_h.opacity=.4+.14*Math.sin(t*9)});
+    return t=>{F.rotation.set(.07*Math.sin(t*2.3),0,.62+.09*Math.sin(t*1.7));
+     L3.forEach((q,i)=>{const[w,h]=q.userData.s,k=1+.13*Math.sin(t*(10+i*3)+i*2)+.07*Math.sin(t*(21+i*5));q.scale.set(w*(1+.06*Math.sin(t*13+i)),h*k,w*(1+.06*Math.cos(t*11+i)));q.position.y=.42*h*k-1;q.rotation.y=t*(i%2?-1.3:1)});
+     CO.forEach((k,i)=>{const s=1.5+.4*Math.sin(t*9+i*2.2);k.scale.set(1.15,s*1.9,1.15)});
+     FS.forEach((q,i)=>{const p=(t*(.7+.09*(i%3))+i*.131)%1,a=i*2.399+t*.8;q.position.set(Math.cos(a)*(1.9-1.4*p),1.5+12.5*p,Math.sin(a)*(1.9-1.4*p));const k=Math.min(1,p*6)*(1-p);q.scale.set(.5+4.2*k,1+7.5*k,1)});
+     EM.forEach((q,i)=>{const p=(t*.5+i/6)%1,a=i*2.1+t*.9+p*3;q.position.set(Math.cos(a)*(2+2.4*p),3+13*p,Math.sin(a)*(2+2.4*p));q.scale.setScalar(2*Math.sin(p*Math.PI))})}}},
+  // cristaux lumineux en orbite autour de la tete : trois grands dans un sens, trois petits dans l'autre, chacun avec sa trainee
+  eclats:{n:['Cristaux gravitants','Orbiting crystals'],lv:0,shop:1,r:2,vw:[0,49,0,76,-.75,.6],tz:1.15,b(g){hair(g,0x1c1f30);const oc=G('ecl_o',()=>new THREE.OctahedronGeometry(1,0)),O=[],H=[.52,.62,.76];
+    for(const[R_,n,sp,sx,sz,w,h]of[[10,3,1.5,.3,.14,1.25,2.9],[7.4,3,-2.2,-.36,-.12,.8,1.9]]){const A=new THREE.Group();A.position.y=2.4;A.rotation.set(sx,0,sz);g.add(A);
+     const rg=mesh(A,G('ecl_r'+R_,()=>new THREE.TorusGeometry(R_,.06,5,72)),GLOW('h_ecl_r',0x8fb8ff,.42));rg.rotation.x=Math.PI/2;
+     for(let i=0;i<n;i++){const hu=H[(i+(sp<0?1:0))%3],col=new THREE.Color().setHSL(hu,1,.62),k='h_ecl'+Math.round(hu*100),c=new THREE.Group();A.add(c);
+      const m=mesh(c,oc,M(k,()=>new THREE.MeshPhongMaterial({color:col,emissive:new THREE.Color().setHSL(hu,1,.34),specular:0xffffff,shininess:120,flatShading:true,envMap:skyEnv(),combine:THREE.MixOperation,reflectivity:.3})));m.scale.set(w,h,w);
+      mesh(c,oc,GLOW(k+'k',0xffffff,.55)).scale.set(w*.45,h*.6,w*.45);const gl=new THREE.Sprite(sprGlow(k+'g',col.getHex(),.75));gl.scale.set(w*6,w*6,1);c.add(gl);
+      const TR=[...Array(5)].map(()=>{const q=new THREE.Sprite(sprGlow(k+'t',col.getHex(),.5));A.add(q);return q});O.push({c,m,TR,R_,sp,i,n,w})}}
+    const tw=[...Array(4)].map(()=>{const q=new THREE.Sprite(SPR('h_ecl_s',0xdcecff,1));g.add(q);return q});
+    AN('ecl',t=>{MAT.h_ecl_r.opacity=.3+.14*Math.sin(t*2.2)});
+    return t=>{for(const o of O){const a=t*o.sp+o.i*TAU/o.n,y=.9*Math.sin(t*2.1+o.i*2+o.R_);o.c.position.set(Math.cos(a)*o.R_,y,Math.sin(a)*o.R_);o.m.rotation.set(.25*Math.sin(t*1.7+o.i),t*2.4+o.i,.2);
+      o.TR.forEach((q,j)=>{const b=a-Math.sign(o.sp)*(j+1)*.15;q.position.set(Math.cos(b)*o.R_,y*(1-j*.12),Math.sin(b)*o.R_);q.scale.setScalar(o.w*(3.3-j*.55))})}
+     tw.forEach((q,i)=>{const f=Math.max(0,Math.sin(t*2.6+i*1.9)),a=i*1.7+Math.floor(t*.41+i*.3)*2.3;q.position.set(Math.cos(a)*8.6,3+2.5*Math.sin(i*2.2),Math.sin(a)*8.6);q.scale.setScalar(.3+2.6*f*f*f)})}}},
+  // couronne de cristal : elle flotte au-dessus de la tete et tourne lentement ; cristaux limpides eclaires de l'interieur, la lumiere change de teinte
+  couronne:{n:['Couronne de cristal','Crystal crown'],lv:0,shop:1,r:3,vw:[0,52,0,70,-.75,.55],tz:1.1,b(g){hair(g,0x262234);const K=new THREE.Group(),cg=cryGeo(),oc=G('ecl_o',()=>new THREE.OctahedronGeometry(1,0));g.add(K);
+    const pl=M('h_cc_m',()=>new THREE.MeshPhongMaterial({color:0xeef2fb,emissive:0x363c4c,envMap:skyEnv(),combine:THREE.MixOperation,reflectivity:.45,shininess:200,specular:0xffffff,side:THREE.DoubleSide})),
+     cm=M('h_cc_c',()=>new THREE.MeshPhongMaterial({color:0xc4ecff,emissive:0x1c5c8c,specular:0xffffff,shininess:110,flatShading:true,transparent:true,opacity:.8,envMap:skyEnv(),combine:THREE.MixOperation,reflectivity:.5})),core=GLOW('h_cc_k',0xd8f6ff,.95),gm=B('h_cc_g',0xa8ecff,{fog:false});
+    // bandeau d'or blanc : deux joncs, un anneau, des pierres
+    tor(K,5.15,.36,pl,0,0,0);tor(K,5.3,.26,pl,0,1.3,0);mesh(K,G('cc_band',()=>new THREE.CylinderGeometry(5.28,5.14,1.3,36,1,true)),pl,0,.65,0);
+    const TIP=[];for(let i=0;i<16;i++){const a=i/16*TAU,big=i%4===0,mid=i%4===2,h=big?7:mid?4.6:2.5,w=big?2.3:mid?1.8:1.25,k=new THREE.Group();k.position.set(Math.cos(a)*5.2,.9,Math.sin(a)*5.2);k.rotation.y=-a;K.add(k);const c=new THREE.Group();c.rotation.z=-(big?.2:mid?.3:.42);k.add(c);
+     mesh(c,cg,cm).scale.set(w,h,w);mesh(c,oc,core,0,h*.46,0).scale.set(w*.2,h*.36,w*.2);if(big||mid){const q=new THREE.Sprite(SPR('h_cc_s',0xffffff,1));q.position.y=h+.2;c.add(q);TIP.push(q)}
+     if(i%2===0){const q=mesh(k,oc,gm,.5,-.25,0);q.scale.set(.42,.5,.42)}}
+    // faisceau de lumiere, halo, eclats qui s'elevent au centre
+    const bm=mesh(K,G('cc_beam',()=>new THREE.CylinderGeometry(4.4,6.4,9,32,1,true)),GLOW('h_cc_b',0x9fdcff,.26,fadeTex()),0,5.2,0);bm.rotation.x=Math.PI;
+    const hl=new THREE.Sprite(sprGlow('h_cc_h',0x7fc8ff,.42));hl.scale.set(28,28,1);hl.position.y=3;K.add(hl);
+    const UP=[...Array(5)].map(()=>{const q=mesh(K,oc,cm);const s=new THREE.Sprite(sprGlow('h_cc_u',0xbfeaff,.7));s.scale.set(5,5,1);q.add(s);return q});
+    AN('cc',t=>{const hu=.56+.13*Math.sin(t*.7);MAT.h_cc_k.color.setHSL(hu,1,.82);MAT.h_cc_c.emissive.setHSL(hu,.85,.33);MAT.h_cc_b.color.setHSL(hu,1,.72);MAT.h_cc_h.color.setHSL(hu,1,.66);MAT.h_cc_g.color.setHSL(hu,1,.8);MAT.h_cc_u.color.setHSL(hu,1,.8);MAT.h_cc_b.opacity=.2+.08*Math.sin(t*2.4)});
+    return t=>{K.position.set(0,4.9+.4*Math.sin(t*1.8),0);K.rotation.set(.05*Math.sin(t*1.1),t*.4,.05*Math.cos(t*.9));
+     TIP.forEach((q,i)=>{const f=Math.max(0,Math.sin(t*2.4+i*TAU/8*3));q.scale.setScalar(.5+4*f*f*f)});
+     UP.forEach((q,i)=>{const p=(t*.22+i/5)%1,a=i*2.4+t*1.1,k=Math.sin(p*Math.PI);q.position.set(Math.cos(a)*2.2*(1-p*.5),1+10*p,Math.sin(a)*2.2*(1-p*.5));q.rotation.set(t+i,t*1.6+i*2,0);q.scale.set(.42*k,1*k,.42*k)})}}}});
  const CATS=[['o',['Tenue','Outfit'],OUT],['h',['Bonnet','Hat'],HAT],['g',['Arme','Weapon'],GUN],['b',['Sac','Bag'],BAG],['a',['Aura','Aura'],AUR]],DEF={o:OUT,h:HAT,g:GUN,b:BAG,a:AUR};
  const RAR=l=>l>=25?3:l>=17?2:l>=9?1:0,RARN=[['Commun','Common'],['Rare','Rare'],['Épique','Epic'],['Légendaire','Legendary']],RARC=['#a3b1c2','#3fa2ff','#b768ff','#ffae2b'],rarOf=it=>it.shop?it.r:RAR(it.lv);
  // couleurs de rarete pour les cartes (variables CSS) : teinte pleine, fond leger, bord, halo derriere le modele
@@ -11865,7 +11944,7 @@ const SKIN=(()=>{
  try{SEEN=new Set(JSON.parse(localStorage.getItem(KSEEN)||'[]'))}catch(e){}
  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(SEL))}catch(e){}},saveSeen=()=>{try{localStorage.setItem(KSEEN,JSON.stringify([...SEEN]))}catch(e){}};
  const prof=()=>typeof PROF!=='undefined'&&PROF.code()?PROF.get():null;
- const lvlNow=()=>{const p=prof();return p?p.lvl||0:0},owned=(c,id)=>{const p=prof();return!!p&&Array.isArray(p.own)&&p.own.includes(c+':'+id)},unl=(c,id)=>!id||(DEF[c][id].shop?owned(c,id):lvlNow()>=DEF[c][id].lv);   // skins de la boutique : achetes (liste « own » du profil, tenue par le serveur)
+ const lvlNow=()=>{const p=prof();return p?p.lvl||0:0},tester=()=>{const p=prof();return!!p&&Array.isArray(p.own)&&p.own.includes('*')},owned=(c,id)=>{const p=prof();return!!p&&Array.isArray(p.own)&&(p.own.includes('*')||p.own.includes(c+':'+id))},unl=(c,id)=>!id||(DEF[c][id].shop?owned(c,id):tester()||lvlNow()>=DEF[c][id].lv);   // '*' : profil testeur (mode test des skins, ?skin=<mot du serveur>), tout est debloque   // skins de la boutique : achetes (liste « own » du profil, tenue par le serveur)
  const worn=()=>{const w={};for(const k in SEL)w[k]=unl(k,SEL[k])?SEL[k]:'';return w},keyOf=w=>w?w.o+'|'+w.h+'|'+w.g+'|'+w.b+'|'+w.a:'';
  // envoi au serveur (profil + salon en ligne) ; s'il echoue (serveur injoignable), renvoye des que le profil revient
  function push(){if(typeof PROF==='undefined')return;PEND=true;PROF.saveSkins(Object.assign({},SEL)).then(ok=>{if(ok)PEND=false})}
@@ -12061,6 +12140,13 @@ const SKIN=(()=>{
  // retour de la page de paiement Stripe (?shop=ok&cs=... ou ?shop=cancel) : le serveur verifie le paiement aupres de Stripe,
  // puis le skin achete est equipe et le casier s'ouvre dessus
  {let q=null;try{q=new URLSearchParams(location.search)}catch(e){}const sh=q&&q.get('shop'),cs=q&&q.get('cs')||'';
+  // mode test des skins : ?skin=<mot choisi sur le serveur> debloque tous les skins pour ce profil, ?skin=off l'enleve
+  const tk=q&&q.get('skin');
+  if(tk){try{history.replaceState(null,'',location.pathname+location.hash)}catch(e){}let n=0;const go=async()=>{n++;const fin=(t,ok)=>{MODE='lock';open();say(t,ok)};
+    if(typeof PROF==='undefined'||!PROF.isOn()){if(n<16)return setTimeout(go,500);return fin(LG('Mode test des skins : ouvre d’abord ton profil sur cet appareil, puis recharge cette adresse.','Skin test mode: open your profile on this device first, then reload this address.'),0)}
+    const j=await PROF.test(tk);
+    fin(j&&j.on===1?LG('Mode test : tous les skins sont débloqués pour ce profil.','Test mode: all skins are unlocked for this profile.'):j&&j.on===0?LG('Mode test désactivé pour ce profil.','Test mode turned off for this profile.'):j&&j.err==='locked'?LG('Trop d’essais : réessaie dans 5 minutes.','Too many tries: try again in 5 minutes.'):LG('Mode test indisponible sur ce serveur, ou mot incorrect.','Test mode unavailable on this server, or wrong word.'),j&&j.on!=null?1:0)};
+   setTimeout(go,600)}
   if(sh){try{history.replaceState(null,'',location.pathname+location.hash)}catch(e){}
    const done=(c,t,ok)=>{if(c&&DEF[c]){CAT=c;MODE='lock'}else MODE='shop';open();say(t,ok)};
    if(sh==='cancel')setTimeout(()=>done('',LG('Paiement annulé : aucun montant n’a été prélevé.','Payment cancelled: you were not charged.'),0),600);
