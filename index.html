@@ -3539,7 +3539,7 @@ function dropSock(){try{if(netSocket){netSocket.onclose=null;netSocket.close()}}
 // message discret en bas de l'ecran, sans recharger la page (ms : il disparait tout seul)
 function srvUpd(t){let d=$('srvupd');if(!d){d=document.createElement('div');d.id='srvupd';d.style.cssText='position:fixed;bottom:96px;left:50%;transform:translateX(-50%);max-width:min(520px,88vw);z-index:59;background:rgba(10,14,24,.88);border:1px solid rgba(255,215,106,.5);border-radius:12px;color:#ffe9a8;font:600 13px/1.35 system-ui;padding:9px 14px;text-align:center;pointer-events:none';document.body.appendChild(d)}d.textContent=t}
 function netToast(t,ms){srvUpd(t);const d=$('srvupd');clearTimeout(d._t);if(ms)d._t=setTimeout(()=>d.remove(),ms)}
-const BUILD='2026-11-11T14:37Z';   // version du jeu (date de construction, UTC)
+const BUILD='2026-11-11T15:07Z';   // version du jeu (date de construction, UTC)
 setTimeout(()=>{if(HEADLESS)return;const d=document.createElement('div');d.id='buildTag';d.style.cssText='position:fixed;right:30px;top:116px;z-index:70;font:600 10.5px/1 system-ui;color:#7d8899;pointer-events:none;letter-spacing:.02em;text-shadow:0 1px 2px #000';
  d.textContent=LG('Version du ','Version ')+new Date(BUILD).toLocaleString(LANG==='en'?'en-US':'fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});document.body.appendChild(d);
  setInterval(()=>{d.style.display=menu.classList.contains('hidden')?'none':''},700)},0);   // apres le chargement complet du script (LG, LANG)
@@ -11220,7 +11220,7 @@ const PROF=(()=>{
  // bareme affiche par le bouton « Calcul de l'XP » (le serveur compte avec le meme, profiles.js)
  const XPT=()=>[
   [LG('Fin de partie (terminée · victoire)','End of game (finished · victory)'),[[LG('Bombe','Bomb'),'+30 · +60'],[LG('Match à mort','Deathmatch'),'+15 · +30'],['Zones','+15 · +30'],[LG('Cristal','Crystal'),'+10 · +40'],[LG('Code Rouge','Code Red'),'+100 · +200'],['Zombie','+40 · +120'],[LG('Escorte','Escort'),'+50 · +100']]],
-  [LG('Pendant la partie','During the game'),[[LG('Élimination','Elimination'),'+5'],[LG('MVP (sauf Zombie)','MVP (except Zombie)'),'+25'],[LG('1re victoire du jour','First win of the day'),'+150']]],
+  [LG('Pendant la partie','During the game'),[[LG('Élimination','Elimination'),'+10'],[LG('MVP (sauf Zombie)','MVP (except Zombie)'),'+25'],[LG('1re victoire du jour','First win of the day'),'+150']]],
   [LG('Objectifs du mode','Mode objectives'),[[LG('Bombe : posée · désamorcée · drapeau','Bomb: planted · defused · flag'),LG('+12,5 · +15 · +10','+12.5 · +15 · +10')],[LG('Code Rouge : antenne · missile · retour','Code Red: antenna · missile · return'),LG('+12,5 · +20 · +10','+12.5 · +20 · +10')],[LG('Escorte : C4 · obus au but','Escort: C4 · shell hit'),LG('+10 · +7,5','+10 · +7.5')],[LG('Zones : seconde dans la zone','Zones: second in the zone'),LG('+0,25 (75 max)','+0.25 (75 max)')],[LG('Cristal : cristal déposé','Crystal: crystal delivered'),'+10'],[LG('Zombie : zombie · vague survécue','Zombie: zombie · wave survived'),'+1 · +5'],[LG('Match à mort : drapeau','Deathmatch: flag'),'+10']]],
   [LG('Règles','Rules'),[[LG('Partie quittée ou non terminée','Game left or not finished'),'0 XP'],[LG('Profil','Profile'),LG('1 appareil à la fois','1 device at a time')],[LG('Niveau maximum','Max level'),LG('30 (136 184 XP)','30 (136,184 XP)')]]]];
  function fill(){const[lv,cur,nd]=prog(P.xp),b=$('profBox'),st=!I?'guest':ST==='busy'?'busy':ST==='off'?'off':'on';b.dataset.st=st;
@@ -11945,6 +11945,19 @@ const SKIN=(()=>{
    for(let i=0;i<7;i++){const a=pts[i],b=pts[i+1];for(const[ox,oz]of[[w,0],[0,w]])P.push(a[0]-ox,a[1],a[2]-oz,a[0]+ox,a[1],a[2]+oz,b[0]+ox,b[1],b[2]+oz,a[0]-ox,a[1],a[2]-oz,b[0]+ox,b[1],b[2]+oz,b[0]-ox,b[1],b[2]-oz);
     if(i===3||i===5){const c=[b[0]+(r()-.5)*7,b[1]+2+r()*3,b[2]+(r()-.5)*7];P.push(b[0]-w*.7,b[1],b[2],b[0]+w*.7,b[1],b[2],c[0],c[1],c[2])}}
    const ge=new THREE.BufferGeometry();ge.setAttribute('position',new THREE.Float32BufferAttribute(P,3));return ge});
+ // langue de feu animee : tube effile dont la ligne centrale ondule (vagues qui courent de la base vers la pointe) et dont le rayon
+ // gonfle et se resserre ; couleurs le long de la flamme : coeur blanc-jaune a la base, orange, rouge, puis eteint a la pointe
+ const TGN=16,TGS=8,TGT=(()=>{const U=[],C=[],S_=[],R=[],I=[],COL=[];for(let n=0;n<=TGN;n++){const u=n/TGN,r=.5*Math.pow(1-u,.62)*(.42+.58*Math.min(1,u*4.5));
+   for(let k=0;k<TGS;k++){const f=k/TGS*TAU;U.push(u);C.push(Math.cos(f));S_.push(Math.sin(f));R.push(r);
+    const c=u<.35?[1,1-.5*u/.35,.72-.62*u/.35]:u<.7?[1,.5-.38*(u-.35)/.35,.1-.08*(u-.35)/.35]:[1-.9*(u-.7)/.3,.12-.12*(u-.7)/.3,.02];COL.push(...c)}}
+  for(let n=0;n<TGN;n++)for(let k=0;k<TGS;k++){const a=n*TGS+k,b=n*TGS+(k+1)%TGS;I.push(a,b,a+TGS,b,b+TGS,a+TGS)}
+  const ix=new THREE.Uint16BufferAttribute(I,1),col=new THREE.Float32BufferAttribute(COL,3);return{U,C,S:S_,R,ix,col,n:U.length}})();
+ const tongue=(par,mi,mo)=>{const ge=new THREE.BufferGeometry();ge.setAttribute('position',new THREE.Float32BufferAttribute(new Float32Array(TGT.n*3),3));ge.setAttribute('color',TGT.col);ge.setIndex(TGT.ix);
+   const a=new THREE.Mesh(ge,mo);a.scale.set(1.07,1.5,1.5);a.frustumCulled=false;par.add(a);const b=new THREE.Mesh(ge,mi);b.frustumCulled=false;par.add(b);return ge};
+ function tongueMove(ge,t,ph,amp,spd){const P=ge.attributes.position.array,{U,C,S:S_,R}=TGT;
+  for(let i=0,n=TGT.n;i<n;i++){const u=U[i],w=Math.pow(u,1.35),cy=amp*w*Math.sin(6.5*u-spd*t+ph)+amp*.45*u*u*Math.sin(13*u-spd*1.7*t+ph*2.3),cz=amp*.8*w*Math.sin(5.5*u-spd*.9*t+ph*1.7+1.3),
+    r=R[i]*(1+.24*Math.sin(15*u-spd*1.9*t+ph))*(1+.12*Math.sin(t*9+ph*3)),x=u*(1+.1*Math.sin(t*7.3+ph*1.9));P[i*3]=x;P[i*3+1]=cy+C[i]*r;P[i*3+2]=cz+S_[i]*r}
+  ge.attributes.position.needsUpdate=true}
  Object.assign(AUR,{
   // trainee ardente : a l'arret, un foyer de flammes rouge vif monte autour des jambes ; en courant, les flammes se couchent
   // en une queue de comete et le joueur laisse derriere lui un sillage de feu qui suit son chemin (il brule puis s'eteint).
@@ -11956,7 +11969,8 @@ const SKIN=(()=>{
     // sillage lumineux au sol (en course), qui commence derriere le rond
     const wk=mesh(g,G('a_tr_w',()=>{const q=new THREE.PlaneGeometry(1,1);q.translate(.5,0,0);q.rotateX(-Math.PI/2);return q}),GLOW('a_tr_wm',0xff2408,.55,capTex),0,1.6,0);
     // flammes principales : foyer a l'arret, queue de comete en course (trois nappes : rouge, orange, coeur clair)
-    const TG=[...Array(NT)].map(()=>{const k=new THREE.Group();g.add(k);FM.forEach((mt,j)=>mesh(k,ge,mt).scale.set([1,.76,.48][j],[1,.66,.38][j],[1,.66,.38][j]));return k});
+    const TMI=M('a_tr_vi',()=>new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,opacity:.95,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,side:THREE.DoubleSide})),TMO=M('a_tr_vo',()=>new THREE.MeshBasicMaterial({color:0xff3a0c,vertexColors:true,transparent:true,opacity:.6,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,side:THREE.DoubleSide}));
+    const TG=[...Array(NT)].map((_,i)=>{const k=new THREE.Group();g.add(k);k.userData={ge:tongue(k,TMI,TMO),ph:i*2.17+hsh(i,5)*3};return k});
     // sillage de feu au sol : des flammes laissees sur le chemin parcouru (position dans le monde), qui montent, rougissent et s'eteignent
     const ft=tex('a_sp_f',flameSpr,64),SM=[0xff3a0a,0xffa030,0xfff0b0].map((c,j)=>M('a_tr_s'+j,()=>new THREE.SpriteMaterial({map:ft,color:c,transparent:true,opacity:[.8,.85,.9][j],blending:THREE.AdditiveBlending,depthWrite:false,fog:false})));
     const dg=G('a_tr_pd',()=>{const q=new THREE.PlaneGeometry(1,1);q.rotateX(-Math.PI/2);return q}),dm=ADD2('a_tr_pm',{map:radTex,color:0xff4a12,opacity:.85});
@@ -11970,14 +11984,14 @@ const SKIN=(()=>{
      if(demo){k=.5-.5*Math.cos(t*1.1+1.2);sp=170*k*k}   // casier et vignettes : la trainee s'etire et se resserre toute seule
      else{g.getWorldPosition(W);if(has){Lc.copy(P0);g.worldToLocal(Lc);const l=Math.hypot(Lc.x,Lc.z);sp=l<70?l/dt:0;vm=Math.max(vm*(1-dt*.04),sp);const kt=Math.min(1,sp/Math.max(60,vm*.8));k+=(kt-k)*Math.min(1,dt*(kt>k?6:3));
        if(sp>6&&l>0){const f=Math.min(1,dt*8);dx+=(Lc.x/l-dx)*f;dz+=(Lc.z/l-dz)*f;const n=Math.hypot(dx,dz)||1;dx/=n;dz/=n}}P0.copy(W);has=1}
-     const psi=Math.atan2(-dz,dx),e=k*k*(3-2*k),Lt=12+48*e;
+     const psi=Math.atan2(-dz,dx),e=k*k*(3-2*k),Lt=10+24*e;
      // foyer (arret) : flammes droites serrees contre les jambes, a l'interieur du rond ; course : couchees vers l'arriere, etagees du sol aux epaules
      TG.forEach((q,i)=>{const ar=i/NT*TAU,yw=psi+((((i*4)%9)-4)*.06+.08*Math.sin(t*6+i*1.7))*e,lat=((i%3)-1)*3,
        bx_=Math.cos(ar)*7.6*(1-e)+(dx*3+dz*lat)*e,bz=Math.sin(ar)*7.6*(1-e)+(dz*3-dx*lat)*e,by=1.5*(1-e)+(4+(i%5)*4.6)*e,
-       L_=(21+8*(i%3))*(1-e)+(30+11*(i%4))*e,w=4.8+1*e+(i%2)*.8;
-      q.position.set(bx_,by,bz);q.rotation.set(0,(1-e)*(-ar)+e*yw,(Math.PI/2+.05)*(1-e)+(.05+.05*(i%4))*e);
-      q.scale.set(L_*(1+.15*Math.sin(t*9+i*2.3)+.07*Math.sin(t*19+i)),w*(1+.1*Math.sin(t*11+i)),w*(1+.1*Math.cos(t*10+i*2)))});
-     wk.rotation.y=psi;wk.position.set(dx*13,1.6,dz*13);wk.scale.set((8+Lt*1.2)*e+.01,1,(8+6*e)*e+.01);hl.scale.set(18+6*e,22,1);hl.position.set(dx*5*e,16,dz*5*e);
+       L_=(20+7*(i%3))*(1-e)+(16+6*(i%4))*e,w=5+1.2*e+(i%2)*.8;
+      q.position.set(bx_,by,bz);q.rotation.set(0,(1-e)*(-ar)+e*yw,(Math.PI/2+.05)*(1-e)+(.1+.06*(i%4))*e);
+      q.scale.set(L_*(1+.08*Math.sin(t*5+i*2.3)),w,w);tongueMove(q.userData.ge,t,q.userData.ph,.2+.16*e,9+5*e)});   // flammes qui lechent : ondulation de la base vers la pointe
+     wk.rotation.y=psi;wk.position.set(dx*13,1.6,dz*13);wk.scale.set((8+Lt*1.3)*e+.01,1,(8+6*e)*e+.01);hl.scale.set(18+6*e,22,1);hl.position.set(dx*5*e,16,dz*5*e);
      // sillage : une nouvelle flamme a chaque bout de chemin parcouru
      if(e>.2){spT-=dt;dv+=sp*dt;if(spT<=0&&dv>5){spT=.025;dv=0;const o=PF[pi++%NP];o.age=0;o.L=.85+.4*hsh(pi,1);o.s=.85+.45*hsh(pi,2);o.a=(hsh(pi,3)-.5)*6;
        if(demo)o.w.set(dx*9,0,dz*9);else{DW.set(dx*9+dz*o.a,0,dz*9-dx*o.a);g.localToWorld(DW);o.w.copy(DW)}}}
