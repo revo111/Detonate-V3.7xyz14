@@ -3540,7 +3540,7 @@ function dropSock(){try{if(netSocket){netSocket.onclose=null;netSocket.close()}}
 // message discret en bas de l'ecran, sans recharger la page (ms : il disparait tout seul)
 function srvUpd(t){let d=$('srvupd');if(!d){d=document.createElement('div');d.id='srvupd';d.style.cssText='position:fixed;bottom:96px;left:50%;transform:translateX(-50%);max-width:min(520px,88vw);z-index:59;background:rgba(10,14,24,.88);border:1px solid rgba(255,215,106,.5);border-radius:12px;color:#ffe9a8;font:600 13px/1.35 system-ui;padding:9px 14px;text-align:center;pointer-events:none';document.body.appendChild(d)}d.textContent=t}
 function netToast(t,ms){srvUpd(t);const d=$('srvupd');clearTimeout(d._t);if(ms)d._t=setTimeout(()=>d.remove(),ms)}
-const BUILD='2026-11-11T16:20Z';   // version du jeu (date de construction, UTC)
+const BUILD='2026-11-11T23:04Z';   // version du jeu (date de construction, UTC)
 setTimeout(()=>{if(HEADLESS)return;const d=document.createElement('div');d.id='buildTag';d.style.cssText='position:fixed;right:30px;top:116px;z-index:70;font:600 10.5px/1 system-ui;color:#7d8899;pointer-events:none;letter-spacing:.02em;text-shadow:0 1px 2px #000';
  d.textContent=LG('Version du ','Version ')+new Date(BUILD).toLocaleString(LANG==='en'?'en-US':'fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});document.body.appendChild(d);
  setInterval(()=>{d.style.display=menu.classList.contains('hidden')?'none':''},700)},0);   // apres le chargement complet du script (LG, LANG)
@@ -12070,6 +12070,80 @@ const SKIN=(()=>{
     return t=>{SEG.forEach(([S,b,pl],i)=>{const l=put(S,i,t)*1.3;b.scale.z=l;pl.scale.z=l*.86});put(H,-1.7,t);jw.rotation.x=.2+.14*Math.sin(t*2.6);WK.forEach((k,i)=>k.rotation.set(.12*Math.sin(t*2.2+i),.1*Math.sin(t*1.7+i*2),.1*Math.sin(t*2.9+i)));
      pos(-6.6,t,PL.position);PL.position.y+=.8*Math.sin(t*3.1);ps.scale.setScalar(5+2.5*Math.sin(t*7));
      SK.forEach((q,i)=>{const p=(t*.6+i/12)%1;pos(2+i*2.3,t-p*.5,q.position);q.position.y-=p*5;q.scale.setScalar(2.6*Math.sin(p*Math.PI))})}}}});
+ // ---------- ARMES DE LA BOUTIQUE, serie 2 : rose fluo, argent chrome, diamant ----------
+ // reflet qui balaie le corps de l'arme (meme principe que l'or massif) : materiau a part pour chaque arme
+ const shineMat=(k,c)=>M(k,()=>{const t_=shineTex.clone();t_.needsUpdate=true;t_.wrapS=t_.wrapT=THREE.ClampToEdgeWrapping;return new THREE.MeshBasicMaterial({map:t_,color:c,transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2})});
+ const sweep=(k,t,per,dur)=>{const m=MAT[k];if(!m)return;const u=(t%per)/dur;m.map.offset.x=.5-(-.25+1.5*Math.min(1,u));m.visible=u<1};
+ // eclats qui scintillent sur les faces de l'arme
+ const twinkles=(g,bd,n,k,c,sz)=>{const s_=bd.getSize(new THREE.Vector3()),x0=bd.min.x+.8,x1=bd.max.x-1.4;return[...Array(n)].map((_,i)=>{const q=new THREE.Sprite(SPR(k,c,1));g.add(q);q.userData.p=[x0+(x1-x0)*((i*.37+.1)%1),bd.min.y+s_.y*(i%2?.85:.4),i%2?bd.max.z+.3:bd.min.z-.3];q.userData.s=sz;return q})};
+ const twTick=(sp,t,sp_)=>sp.forEach((q,i)=>{const f=Math.max(0,Math.sin(t*(sp_||2.6)+i*2.3));q.position.set(...q.userData.p);q.scale.setScalar(.3+q.userData.s*f*f*f)});
+ // reflets qui glissent en continu sur l'arme : bandes claires de largeurs differentes, en biais, sur toute la surface
+ const bandTex=tex('fx_bands',(x,S)=>{const B_=[[.08,.05,.5],[.3,.014,1],[.37,.035,.4],[.62,.07,.45],[.84,.012,.9],[.9,.03,.3]];for(let i=0;i<S;i++){const u=i/S;let v=0;for(const[c,w,a]of B_){let d=Math.abs(u-c);d=Math.min(d,1-d);v+=a*Math.exp(-d*d/(w*w))}v=Math.min(1,v);const q=Math.round(v*255);x.fillStyle='rgb('+q+','+q+','+q+')';x.fillRect(i,0,1,S)}},256);
+ const bandGeo=(geo,s)=>{const p=geo.attributes.position,U=[];for(let i=0;i<p.count;i++)U.push((p.getX(i)+.6*p.getY(i)+.35*p.getZ(i))*s,.5);geo.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));return geo};
+ const bandMat=(k,c,op)=>M(k,()=>{const t_=bandTex.clone();t_.needsUpdate=true;return new THREE.MeshBasicMaterial({map:t_,color:c,transparent:true,opacity:op,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1})});
+ // coordonnees a plat (meme taille de motif partout sur l'arme, quelle que soit la piece)
+ const flatUV=(geo,s)=>{const p=geo.attributes.position,U=[],a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3(),n=new THREE.Vector3();for(let i=0;i<p.count;i+=3){a.fromBufferAttribute(p,i);b.fromBufferAttribute(p,i+1);c.fromBufferAttribute(p,i+2);n.subVectors(b,a).cross(c.clone().sub(a));const ax=Math.abs(n.x),ay=Math.abs(n.y),az=Math.abs(n.z);
+   for(const v of[a,b,c]){if(az>=ax&&az>=ay)U.push(v.x*s,v.y*s);else if(ay>=ax)U.push(v.x*s,v.z*s+.31);else U.push(v.z*s+.17,v.y*s)}}geo.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));return geo};
+ // decor chrome : studio sombre avec de grandes lampes blanches (contraste fort = metal poli)
+ let ENVC=null;function chrEnv(){if(ENVC)return ENVC;const F=[];for(let i=0;i<6;i++){const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d');
+   if(i===2){x.fillStyle='#8a94a4';x.fillRect(0,0,64,64);x.fillStyle='#ffffff';x.fillRect(10,0,9,64);x.fillRect(40,0,4,64)}else if(i===3){x.fillStyle='#181c24';x.fillRect(0,0,64,64)}else{const g=x.createLinearGradient(0,0,0,64);g.addColorStop(0,'#ffffff');g.addColorStop(.3,'#b8c4d4');g.addColorStop(.47,'#5a6474');g.addColorStop(.5,'#14181f');g.addColorStop(.56,'#3a424f');g.addColorStop(1,'#8a94a4');x.fillStyle=g;x.fillRect(0,0,64,64);
+    x.fillStyle='#ffffff';x.fillRect(8+i*7,4,7,26);x.fillRect(40-i*4,8,4,20)}F.push(c)}
+  ENVC=new THREE.CubeTexture(F);ENVC.needsUpdate=true;return ENVC}
+ // decor du diamant : blanc et bleu glace, avec des eclats arc-en-ciel (dispersion de la lumiere)
+ let ENVD=null;function diaEnv(){if(ENVD)return ENVD;const F=[];for(let i=0;i<6;i++){const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d'),r=rnd(73+i*17),g=x.createLinearGradient(0,0,0,64);
+   if(i===3){g.addColorStop(0,'#3a4a66');g.addColorStop(1,'#141c2c')}else{g.addColorStop(0,'#ffffff');g.addColorStop(.45,'#d6ecff');g.addColorStop(1,'#5a7090')}x.fillStyle=g;x.fillRect(0,0,64,64);
+   if(i!==3)for(let k=0;k<5;k++){x.fillStyle='hsla('+Math.floor(r()*360)+',100%,75%,'+(.55+r()*.45)+')';x.fillRect(r()*58,r()*40,2+r()*5,12+r()*26)}F.push(c)}
+  ENVD=new THREE.CubeTexture(F);ENVD.needsUpdate=true;return ENVD}
+ // facettes : chaque case est taillee en 4 triangles autour d'un sommet decale
+ const facets=(x,S,r,n,col)=>{const q=S/n;for(let j=0;j<n;j++)for(let i=0;i<n;i++){const X=i*q,Y=j*q,cx=X+q*(.28+.44*r()),cy=Y+q*(.28+.44*r()),C=[[X,Y],[X+q,Y],[X+q,Y+q],[X,Y+q]];
+   for(let e=0;e<4;e++){x.fillStyle=col(r);x.beginPath();x.moveTo(cx,cy);x.lineTo(...C[e]);x.lineTo(...C[(e+1)%4]);x.closePath();x.fill()}}};
+ // pierre taillee : beaucoup de blanc, du bleu glace, quelques facettes sombres pour le contraste, de rares touches irisees
+ const diaTex=(x,S,r)=>{facets(x,S,r,4,r=>{const t_=r();return t_<.07?'hsl('+Math.floor(r()*360)+',90%,80%)':t_<.3?'hsl('+(206+r()*14)+',60%,'+(38+r()*16)+'%)':t_<.62?'hsl('+(198+r()*16)+',70%,'+(70+r()*14)+'%)':'hsl(200,60%,'+(90+r()*9)+'%)'});
+   x.strokeStyle='rgba(255,255,255,.55)';x.lineWidth=.8;const q=S/4;for(let i=0;i<=4;i++){x.beginPath();x.moveTo(i*q,0);x.lineTo(i*q,S);x.moveTo(0,i*q);x.lineTo(S,i*q);x.stroke()}};
+ // scintillement : chaque facette s'allume a son tour (rouge = moment, vert = force, bleu = teinte)
+ const sparkMat=k=>M(k,()=>{const t_=tex('g_dia_fc',(x,S,r)=>facets(x,S,r,10,r=>'rgb('+(r()*255|0)+','+(r()<.6?110+r()*145|0:0)+','+(r()*255|0)+')'),256);t_.magFilter=t_.minFilter=THREE.NearestFilter;t_.generateMipmaps=false;t_.needsUpdate=true;
+   return new THREE.ShaderMaterial({uniforms:{map:{value:t_},t:{value:0},k:{value:1}},transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-1,
+    vertexShader:'varying vec2 vU;void main(){vU=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+    fragmentShader:'uniform sampler2D map;uniform float t;uniform float k;varying vec2 vU;void main(){vec4 f=texture2D(map,vU);float s=pow(max(0.,sin(t*2.3+f.r*6.2832)),9.)*f.g;vec3 c=mix(vec3(1.),.5+.5*cos(6.2832*(f.b+t*.05+vec3(0.,.33,.67))),.5);gl_FragColor=vec4(c*(s*1.25+f.g*.07)*k,1.);}'})});
+ // chrome : chaque face reflete un ciel clair, une ligne d'horizon sombre puis un sol gris (le degrade typique du metal poli), finement brosse
+ const chromeTex=(x,S,r)=>{const g=x.createLinearGradient(0,0,0,S);g.addColorStop(0,'#fbfdff');g.addColorStop(.22,'#c2cad6');g.addColorStop(.44,'#6f7887');g.addColorStop(.5,'#1e232b');g.addColorStop(.56,'#59626f');g.addColorStop(.8,'#b0b9c6');g.addColorStop(1,'#eef3f9');x.fillStyle=g;x.fillRect(0,0,S,S);
+   for(let i=0;i<150;i++){x.fillStyle=r()<.5?'rgba(255,255,255,'+(.04+r()*.1)+')':'rgba(10,14,22,'+(.04+r()*.1)+')';x.fillRect(0,r()*S,S,.8)}};
+ // rose fluo laque : rose vif, bande brillante en haut de chaque face
+ const fluoTex=(x,S,r)=>{const g=x.createLinearGradient(0,0,0,S);g.addColorStop(0,'#ff8fdc');g.addColorStop(.1,'#ffd2f2');g.addColorStop(.17,'#ff58c4');g.addColorStop(.5,'#ff1c9c');g.addColorStop(.8,'#f0108a');g.addColorStop(1,'#ff4ab8');x.fillStyle=g;x.fillRect(0,0,S,S);
+   for(let i=0;i<90;i++){x.fillStyle='rgba(255,'+(190+r()*65|0)+',250,'+(.2+r()*.5)+')';x.fillRect(r()*S,r()*S,1.3,1.3)}};
+ Object.assign(GUN,{
+  // rose fluo : corps rose vif qui luit comme un neon, pieces en laque noire, aretes en tube neon, reflets roses qui glissent sur l'arme
+  fluo:{n:['Rose fluo','Neon pink'],lv:0,shop:1,r:2,bd:()=>M('g_flu',()=>{const t=tex('g_flu2',fluoTex,128);return new THREE.MeshPhongMaterial({map:t,emissiveMap:t,emissive:0xffffff,emissiveIntensity:.55,envMap:chrEnv(),combine:THREE.MixOperation,reflectivity:.14,shininess:200,specular:0xffffff})}),
+   ac:()=>M('g_flu_a',()=>new THREE.MeshPhongMaterial({color:0x2a0a24,emissive:0x1a0414,envMap:chrEnv(),combine:THREE.MixOperation,reflectivity:.3,shininess:240,specular:0xff9ae0})),gl:()=>B('g_flu_g',0xff5ad0,{fog:false}),
+   tp:()=>M('g_flu_t',()=>new THREE.MeshPhongMaterial({color:0xff86d6,emissive:0x8a1e62,envMap:chrEnv(),combine:THREE.MixOperation,reflectivity:.45,shininess:240,specular:0xffffff})),
+   fx(g,bb,edges,bd,shine){mesh(g,edges(.17),GLOW('g_flu_e',0xff8ae2,.8));gunGlow(g,bb,GLOW('g_flu_h',0xff2fa8,.5,capTex),3.5);mesh(g,bandGeo(shine(),1/30),bandMat('g_flu_b',0xff9ae4,.6));mesh(g,shine(),shineMat('g_flu_w',0xfff0fb));
+    const sp=twinkles(g,bd,6,'g_flu_s',0xffd6f6,4);
+    AN('flu',t=>{const p=.5+.5*Math.sin(t*3.1);MAT.g_flu.emissiveIntensity=.48+.24*p;MAT.g_flu_h.opacity=.4+.2*p;MAT.g_flu_e.opacity=.6+.25*p;MAT.g_flu_b.map.offset.x=-t*.16;sweep('g_flu_w',t,2.4,.8)});
+    return t=>twTick(sp,t,3)}},
+  // argent : chrome poli (ciel, horizon, sol refletes sur chaque face), acier noir poli, reflets blancs qui glissent sur l'arme, eclats
+  argent:{n:['Argent','Silver'],lv:0,shop:1,r:2,bd:()=>M('g_arg',()=>{const t=tex('g_arg2',chromeTex,128);return new THREE.MeshPhongMaterial({map:t,color:0xa4aab4,emissiveMap:t,emissive:0x14161b,envMap:chrEnv(),combine:THREE.MixOperation,reflectivity:.45,shininess:260,specular:0xffffff})}),
+   ac:()=>M('g_arg_a',()=>new THREE.MeshPhongMaterial({color:0x2c323e,emissive:0x0c0f16,envMap:chrEnv(),combine:THREE.MixOperation,reflectivity:.5,shininess:240,specular:0xffffff})),gl:()=>B('g_arg_g',0xe6f2ff,{fog:false}),
+   tp:()=>M('g_arg_t',()=>new THREE.MeshPhongMaterial({color:0xb4bac4,emissive:0x1a1d24,envMap:chrEnv(),combine:THREE.MixOperation,reflectivity:.6,shininess:260,specular:0xffffff})),
+   fx(g,bb,edges,bd,shine){mesh(g,edges(.1),GLOW('g_arg_e',0xffffff,.28));gunGlow(g,bb,GLOW('g_arg_h',0xcfdcf0,.22,capTex),2.8);mesh(g,bandGeo(shine(),1/30),bandMat('g_arg_b',0xffffff,.6));mesh(g,shine(),shineMat('g_arg_w',0xffffff));
+    const sp=twinkles(g,bd,5,'g_arg_s',0xffffff,4.6);
+    AN('arg',t=>{sweep('g_arg_w',t,2.8,.9);MAT.g_arg_b.map.offset.x=-t*.13;MAT.g_arg_h.opacity=.18+.08*Math.sin(t*2.2)});
+    return t=>twTick(sp,t,2.4)}},
+  // diamant : arme taillee dans le diamant (facettes blanches et bleu glace), chaque facette scintille a son tour avec des feux irises,
+  // diamants bruts sur le dessus, brillant serti dans le platine de chaque cote, halo glace, reflet qui balaie l'arme
+  diamant:{n:['Diamant','Diamond'],lv:0,shop:1,r:3,bd:()=>M('g_dia',()=>{const t=tex('g_dia2',diaTex,128);t.repeat.set(2,1);return new THREE.MeshPhongMaterial({map:t,emissiveMap:t,emissive:0x586480,envMap:diaEnv(),combine:THREE.MixOperation,reflectivity:.26,shininess:250,specular:0xffffff})}),
+   ac:()=>M('g_dia_a',()=>new THREE.MeshPhongMaterial({color:0xe8edf5,emissive:0x40485a,envMap:diaEnv(),combine:THREE.MixOperation,reflectivity:.6,shininess:240,specular:0xffffff})),gl:()=>B('g_dia_g',0xcff0ff,{fog:false}),
+   tp:()=>M('g_dia_t',()=>new THREE.MeshPhongMaterial({color:0xf4f7fc,emissive:0x50586a,envMap:diaEnv(),combine:THREE.MixOperation,reflectivity:.6,shininess:240,specular:0xffffff})),
+   fx(g,bb,edges,bd,shine){mesh(g,edges(.13),GLOW('g_dia_e',0xffffff,.8));gunGlow(g,bb,GLOW('g_dia_h',0x9fe0ff,.45,capTex),3.4);mesh(g,flatUV(shine(),1/11),sparkMat('g_dia_f'));mesh(g,shine(),shineMat('g_dia_w',0xffffff));
+    const sz=bd.getSize(new THREE.Vector3()),k=Math.max(.5,Math.min(1.15,sz.x/16)),zc=(bd.min.z+bd.max.z)/2,
+     cm=M('g_dia_c',()=>new THREE.MeshPhongMaterial({color:0xf0f8ff,emissive:0x5a7a9a,specular:0xffffff,shininess:160,flatShading:true,transparent:true,opacity:.9,envMap:diaEnv(),combine:THREE.MixOperation,reflectivity:.55})),pt=M('g_dia_p',()=>new THREE.MeshPhongMaterial({color:0xdfe5ee,emissive:0x2a3040,shininess:200,specular:0xffffff,envMap:diaEnv(),combine:THREE.MixOperation,reflectivity:.5}));
+    for(const[u,h,w,rz,rx,dz]of[[.08,5,2.2,.28,.12,0],[.16,3,1.6,-.52,-.45,.3],[.03,2.8,1.5,.72,.4,-.3],[.46,4.2,2,-.12,-.1,.04],[.54,2.6,1.4,-.68,.45,-.3],[.39,2.3,1.4,.6,-.5,.3],[.76,3.2,1.7,.2,.2,-.1],[.83,2,1.2,-.6,-.4,.28]]){const q=mesh(g,rubGeo(),cm,bd.min.x+sz.x*u,bd.max.y-.3,zc+dz*sz.z);q.scale.set(w*k,h*k,w*k);q.rotation.set(rx,u*9,rz)}
+    const gr=Math.max(.7,Math.min(1.7,sz.y*.17));for(const s_ of[-1,1]){const zf=s_>0?bd.max.z:bd.min.z,gx=bd.min.x+sz.x*.6,gy=bd.max.y-sz.y*.25,c=cyl(g,gr*1.25,gr*1.25,.5,8,pt,gx,gy,zf);c.rotation.x=Math.PI/2;const q=mesh(g,rubCut(),cm,gx,gy,zf+s_*.3);q.scale.setScalar(gr);q.rotation.x=s_*Math.PI/2}
+    // eclats arc-en-ciel : chacun prend une teinte differente
+    const s2=bd.getSize(new THREE.Vector3()),sp=[...Array(8)].map((_,i)=>{const q=new THREE.Sprite(M('g_dia_s'+i,()=>new THREE.SpriteMaterial({map:starTex,color:new THREE.Color().setHSL(i/8,1,.8),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,fog:false})));g.add(q);
+     q.userData.p=[bd.min.x+.8+(s2.x-2.2)*((i*.37+.1)%1),i%3===2?bd.max.y+2*k:bd.min.y+s2.y*(i%2?.85:.4),i%3===2?zc:i%2?bd.max.z+.3:bd.min.z-.3];q.userData.s=4.4;return q});
+    AN('dia',t=>{sweep('g_dia_w',t,2.6,.8);MAT.g_dia_f.uniforms.t.value=t;const h=(t*.12)%1;MAT.g_dia_e.color.setHSL(h,.75,.8);MAT.g_dia_h.opacity=.38+.12*Math.sin(t*2.1);MAT.g_dia.emissiveIntensity=.9+.25*Math.sin(t*2.4);
+     for(let i=0;i<8;i++){const m=MAT['g_dia_s'+i];if(m)m.color.setHSL((i/8+t*.2)%1,1,.8)}});
+    return t=>twTick(sp,t,2.8)}}});
  const CATS=[['o',['Tenue','Outfit'],OUT],['h',['Bonnet','Hat'],HAT],['g',['Arme','Weapon'],GUN],['b',['Sac','Bag'],BAG],['a',['Aura','Aura'],AUR]],DEF={o:OUT,h:HAT,g:GUN,b:BAG,a:AUR};
  const RAR=l=>l>=25?3:l>=17?2:l>=9?1:0,RARN=[['Commun','Common'],['Rare','Rare'],['Épique','Epic'],['Légendaire','Legendary']],RARC=['#a3b1c2','#3fa2ff','#b768ff','#ffae2b'],rarOf=it=>it.shop?it.r:RAR(it.lv);
  // couleurs de rarete pour les cartes (variables CSS) : teinte pleine, fond leger, bord, halo derriere le modele
