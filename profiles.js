@@ -298,6 +298,15 @@ function create(name, mig, ip, dev, pin) {
   return { id, s, sid, prof: pub(P) };
 }
 
+// ---------- joueurs en ligne ----------
+const ONLINE = new Map(), ONIP = new Map(), ON_TTL = +process.env.ONLINE_TTL_MS || 75000;   // appareil -> { t, g }
+function onlineCount(now) {
+  let n = 0, g = 0;
+  for (const [d, o] of ONLINE) { if (now - o.t > ON_TTL) ONLINE.delete(d); else { n++; if (o.g) g++; } }
+  if (ONIP.size > 5000) for (const [k, v] of ONIP) if (!v.some(d => ONLINE.has(d))) ONIP.delete(k);
+  return { n, g };
+}
+
 // ---------- API HTTP (le jeu envoie du JSON en text/plain : pas de pre-requete CORS) ----------
 const HDR = { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' };
 function out(res, code, o) { res.writeHead(code, HDR); res.end(JSON.stringify(o)); }
@@ -334,6 +343,20 @@ async function http(req, res, url) {
   if (op === 'peek') {
     if (m.key !== KEY) return out(res, 403, { err: 'key' });
     return out(res, 200, peekLocal(m.id, m.s, m.sid));
+  }
+  // joueurs en ligne : chaque jeu ouvert (avec ou sans profil) se signale toutes les 30 secondes avec l'identifiant de son appareil
+  // et dit s'il est en partie. Reponse : { n : jeux ouverts, g : en partie }. Un jeu silencieux depuis 75 secondes n'est plus compte.
+  if (op === 'here') {
+    const now = Date.now();
+    if (devOk(m.dev)) {
+      const old = ONLINE.get(m.dev);
+      if (old || ONLINE.size < 100000) {
+        let ok = true;
+        if (!old) { const k = ONIP.get(ip) || []; const live = k.filter(d => ONLINE.has(d)); ok = live.length < 30; if (ok) { live.push(m.dev); ONIP.set(ip, live); } }   // 30 appareils au plus par adresse
+        if (ok) ONLINE.set(m.dev, { t: now, g: m.g ? 1 : 0 });
+      }
+    }
+    return out(res, 200, onlineCount(now));
   }
   // boutique du moment : les 4 skins proposes, leurs prix et l'heure du prochain changement (sans profil : les invites la voient aussi)
   if (op === 'shop') {
