@@ -11851,7 +11851,7 @@ const SKIN=(()=>{
     return t=>sp.forEach((q,i)=>{const f=Math.max(0,Math.sin(t*1.9+i*2.1)),a=1.2+i*1.9;q.position.set(Math.cos(a)*R_,1.2,Math.sin(a)*R_);q.scale.setScalar(.3+2.8*f*f*f)})}},
   // crane : os ivoire, orbites noires ou brulent deux braises, machoire a dents, grande flamme vive au sommet
   crane:{n:['Crâne ardent','Blazing skull'],lv:0,shop:1,r:2,vw:[-6,55,0,94,-.7,.5],tz:1.3,b(g){
-    const bone=M('h_cra',()=>new THREE.MeshPhongMaterial({map:tex('h_cra',skullTex,128),color:0xe2dccb,emissive:0x16130e,shininess:24,specular:0x3a342a})),bn=P('h_cra2',0xc9bea2,24,{specular:0x3a342a,emissive:0x16130e}),dk=P('h_cra3',0xa39577,20,{specular:0x221c14}),bk=B('h_cra_k',0x0b090b),em=B('h_cra_e',0xff8a1a,{fog:false}),th=L('h_cra_t',0xe6dfcc,{emissive:0x1c1a14});
+    const bone=M('h_cra',()=>new THREE.MeshPhongMaterial({map:tex('h_cra',skullTex,128),color:0xe2dccb,emissive:0x3a1a06,shininess:24,specular:0x3a342a})),bn=P('h_cra2',0xc9bea2,24,{specular:0x3a342a,emissive:0x3a1a06}),dk=P('h_cra3',0xa39577,20,{specular:0x221c14}),bk=B('h_cra_k',0x0b090b),em=B('h_cra_e',0xff8a1a,{fog:false}),th=L('h_cra_t',0xe6dfcc,{emissive:0x1c1a14});
     const cr=mesh(g,G('cra_s',()=>new THREE.SphereGeometry(6.35,26,18)),bone,-.35,1.35,0);cr.scale.set(1.07,1,.98);
     for(const s_ of[-1,1]){const so=sph(g,1.85,bk,4.85,1.15,s_*2.4);so.scale.set(.72,1,1.08);so.rotation.x=s_*-.25;sph(g,.62,em,5.72,1,s_*2.4);const eg=new THREE.Sprite(sprGlow('h_cra_eg',0xff6a10,.75));eg.scale.set(3.4,3.4,1);eg.position.set(6.3,1,s_*2.4);g.add(eg);
      const br=bx(g,1.2,.7,3.2,bn,5.35,3.05,s_*2.35);br.rotation.set(s_*.22,s_*-.2,.2);   // arcade sourciliere
@@ -11872,13 +11872,19 @@ const SKIN=(()=>{
       const ge=new THREE.BufferGeometry();ge.setAttribute('position',new THREE.Float32BufferAttribute(P,3));ge.setIndex(I);return ge});
     const TG=[[[1,15,15,3.5,5.4],0,0,-.6,0],[[.5,9.5,12.5,2.4,3.9],.45,.3,-.2,1.7],[[.5,9.5,12.5,2.4,3.9],-.45,.3,-.2,-1.7],[[2.5,12,7.5,1.8,3.6],0,-1,-.9,0],[[0,4.6,10.5,1.2,3.1],0,1.7,0,0],[[1.5,8,5,1,2.6],.8,-1,-1.2,2.4],[[1.5,8,5,1,2.6],-.8,-1,-1.2,-2.4]].map(([pr,ry,x,y,z],n)=>{const k=new THREE.Group(),ge=tongue(...pr);k.position.set(x,y,z);k.userData.ry=ry;F.add(k);
       FMAT.forEach((m,q)=>mesh(k,ge,m).scale.setScalar([1,.74,.5][q]));return k});
+    // feu sur tout le crane : petites langues de feu plantees sur toute la boite cranienne (le visage reste degage), couchees vers le haut et l'arriere
+    const ft1=fireTube(),X1=new THREE.Vector3(1,0,0),dv=new THREE.Vector3(),SF=[];
+    for(let i=0;i<44;i++){const yy=1-(i+.5)/44*1.42,rr=Math.sqrt(Math.max(0,1-yy*yy)),a=i*2.39996,nx=Math.cos(a)*rr,nz=Math.sin(a)*rr;if(nx>.5&&yy<.62)continue;   // pas sur le visage
+     const k=new THREE.Group();k.position.set(-.35+nx*6.5*1.07,1.35+yy*6.3,nz*6.2);dv.set(nx*.55-.75,yy*.5+.85,nz*.55).normalize();k.quaternion.setFromUnitVectors(X1,dv);g.add(k);
+     FMAT.forEach((m,j)=>mesh(k,ft1,m).scale.set([1,.74,.5][j],[1,.66,.4][j],[1,.66,.4][j]));k.userData.s=[4.6+3.4*hsh(i,3),2.4+1.2*hsh(i,4)];SF.push(k)}
     const CO=[...Array(9)].map((_,i)=>{const a=i/9*TAU,k=new THREE.Group();k.position.set(Math.cos(a)*3.6-.4,-.2-.5*Math.cos(a),Math.sin(a)*3.6);k.rotation.set(Math.sin(a)*.55,0,.5-Math.cos(a)*.35);F.add(k);mesh(k,fl,FMAT[0]);mesh(k,fl,FMAT[1]).scale.setScalar(.6);return k});
     const ft=tex('a_sp_f',flameSpr,64),FM=[0xff4a10,0xffa828].map((c,j)=>M('h_cra_s'+j,()=>new THREE.SpriteMaterial({map:ft,color:c,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}))),FS=[...Array(12)].map((_,i)=>{const q=new THREE.Sprite(FM[i%2]);F.add(q);return q});
-    const EM=[...Array(9)].map(()=>{const q=new THREE.Sprite(SPR('h_cra_b',0xffb040,1));F.add(q);return q}),HL=[[-3,6,24],[-11,10,26]].map(([x,y,sc])=>{const q=new THREE.Sprite(sprGlow('h_cra_h',0xff5a10,.5));q.scale.set(sc,sc,1);q.position.set(x,y,0);F.add(q);return q});
+    const EM=[...Array(9)].map(()=>{const q=new THREE.Sprite(SPR('h_cra_b',0xffb040,1));F.add(q);return q}),HL=[[-.5,-3.5,24],[-3,6,24],[-11,10,26]].map(([x,y,sc])=>{const q=new THREE.Sprite(sprGlow('h_cra_h',0xff5a10,.5));q.scale.set(sc,sc,1);q.position.set(x,y,0);F.add(q);return q});
     AN('cra',t=>{const f=.75+.25*Math.sin(t*7)*Math.sin(t*3.1);MAT.h_cra_e.color.setRGB(1,.42+.25*f,.06+.1*f);MAT.h_cra_eg.opacity=.5+.35*f;MAT.h_cra_h.opacity=.36+.12*Math.sin(t*9)});
     return t=>{F.rotation.set(.05*Math.sin(t*2.3),0,.05*Math.sin(t*1.7));
      TG.forEach((k,n)=>{k.scale.set(1+.08*Math.sin(t*7+n*2),1+.12*Math.sin(t*9+n*1.7)+.05*Math.sin(t*17+n),1+.1*Math.sin(t*8+n*1.3));k.rotation.set(.06*Math.sin(t*4.1+n),k.userData.ry+.08*Math.sin(t*3.3+n*1.9),.07*Math.sin(t*5+n*2.1))});
      CO.forEach((k,i)=>{const s=1.6+.45*Math.sin(t*9+i*2.2);k.scale.set(1.25,s*2,1.25)});
+     SF.forEach((k,i)=>{const[l,w]=k.userData.s,f=1+.24*Math.sin(t*10+i*2.3)+.12*Math.sin(t*23+i*1.1);k.scale.set(l*f,w*(1+.1*Math.sin(t*12+i)),w*(1+.1*Math.cos(t*11+i*2)))});
      FS.forEach((q,i)=>{const p=(t*(.62+.08*(i%3))+i*.131)%1,[x,y]=path(p*1.15),a=i*2.399+t,r_=1.8*(1-p)+.5,k=Math.min(1,p*7)*(1-p);q.position.set(x+Math.cos(a)*r_*.5,y+1+1.5*Math.sin(a*1.3),Math.sin(a)*r_);q.scale.set(.5+3.6*k,1+6.5*k,1)});
      EM.forEach((q,i)=>{const p=(t*.42+i/9)%1,[x,y]=path(.3+p*.95),a=i*2.1+t*.9;q.position.set(x-1.5*p+Math.cos(a)*1.4,y+1.5+2.4*Math.sin(a*1.4+p*4),Math.sin(a)*(1.5+2.8*p));q.scale.setScalar(2.2*Math.sin(p*Math.PI))})}}},
   // cristaux lumineux en orbite autour de la tete : trois grands dans un sens, trois petits dans l'autre, chacun avec sa trainee
@@ -11894,23 +11900,30 @@ const SKIN=(()=>{
     return t=>{for(const o of O){const a=t*o.sp+o.i*TAU/o.n,y=.9*Math.sin(t*2.1+o.i*2+o.R_);o.c.position.set(Math.cos(a)*o.R_,y,Math.sin(a)*o.R_);o.m.rotation.set(.25*Math.sin(t*1.7+o.i),t*2.4+o.i,.2);
       o.TR.forEach((q,j)=>{const b=a-Math.sign(o.sp)*(j+1)*.15;q.position.set(Math.cos(b)*o.R_,y*(1-j*.12),Math.sin(b)*o.R_);q.scale.setScalar(o.w*(3.3-j*.55))})}
      tw.forEach((q,i)=>{const f=Math.max(0,Math.sin(t*2.6+i*1.9)),a=i*1.7+Math.floor(t*.41+i*.3)*2.3;q.position.set(Math.cos(a)*8.6,3+2.5*Math.sin(i*2.2),Math.sin(a)*8.6);q.scale.setScalar(.3+2.6*f*f*f)})}}},
-  // couronne de cristal : elle flotte au-dessus de la tete et tourne lentement ; cristaux limpides eclaires de l'interieur, la lumiere change de teinte
-  couronne:{n:['Couronne de cristal','Crystal crown'],lv:0,shop:1,r:3,vw:[0,52,0,70,-.75,.55],tz:1.1,b(g){hair(g,0x262234);const K=new THREE.Group(),cg=cryGeo(),oc=G('ecl_o',()=>new THREE.OctahedronGeometry(1,0));g.add(K);
-    const pl=M('h_cc_m',()=>new THREE.MeshPhongMaterial({color:0xeef2fb,emissive:0x363c4c,envMap:skyEnv(),combine:THREE.MixOperation,reflectivity:.45,shininess:200,specular:0xffffff,side:THREE.DoubleSide})),
-     cm=M('h_cc_c',()=>new THREE.MeshPhongMaterial({color:0xc4ecff,emissive:0x1c5c8c,specular:0xffffff,shininess:110,flatShading:true,transparent:true,opacity:.8,envMap:skyEnv(),combine:THREE.MixOperation,reflectivity:.5})),core=GLOW('h_cc_k',0xd8f6ff,.95),gm=B('h_cc_g',0xa8ecff,{fog:false});
-    // bandeau d'or blanc : deux joncs, un anneau, des pierres
-    tor(K,5.15,.36,pl,0,0,0);tor(K,5.3,.26,pl,0,1.3,0);mesh(K,G('cc_band',()=>new THREE.CylinderGeometry(5.28,5.14,1.3,36,1,true)),pl,0,.65,0);
-    const TIP=[];for(let i=0;i<16;i++){const a=i/16*TAU,big=i%4===0,mid=i%4===2,h=big?7:mid?4.6:2.5,w=big?2.3:mid?1.8:1.25,k=new THREE.Group();k.position.set(Math.cos(a)*5.2,.9,Math.sin(a)*5.2);k.rotation.y=-a;K.add(k);const c=new THREE.Group();c.rotation.z=-(big?.2:mid?.3:.42);k.add(c);
-     mesh(c,cg,cm).scale.set(w,h,w);mesh(c,oc,core,0,h*.46,0).scale.set(w*.2,h*.36,w*.2);if(big||mid){const q=new THREE.Sprite(SPR('h_cc_s',0xffffff,1));q.position.y=h+.2;c.add(q);TIP.push(q)}
-     if(i%2===0){const q=mesh(k,oc,gm,.5,-.25,0);q.scale.set(.42,.5,.42)}}
-    // faisceau de lumiere, halo, eclats qui s'elevent au centre
-    const bm=mesh(K,G('cc_beam',()=>new THREE.CylinderGeometry(4.4,6.4,9,32,1,true)),GLOW('h_cc_b',0x9fdcff,.26,fadeTex()),0,5.2,0);bm.rotation.x=Math.PI;
-    const hl=new THREE.Sprite(sprGlow('h_cc_h',0x7fc8ff,.42));hl.scale.set(28,28,1);hl.position.y=3;K.add(hl);
-    const UP=[...Array(5)].map(()=>{const q=mesh(K,oc,cm);const s=new THREE.Sprite(sprGlow('h_cc_u',0xbfeaff,.7));s.scale.set(5,5,1);q.add(s);return q});
-    AN('cc',t=>{const hu=.56+.13*Math.sin(t*.7);MAT.h_cc_k.color.setHSL(hu,1,.82);MAT.h_cc_c.emissive.setHSL(hu,.85,.33);MAT.h_cc_b.color.setHSL(hu,1,.72);MAT.h_cc_h.color.setHSL(hu,1,.66);MAT.h_cc_g.color.setHSL(hu,1,.8);MAT.h_cc_u.color.setHSL(hu,1,.8);MAT.h_cc_b.opacity=.2+.08*Math.sin(t*2.4)});
-    return t=>{K.position.set(0,4.9+.4*Math.sin(t*1.8),0);K.rotation.set(.05*Math.sin(t*1.1),t*.4,.05*Math.cos(t*.9));
-     TIP.forEach((q,i)=>{const f=Math.max(0,Math.sin(t*2.4+i*TAU/8*3));q.scale.setScalar(.5+4*f*f*f)});
-     UP.forEach((q,i)=>{const p=(t*.22+i/5)%1,a=i*2.4+t*1.1,k=Math.sin(p*Math.PI);q.position.set(Math.cos(a)*2.2*(1-p*.5),1+10*p,Math.sin(a)*2.2*(1-p*.5));q.rotation.set(t+i,t*1.6+i*2,0);q.scale.set(.42*k,1*k,.42*k)})}}}});
+  // couronne de cristal : grande couronne qui flotte au-dessus de la tete et tourne lentement. Cristaux limpides eclaires de l'interieur, ouverts en etoile
+  // pour bien se voir en vue de jeu, eclats en orbite, rayons, halo ; la lumiere change de teinte
+  couronne:{n:['Couronne de cristal','Crystal crown'],lv:0,shop:1,r:3,vw:[0,54,0,92,-.75,.55],tz:1.25,b(g){hair(g,0x262234);const K=new THREE.Group(),cg=cryGeo(),oc=G('ecl_o',()=>new THREE.OctahedronGeometry(1,0));g.add(K);
+    const pl=M('h_cc_m',()=>new THREE.MeshPhongMaterial({color:0xf2f5fc,emissive:0x4a5266,envMap:skyEnv(),combine:THREE.MixOperation,reflectivity:.45,shininess:200,specular:0xffffff,side:THREE.DoubleSide})),
+     cm=M('h_cc_c',()=>new THREE.MeshPhongMaterial({color:0xc9f0ff,emissive:0x2478b8,specular:0xffffff,shininess:110,flatShading:true,transparent:true,opacity:.88,envMap:skyEnv(),combine:THREE.MixOperation,reflectivity:.42})),core=GLOW('h_cc_k',0xe4f9ff,1),gm=B('h_cc_g',0xa8ecff,{fog:false}),edge=GLOW('h_cc_e',0x9fe6ff,.5);
+    // bandeau d'or blanc : deux joncs, un anneau, des pierres ; lisere lumineux
+    tor(K,6.1,.42,pl,0,0,0);tor(K,6.3,.3,pl,0,1.5,0);mesh(K,G('cc_band2',()=>new THREE.CylinderGeometry(6.28,6.1,1.5,40,1,true)),pl,0,.75,0);tor(K,6.5,.16,edge,0,.75,0);
+    const TIP=[];for(let i=0;i<16;i++){const a=i/16*TAU,big=i%4===0,mid=i%4===2,h=big?10.5:mid?7:3.6,w=big?3.3:mid?2.5:1.6,k=new THREE.Group();k.position.set(Math.cos(a)*6.15,1,Math.sin(a)*6.15);k.rotation.y=-a;K.add(k);const c=new THREE.Group();c.rotation.z=-(big?.5:mid?.62:.8);k.add(c);
+     mesh(c,cg,cm).scale.set(w,h,w);mesh(c,oc,core,0,h*.45,0).scale.set(w*.22,h*.38,w*.22);if(big||mid){const q=new THREE.Sprite(SPR('h_cc_s',0xffffff,1));q.position.y=h+.2;c.add(q);TIP.push(q);const gl=new THREE.Sprite(sprGlow('h_cc_t',0x8fdcff,.5));gl.scale.set(w*3.2,w*3.2,1);gl.position.y=h*.6;c.add(gl)}
+     if(i%2===0){const q=mesh(k,oc,gm,.55,-.2,0);q.scale.set(.55,.65,.55)}}
+    // fleuron central : un grand cristal a deux pointes qui flotte au milieu de la couronne
+    const ct=new THREE.Group();ct.position.y=5.4;K.add(ct);mesh(ct,oc,cm).scale.set(1.9,4.6,1.9);mesh(ct,oc,core).scale.set(.6,2.4,.6);const cs=new THREE.Sprite(SPR('h_cc_s',0xffffff,1));ct.add(cs);
+    // eclats en orbite autour de la couronne, rayons de lumiere, faisceau, halo
+    const OB=[...Array(8)].map((_,i)=>{const q=new THREE.Group();K.add(q);mesh(q,oc,cm).scale.set(i%2?.8:1.15,i%2?1.9:2.8,i%2?.8:1.15);mesh(q,oc,core).scale.set(.3,1,.3);const s2=new THREE.Sprite(sprGlow('h_cc_u',0xbfeaff,.7));s2.scale.set(i%2?5:7,i%2?5:7,1);q.add(s2);return q});
+    const rg=G('ray',()=>{const q=new THREE.PlaneGeometry(1,1);q.translate(.5,0,0);return q}),RY=[...Array(8)].map((_,i)=>{const k=new THREE.Group();k.rotation.y=-(i/8*TAU+TAU/16);k.position.y=.8;K.add(k);const q=mesh(k,rg,GLOW('h_cc_r',0xa6e4ff,.34,capTex),6.4,0,0);q.rotation.x=-Math.PI/2;return q});
+    const bm=mesh(K,G('cc_beam2',()=>new THREE.CylinderGeometry(5.4,8,12,32,1,true)),GLOW('h_cc_b',0x9fdcff,.3,fadeTex()),0,6.6,0);bm.rotation.x=Math.PI;
+    const hl=new THREE.Sprite(sprGlow('h_cc_h',0x7fc8ff,.6));hl.scale.set(44,44,1);hl.position.y=3;K.add(hl);
+    const UP=[...Array(6)].map(()=>{const q=mesh(K,oc,cm);const s2=new THREE.Sprite(sprGlow('h_cc_u',0xbfeaff,.7));s2.scale.set(5,5,1);q.add(s2);return q});
+    AN('cc',t=>{const hu=.56+.14*Math.sin(t*.7);MAT.h_cc_k.color.setHSL(hu,1,.84);MAT.h_cc_c.emissive.setHSL(hu,.9,.42);MAT.h_cc_b.color.setHSL(hu,1,.72);MAT.h_cc_h.color.setHSL(hu,1,.66);MAT.h_cc_g.color.setHSL(hu,1,.8);MAT.h_cc_u.color.setHSL(hu,1,.8);MAT.h_cc_t.color.setHSL(hu,1,.7);MAT.h_cc_e.color.setHSL(hu,1,.74);MAT.h_cc_r.color.setHSL(hu,1,.76);MAT.h_cc_b.opacity=.24+.08*Math.sin(t*2.4);MAT.h_cc_r.opacity=.26+.14*Math.sin(t*3.1);MAT.h_cc_h.opacity=.5+.12*Math.sin(t*2.4)});
+    return t=>{K.position.set(0,6.6+.45*Math.sin(t*1.8),0);K.rotation.set(.05*Math.sin(t*1.1),t*.4,.05*Math.cos(t*.9));
+     TIP.forEach((q,i)=>{const f=Math.max(0,Math.sin(t*2.4+i*TAU/8*3));q.scale.setScalar(.8+5.5*f*f*f)});ct.rotation.y=-t*1.3;ct.position.y=5.4+.5*Math.sin(t*2.3);cs.scale.setScalar(5+3*Math.sin(t*6));
+     OB.forEach((q,i)=>{const a=i/8*TAU-t*1.15;q.position.set(Math.cos(a)*12.2,2.4+1.4*Math.sin(t*2+i*1.9),Math.sin(a)*12.2);q.rotation.set(.3*Math.sin(t*1.5+i),t*2.2+i,.25)});
+     RY.forEach((q,i)=>q.scale.set(9+3.5*Math.sin(t*2.2+i*1.7),1,2.6+.8*Math.sin(t*3+i)));
+     UP.forEach((q,i)=>{const p=(t*.22+i/6)%1,a=i*2.4+t*1.1,k=Math.sin(p*Math.PI);q.position.set(Math.cos(a)*3*(1-p*.5),9+11*p,Math.sin(a)*3*(1-p*.5));q.rotation.set(t+i,t*1.6+i*2,0);q.scale.set(.5*k,1.2*k,.5*k)})}}}});
  // ---------- AURAS DE LA BOUTIQUE, serie 2 : trainee ardente, aura de puissance, dragon celeste ----------
  const ADD2=(k,o)=>M(k,()=>new THREE.MeshBasicMaterial(Object.assign({transparent:true,blending:THREE.AdditiveBlending,depthWrite:false,fog:false,side:THREE.DoubleSide},o)));
  const hsh=(a,b)=>{const v=Math.sin(a*12.9898+b*78.233)*43758.5453;return v-Math.floor(v)};
@@ -12042,7 +12055,10 @@ const SKIN=(()=>{
  // envoi au serveur (profil + salon en ligne) ; s'il echoue (serveur injoignable), renvoye des que le profil revient
  function push(){if(typeof PROF==='undefined')return;PEND=true;PROF.saveSkins(Object.assign({},SEL)).then(ok=>{if(ok)PEND=false})}
  // profil recu du serveur : ses skins font foi (sauf changement fait ici pendant une coupure : il est renvoye)
- function fromProf(sk){if(PEND){if(typeof PROF!=='undefined'&&PROF.isOn())push();return}if(!sk)return;const n=clean(sk);if(keyOf(n)!==keyOf(SEL)){SEL=n;save();if(PV)PV.key=''}}
+ function fromProf(sk){if(PEND){if(typeof PROF!=='undefined'&&PROF.isOn())push();return}if(!sk)return;const n=clean(sk);if(keyOf(n)!==keyOf(SEL)){
+   // skin choisi ici mais refuse par le serveur (il ne le connait pas : profiles.js plus ancien que le jeu) : le dire au lieu de le retirer sans un mot
+   for(const c in SEL)if(SEL[c]&&n[c]!==SEL[c]&&DEF[c][SEL[c]]&&unl(c,SEL[c])){try{say(LG('« ','“')+LGn(DEF[c][SEL[c]].n)+LG(' » est refusé par le serveur : il ne connaît pas encore ce skin (fichier profiles.js à mettre à jour sur le serveur).','” was refused by the server: it does not know this skin yet (update profiles.js on the server).'),0)}catch(e){}break}
+   SEL=n;save();if(PV)PV.key=''}}
  // en jeu : le joueur porte ses skins ; en ligne, les autres joueurs portent ceux que le serveur transmet (verifies par lui)
  function sync(){if(typeof E!=='undefined'&&E){const mine=worn();for(const e of E){const m=e.m;if(!m||!m.sk)continue;let w=null;
    if(e.id===localSlot)w=mine;else if(netMode&&typeof netPlayers!=='undefined'){const p=netPlayers.find(q=>q.slot===e.id);if(p&&p.sk)w=clean(p.sk)}
