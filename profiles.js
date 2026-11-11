@@ -108,7 +108,7 @@ const SHOP = {
   a: { notes: [0, 'Mélodie'], petales: [1, 'Pétales de cerisier'], orbite: [2, 'Orbite'], cercle: [2, "Cercle d'énergie"], spectre: [3, 'Flammes spectrales'] }
 };
 // prix en centimes selon la rarete (commun, rare, epique, legendaire)
-// memes montants dans les deux devises : 0,99 / 1,49 / 1,99 / 2,99 ; l'euro par defaut, le dollar americain au choix du joueur
+// prix fixes en euros : 0,99 / 1,49 / 1,99 / 2,99 ; au choix du joueur, prix en dollars americains convertis au cours du jour (voir FX)
 const PRICE = [99, 149, 199, 299], SHOP_CUR = 'eur', SHOP_CURS = ['eur', 'usd'];
 const CATN = { o: 'Tenue', h: 'Bonnet', g: 'Arme', b: 'Sac', a: 'Aura' }, RARN = ['commun', 'rare', 'épique', 'légendaire'];
 const SHOP_FREE = process.env.SHOP_FREE === '1';
@@ -136,6 +136,29 @@ function rotation(slot) {
 }
 const slotNow = () => Math.floor(Date.now() / ROT_MS) + (+process.env.SHOP_SLOT_ADD || 0);   // SHOP_SLOT_ADD : tests
 const inRotation = (c, id) => process.env.SHOP_ANY === '1' || rotation(slotNow()).some(x => x.c === c && x.id === id);   // SHOP_ANY=1 : tests
+// ---------- cours du dollar : cours de reference de la Banque centrale europeenne (1 euro = FX.usd dollars) ----------
+// Relu au demarrage puis toutes les 6 heures (la BCE le publie chaque jour ouvre vers 16 h, heure de Paris). Le dernier cours
+// connu est garde dans fx.json : si la BCE est injoignable, il reste utilise ; a defaut, FX_USD ou 1,10.
+// FX_URL : autre adresse (tests). Le prix en dollars d'un skin = prix en euros x cours, arrondi au cent.
+const FX_FILE = path.join(DATA_DIR, 'fx.json'), FX_URL = process.env.FX_URL || 'https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml';
+let FX = { usd: +process.env.FX_USD || 1.10, day: '', t: 0 };
+const fxOk = r => typeof r === 'number' && r > 0.5 && r < 2.5;
+async function fxLoad() {
+  try {
+    const c = new AbortController(), t = setTimeout(() => c.abort(), 10000);
+    const r = await fetch(FX_URL, { signal: c.signal }); const x = await r.text(); clearTimeout(t);
+    const m = /currency=['"]USD['"]\s+rate=['"]([0-9.]+)['"]/.exec(x), d = /time=['"]([0-9-]+)['"]/.exec(x), v = m ? +m[1] : 0;
+    if (!r.ok || !fxOk(v)) throw new Error('reponse inattendue');
+    FX = { usd: v, day: d ? d[1] : '', t: Date.now() };
+    try { fs.writeFileSync(FX_FILE, JSON.stringify(FX)); } catch (e) {}
+    console.log('Boutique : cours du dollar ' + v + ' (BCE, ' + FX.day + ')');
+  } catch (e) { console.error('Boutique : cours du dollar non relu (' + e.message + '), cours utilise : ' + FX.usd); }
+}
+if (IS_PRIMARY) {
+  try { const j = JSON.parse(fs.readFileSync(FX_FILE, 'utf8')); if (fxOk(j.usd)) FX = { usd: j.usd, day: j.day || '', t: j.t || 0 }; } catch (e) {}
+  fxLoad(); setInterval(fxLoad, 6 * 3600 * 1000).unref();
+}
+const inCur = (eur, cur) => cur === 'usd' ? Math.round(eur * FX.usd) : eur;
 const priceOf = (c, id) => SHOP[c] && Object.prototype.hasOwnProperty.call(SHOP[c], id) ? PRICE[SHOP[c][id][0]] : 0;
 const owns = (own, c, id) => SHOP_FREE || SKINS_ALL || (Array.isArray(own) && own.includes(c + ':' + id));
 function cleanSkins(sel, lvl, own) {
@@ -257,7 +280,9 @@ function apply(P, r, opt) {
 
 // ---------- creation (avec reprise du profil local de l'etape 1, plafonnee) ----------
 const created = new Map();   // limite de creations par adresse (20 par heure)
-function create(name, mig, ip, dev) {
+function create(name, mig, ip, dev, pin) {
+  // code PIN obligatoire a la creation (PIN_OPTIONAL=1 : tests)
+  if (!pinOk(pin) && process.env.PIN_OPTIONAL !== '1') return { err: 'pin' };
   const now = Date.now(), h = created.get(ip) || [];
   const recent = h.filter(t => now - t < 3600000);
   if (recent.length >= 20) return null;
@@ -267,6 +292,7 @@ function create(name, mig, ip, dev) {
   const m = mig && typeof mig === 'object' ? mig : {};
   const P = { id, sk: sha(s), n: cleanName(name), xp: num(m.xp, 3000), g: num(m.g, 100), w: num(m.w, 100), k: num(m.k, 2000), d: num(m.d, 2000), mvp: num(m.mvp, 50), day: '', sd: '', sx: 0, st: 0, c: now, ls: now };
   if (devOk(dev)) P.dev = dev;
+  if (pinOk(pin)) P.pin = pinHash(P, pin);
   DB[id] = P; save();
   const sid = newSid(); SESS.set(id, { sid, t: now });
   return { id, s, sid, prof: pub(P) };
@@ -297,8 +323,8 @@ async function http(req, res, url) {
   const op = url.slice('/api/profile/'.length);
   const ip = String(req.headers['fly-client-ip'] || req.socket.remoteAddress || '');
   if (op === 'new') {
-    const r = create(m.n, m.mig, ip, m.dev);
-    return r ? out(res, 200, r) : out(res, 429, { err: 'limit' });
+    const r = create(m.n, m.mig, ip, m.dev, m.pin);
+    return !r ? out(res, 429, { err: 'limit' }) : r.err ? out(res, 400, r) : out(res, 200, r);
   }
   if (op === 'award') {
     // XP des parties en ligne, envoyee par les serveurs du jeu (cle partagee)
@@ -312,7 +338,7 @@ async function http(req, res, url) {
   // boutique du moment : les 4 skins proposes, leurs prix et l'heure du prochain changement (sans profil : les invites la voient aussi)
   if (op === 'shop') {
     const sl = slotNow();
-    return out(res, 200, { on: STRIPE_KEY || SHOP_FREE || SKINS_ALL ? 1 : 0, free: SHOP_FREE || SKINS_ALL ? 1 : 0, cur: SHOP_CUR, curs: SHOP_CURS, items: rotation(sl), now: Date.now(), next: (Math.floor(Date.now() / ROT_MS) + 1) * ROT_MS });
+    return out(res, 200, { on: STRIPE_KEY || SHOP_FREE || SKINS_ALL ? 1 : 0, free: SHOP_FREE || SKINS_ALL ? 1 : 0, cur: SHOP_CUR, curs: SHOP_CURS, fx: { usd: FX.usd, day: FX.day }, items: rotation(sl).map(x => Object.assign(x, { pu: inCur(x.p, 'usd') })), now: Date.now(), next: (Math.floor(Date.now() / ROT_MS) + 1) * ROT_MS });
   }
   const P = auth(m.id, m.s);
   if (!P) return out(res, 404, { err: 'profile' });
@@ -365,7 +391,7 @@ async function http(req, res, url) {
     const q = {
       mode: 'payment', locale: 'auto', client_reference_id: P.id,
       success_url: ret + '?shop=ok&cs={CHECKOUT_SESSION_ID}', cancel_url: ret + '?shop=cancel',
-      'line_items[0][quantity]': '1', 'line_items[0][price_data][currency]': cur, 'line_items[0][price_data][unit_amount]': String(pr),
+      'line_items[0][quantity]': '1', 'line_items[0][price_data][currency]': cur, 'line_items[0][price_data][unit_amount]': String(inCur(pr, cur)),
       'line_items[0][price_data][product_data][name]': 'Detonate – ' + name,
       'line_items[0][price_data][product_data][description]': CATN[c] + ' (' + RARN[r] + '). Skin cosmétique, sans avantage de jeu.',
       'custom_text[submit][message]': 'Contenu numérique livré immédiatement dans le jeu. En payant, tu demandes cette livraison immédiate et renonces au droit de rétractation de 14 jours.'
