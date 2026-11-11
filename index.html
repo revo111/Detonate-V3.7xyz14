@@ -3535,6 +3535,7 @@ async function netReconnect(){if(netRecon)return;netRecon=1;
   try{await wsConnect(netRegion);sendNet({type:'join',code:netRoomCode,tok:netTok,name:''});const t0=performance.now();while(netRecon&&performance.now()-t0<6000)await new Promise(r=>setTimeout(r,200));if(!netRecon)return}catch(e){}
   if(netRecon)await new Promise(r=>setTimeout(r,1200+k*900))}
  if(netRecon&&!netBye){netRecon=0;netBye=true;netBanner(LG('Impossible de se reconnecter — retour au menu (le salon est dans « Salons récents »)…','Could not reconnect — back to the menu (the room is in “Recent rooms”)…'),4000)}}
+function srvUpd(t){let d=$('srvupd');if(!d){d=document.createElement('div');d.id='srvupd';d.style.cssText='position:fixed;bottom:96px;left:50%;transform:translateX(-50%);max-width:min(520px,88vw);z-index:59;background:rgba(10,14,24,.88);border:1px solid rgba(255,215,106,.5);border-radius:12px;color:#ffe9a8;font:600 13px/1.35 system-ui;padding:9px 14px;text-align:center;pointer-events:none';document.body.appendChild(d)}d.textContent=t}
 function netBannerOff(){const d=$('netb');if(d)d.remove()}
 // fin de partie (ou partie arretee) : retour dans le salon, sans recharger la page
 function backToLobby(){netStarted=false;rematchAsked=false;ENDT0=0;SBO=false;ENDR.length=0;netBannerOff();try{quitBox.style.display='none'}catch(e){}try{for(const k in keys)keys[k]=0;mouse.down=0}catch(e){}
@@ -3563,7 +3564,9 @@ function netMessage(m){
  if(m.type==='peer_join'){netPlayers=netPlayers.filter(p=>p.slot!==m.slot&&p.id!==m.id).concat([{slot:m.slot,name:m.name,id:m.id}]);if(netStarted){NM[m.slot]=slotName(m.slot);if(isHost&&E&&E[m.slot]){E[m.slot].p=1;E[m.slot].tk=0;delete netInputs[m.slot]}}return}
  if(m.type==='tolobby'){if(netStarted||menu.classList.contains('hidden'))backToLobby();return}
  if(m.type==='peer_left'){netPlayers=netPlayers.filter(p=>p.slot!==m.slot);if(netStarted){NM[m.slot]='IA';if(isHost&&E&&E[m.slot]){E[m.slot].p=0;E[m.slot].tk=0;delete netInputs[m.slot]}}else renderLobby();return}
- if(m.type==='closed'){netBanner("La partie s'est arrêtée — retour au menu…",3500);return}
+ // serveur en cours de mise a jour : la partie en cours va jusqu'au bout, la suivante se jouera sur la nouvelle version
+ if(m.type==='srvupd'){srvUpd(LG('Mise à jour du serveur : la partie continue jusqu’à la fin, puis le jeu se rechargera sur la nouvelle version.','Server update: this game carries on to the end, then the game reloads on the new version.'));return}
+ if(m.type==='closed'){netBye=true;netBanner(m.upd?LG('Le serveur vient d’être mis à jour — rechargement du jeu…','The server has just been updated — reloading the game…'):LG("La partie s'est arrêtée — retour au menu…",'The game has stopped — back to menu…'),m.upd?2500:3500);return}
 }
 // nom d'un joueur dans le salon : hote, toi, pret, deconnecte
 function lobName(p){return p.name+(p.host?' 👑':'')+(p.id===netPlayerId?LG(' (toi)',' (you)'):'')+(p.off?' <span class="offl">· '+LG('déconnecté','offline')+'</span>':(p.ready&&!p.host?' <span class="rdy">✓ '+LG('PRÊT','READY')+'</span>':''))}
@@ -11957,32 +11960,32 @@ const SKIN=(()=>{
       q.position.set((Math.cos(a)*8.5)*(1-e)+(dx*(3+p*Lt)+dz*lat*3)*e,(2+p*27)*(1-e)+(7+7*Math.sin(a)*.8+5*p+3*f)*e,(Math.sin(a)*8.5)*(1-e)+(dz*(3+p*Lt)-dx*lat*3)*e);q.scale.set(.6+4.6*f,1.2+7.5*f,1)});
      EM.forEach((q,i)=>{const p=(t*.5+i/10)%1,a=i*2.1+t*.7;q.position.set(Math.cos(a)*(8+3*p)*(1-e)+(dx*(6+p*Lt*1.2)+dz*2.5*Math.sin(a))*e,(3+30*p)*(1-e)+(9+6*Math.sin(a*1.3)+7*p)*e,Math.sin(a)*(8+3*p)*(1-e)+(dz*(6+p*Lt*1.2)-dx*2.5*Math.sin(a))*e);q.scale.setScalar(2.4*Math.sin(p*Math.PI))})}}},
   // aura de puissance : enveloppe de flammes dorees qui montent autour du corps, pointes de feu, eclairs, cailloux qui levitent ; l'intensite monte et retombe
-  puissance:{n:['Aura de puissance','Power aura'],lv:0,shop:1,r:3,vw:[0,28,0,182,.8,.52],tz:1.5,b(g0){const g=new THREE.Group(),ge=fireTube();g.scale.set(1.32,1.24,1.32);g0.add(g);   // aura agrandie d'un tiers
-    flat(g,62,ADD2('a_pw_d',{map:glowTex('a_pw','rgba(255,200,60,.0)','rgba(255,170,30,.75)')}),1.3);
+  puissance:{n:['Aura de puissance','Power aura'],lv:0,shop:1,r:3,vw:[0,26,0,150,.8,.52],tz:1.25,b(g0){const g=new THREE.Group(),ge=fireTube();g.scale.set(1.08,1.12,1.08);g0.add(g);   // aura serree autour du joueur
+    flat(g,46,ADD2('a_pw_d',{map:glowTex('a_pw','rgba(255,200,60,.0)','rgba(255,170,30,.75)'),opacity:.8}),1.3);   // reflet au sol
     // enveloppe en forme de flamme : trois coques, la texture defile vers le haut, la lumiere s'eteint vers la pointe
-    const shg=G('a_pw_sh2',()=>{const pts=[];for(let i=0;i<=24;i++){const v=i/24;pts.push(new THREE.Vector2(12.5*(1+2*v)*Math.pow(1-v,1.25)+.01,v*46))}const q=new THREE.LatheGeometry(pts,40),uv=q.attributes.uv,C=[];for(let i=0;i<uv.count;i++){const v=uv.getY(i),c=Math.min(1,v*7)*Math.pow(1-v,2.4);C.push(c,c,c)}q.setAttribute('color',new THREE.Float32BufferAttribute(C,3));return q});
+    const shg=G('a_pw_sh3',()=>{const pts=[];for(let i=0;i<=24;i++){const v=i/24;pts.push(new THREE.Vector2(10*(1+2*v)*Math.pow(1-v,1.25)+.01,v*46))}const q=new THREE.LatheGeometry(pts,40),uv=q.attributes.uv,C=[];for(let i=0;i<uv.count;i++){const v=uv.getY(i),c=Math.min(1,v*7)*Math.pow(1-v,2.4);C.push(c,c,c)}q.setAttribute('color',new THREE.Float32BufferAttribute(C,3));return q});
     const SH=[[1,0xffa81a,.5,3,1.1,61],[.84,0xfff0a0,.4,3,.9,84],[1.2,0xff7a10,.26,4,1,107]].map(([sc,c,op,rx,ry,sd],i)=>{const t_=tex('a_pw_t'+i,riseTex(sd),128);t_.repeat.set(rx,ry);const q=mesh(g,shg,ADD2('a_pw_s'+i,{map:t_,color:c,opacity:op,vertexColors:true}),0,1,0);q.userData={sc,t:t_};return q});
     // pointes de feu dressees tout autour
-    const PM=[[0xff9210,.5],[0xffd040,.7],[0xfff6c4,.85]].map(([c,o],i)=>GLOW('a_pw_f'+i,c,o)),PK=[...Array(18)].map((_,i)=>{const a=i/18*TAU+.2*Math.sin(i*5),R_=i%3?13.6:10.4,k=new THREE.Group();k.position.set(Math.cos(a)*R_,1,Math.sin(a)*R_);k.rotation.set(0,-a,Math.PI/2-(i%3?.2:.08));g.add(k);PM.forEach((mt,j)=>mesh(k,ge,mt).scale.set([1,.76,.5][j],[1,.66,.38][j],[1,.66,.38][j]));return k});
+    const PM=[[0xff9210,.5],[0xffd040,.7],[0xfff6c4,.85]].map(([c,o],i)=>GLOW('a_pw_f'+i,c,o)),PK=[...Array(18)].map((_,i)=>{const a=i/18*TAU+.2*Math.sin(i*5),R_=i%3?10.8:8.6,k=new THREE.Group();k.position.set(Math.cos(a)*R_,1,Math.sin(a)*R_);k.rotation.set(0,-a,Math.PI/2-(i%3?.2:.08));g.add(k);PM.forEach((mt,j)=>mesh(k,ge,mt).scale.set([1,.76,.5][j],[1,.66,.38][j],[1,.66,.38][j]));return k});
     // onde de choc au sol, halo, eclairs, cailloux, etincelles
-    const wv=ring(g,15,16.6,GLOW('a_pw_w',0xffe08a,.6),1.9),hl=new THREE.Sprite(sprGlow('a_pw_h',0xffc030,.4));hl.position.y=22;g.add(hl);
+    const wv=ring(g,11,12,GLOW('a_pw_w',0xffe08a,.5),1.9),hl=new THREE.Sprite(sprGlow('a_pw_h',0xffc030,.22));hl.position.y=24;g.add(hl);
     const BM=GLOW('a_pw_b',0xe6f2ff,.95),BG=GLOW('a_pw_bg',0x5aa0ff,.4),BT=[...Array(5)].map(()=>{const k=new THREE.Group();g.add(k);return[k,mesh(k,boltGeo(0,.28),BM),mesh(k,boltGeo(0,.9),BG)]});
-    const rock=G('a_pw_r',()=>new THREE.DodecahedronGeometry(1,0)),rm=M('a_pw_rm',()=>new THREE.MeshPhongMaterial({color:0x7a6e60,emissive:0x4a3410,specular:0xffe0a0,shininess:30,flatShading:true})),RK=[...Array(13)].map((_,i)=>{const q=mesh(g,rock,rm);q.userData=[.7+1.25*hsh(i,1),8.5+10*hsh(i,2),hsh(i,3)*TAU,.16+.12*hsh(i,4)];return q});
+    const rock=G('a_pw_r',()=>new THREE.DodecahedronGeometry(1,0)),rm=M('a_pw_rm',()=>new THREE.MeshPhongMaterial({color:0x7a6e60,emissive:0x4a3410,specular:0xffe0a0,shininess:30,flatShading:true})),RK=[...Array(13)].map((_,i)=>{const q=mesh(g,rock,rm);q.userData=[.7+1.1*hsh(i,1),7.5+5.5*hsh(i,2),hsh(i,3)*TAU,.16+.12*hsh(i,4)];return q});
     const SP=[...Array(16)].map(()=>{const q=new THREE.Sprite(SPR('a_pw_k',0xfff0b0,1));g.add(q);return q});
-    AN('pw',t=>{SH.forEach((q,i)=>{q.userData.t.offset.y=-t*(.8+i*.22);q.userData.t.offset.x=t*(i%2?.05:-.04)});const I=.5+.5*Math.sin(t*.8+2);MAT.a_pw_s0.opacity=.3+.3*I;MAT.a_pw_s1.opacity=.2+.28*I;MAT.a_pw_s2.opacity=.12+.2*I;MAT.a_pw_h.opacity=.25+.3*I;const p=(t*.7)%1;MAT.a_pw_w.opacity=.7*(1-p)*(.4+.6*I)});
+    AN('pw',t=>{SH.forEach((q,i)=>{q.userData.t.offset.y=-t*(.8+i*.22);q.userData.t.offset.x=t*(i%2?.05:-.04)});const I=.5+.5*Math.sin(t*.8+2);MAT.a_pw_s0.opacity=.3+.3*I;MAT.a_pw_s1.opacity=.2+.28*I;MAT.a_pw_s2.opacity=.12+.2*I;MAT.a_pw_h.opacity=.12+.14*I;const p=(t*.7)%1;MAT.a_pw_w.opacity=.55*(1-p)*(.4+.6*I)});
     return t=>{const I=.5+.5*Math.sin(t*.8+2),J=I*I*(3-2*I),p=(t*.7)%1;   // intensite : monte et retombe en 8 secondes environ
      SH.forEach((q,i)=>{const s=q.userData.sc*(.9+.16*J)*(1+.035*Math.sin(t*11+i*2));q.scale.set(s,(.78+.3*J)*(1+.05*Math.sin(t*8+i)),s);q.rotation.y=t*(i%2?-.5:.35)});
      PK.forEach((k,i)=>{const L_=(i%3?13+8*hsh(i,7):24+9*hsh(i,7))*(.6+.75*J)*(1+.26*Math.sin(t*13+i*2.1)+.12*Math.sin(t*29+i)),w=(i%3?4.4:5.4)+1.6*hsh(i,8);k.scale.set(L_,w,w)});
-     wv.scale.setScalar(.7+1.7*p);hl.scale.set(54+16*J,62+18*J,1);
-     BT.forEach(([k,a,b],i)=>{const q=Math.floor(t*12+i*3.7),h=hsh(q,i),on=h<.12+.5*J;k.visible=on;if(!on)return;const n=Math.floor(hsh(q,i+9)*6),an=hsh(q,i+3)*TAU,r_=8+8*hsh(q,i+5);a.geometry=boltGeo(n,.28);b.geometry=boltGeo(n,.9);k.position.set(Math.cos(an)*r_,1+16*hsh(q,i+6),Math.sin(an)*r_);k.rotation.set((hsh(q,i+7)-.5)*1.1,an,(hsh(q,i+8)-.5)*1.1);k.scale.setScalar(.75+.7*hsh(q,i+2))});
+     wv.scale.setScalar(.8+1*p);hl.scale.set(30+8*J,42+10*J,1);
+     BT.forEach(([k,a,b],i)=>{const q=Math.floor(t*12+i*3.7),h=hsh(q,i),on=h<.12+.5*J;k.visible=on;if(!on)return;const n=Math.floor(hsh(q,i+9)*6),an=hsh(q,i+3)*TAU,r_=7+5*hsh(q,i+5);a.geometry=boltGeo(n,.28);b.geometry=boltGeo(n,.9);k.position.set(Math.cos(an)*r_,1+16*hsh(q,i+6),Math.sin(an)*r_);k.rotation.set((hsh(q,i+7)-.5)*1.1,an,(hsh(q,i+8)-.5)*1.1);k.scale.setScalar(.75+.7*hsh(q,i+2))});
      RK.forEach((q,i)=>{const[sz,r_,a0,spd]=q.userData,pp=(t*spd+i/13)%1,act=Math.max(0,Math.min(1,(.3+.85*J-i/13)*5)),a=a0+t*.25,up=1-Math.pow(1-pp,2.2),s=sz*act*Math.min(1,pp*9)*Math.min(1,(1-pp)*5);
       q.position.set(Math.cos(a)*r_,1+up*(9+19*J)+.6*Math.sin(t*3+i),Math.sin(a)*r_);q.rotation.set(t*(1+i%3)+i,t*.8+i*2,i);q.scale.set(s,s*.8,s*.9)});
-     SP.forEach((q,i)=>{const pp=(t*(.7+.5*J)+i/16)%1,a=i*2.399+t*.3,r_=7+9*hsh(i,5);q.position.set(Math.cos(a)*r_*(1-pp*.4),2+46*pp,Math.sin(a)*r_*(1-pp*.4));q.scale.set(.8+1.6*J,(3+6*J)*Math.sin(pp*Math.PI),1)})}}},
+     SP.forEach((q,i)=>{const pp=(t*(.7+.5*J)+i/16)%1,a=i*2.399+t*.3,r_=6+6*hsh(i,5);q.position.set(Math.cos(a)*r_*(1-pp*.4),2+44*pp,Math.sin(a)*r_*(1-pp*.4));q.scale.set(.8+1.6*J,(3+6*J)*Math.sin(pp*Math.PI),1)})}}},
   // dragon celeste : dragon serpentin de jade et d'or qui s'enroule en spirale autour du personnage et poursuit sa perle lumineuse
   dragon:{n:['Dragon céleste','Celestial dragon'],lv:0,shop:1,r:3,vw:[0,24,0,182,.8,.62],tz:1.6,b(g0){const g=new THREE.Group();g.scale.setScalar(1.34);g0.add(g);   // dragon agrandi d'un tiers
     const jade=M('a_dr',()=>new THREE.MeshPhongMaterial({color:0x35e8a8,emissive:0x08603e,specular:0xd8fff0,shininess:90,flatShading:true})),jd2=M('a_dr2',()=>new THREE.MeshPhongMaterial({color:0x16b47c,emissive:0x054a30,specular:0xd8fff0,shininess:90,flatShading:true})),bel=M('a_dr_b',()=>new THREE.MeshPhongMaterial({color:0xe2fff0,emissive:0x62c8a2,shininess:60,flatShading:true})),au=M('a_dr_g',()=>new THREE.MeshPhongMaterial({color:0xffd24a,emissive:0xa06c08,specular:0xfff0b0,shininess:110,flatShading:true})),
      mn=M('a_dr_m',()=>new THREE.MeshPhongMaterial({color:0xff9a30,emissive:0xc04a08,shininess:60,flatShading:true})),eye=B('a_dr_e',0xfff9b0,{fog:false}),wh=L('a_dr_t',0xfffbf0,{emissive:0x555048}),mo=B('a_dr_o',0xff5a1a,{fog:false});
-    flat(g,58,ADD2('a_dr_d',{map:glowTex('a_dr','rgba(60,255,170,.0)','rgba(40,230,150,.55)')}),1.3);
+    flat(g,40,ADD2('a_dr_d',{map:glowTex('a_dr','rgba(60,255,170,.0)','rgba(40,230,150,.55)')}),1.3);
     const N=30,sg=G('a_dr_s',()=>{const q=new THREE.CylinderGeometry(1,1,1,7,1);q.rotateX(Math.PI/2);return q}),rad=u=>u<.14?2.7+5.6*u:.45+3.05*Math.pow(1-(u-.14)/.86,.75),SEG=[];
     for(let i=0;i<N;i++){const r=rad(i/N),S=new THREE.Group(),b=mesh(S,sg,i%2?jd2:jade);b.scale.set(r,r*.92,1);g.add(S);const pl=bx(S,1,1,1,bel,0,-r*.72,0);pl.scale.set(r*1.15,r*.55,1);
      if(i<N-1){const f=cone(S,.9,2.4,4,au,0,r+.35+.5*r/2.5,0);f.rotation.x=-.55;f.scale.setScalar(.5+.7*r/2.5)}
