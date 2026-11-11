@@ -109,6 +109,15 @@ const SHOP = {
 // prix en centimes selon la rarete (commun, rare, epique, legendaire)
 // prix fixes en euros : 0,99 / 1,49 / 1,99 / 2,99 ; au choix du joueur, prix en dollars americains convertis au cours du jour (voir FX)
 const PRICE = [99, 149, 199, 299], SHOP_CUR = 'eur', SHOP_CURS = ['eur', 'usd'];
+// Packs : plusieurs skins vendus ensemble a prix fixe, toujours en boutique (hors selection tournante). Leurs skins ne se vendent pas a l'unite.
+// Un achat de pack est note { c: 'p', id: <pack> } dans le profil ; il donne tous les skins du pack.
+const PACKS = {
+  rubis: { n: ['Pack Rubis', 'Ruby Pack'], p: 499, r: 3, items: [['g', 'rubis', 'arme Rubis'], ['b', 'ailesrubis', 'Ailes de rubis']] }
+};
+const PACK_ITEM = new Set(); for (const k in PACKS) for (const [c, id] of PACKS[k].items) PACK_ITEM.add(c + ':' + id);
+const isPack = (c, id) => c === 'p' && Object.prototype.hasOwnProperty.call(PACKS, id);
+// skins donnes par un achat : ceux du pack, ou le skin lui-meme
+const itemsOf = (c, id) => isPack(c, id) ? PACKS[id].items.map(x => [x[0], x[1]]) : [[c, id]];
 const CATN = { o: 'Tenue', h: 'Bonnet', g: 'Arme', b: 'Sac', a: 'Aura' }, RARN = ['commun', 'rare', 'épique', 'légendaire'];
 const STRIPE_KEY = process.env.STRIPE_SECRET_KEY || '', STRIPE_WH = process.env.STRIPE_WEBHOOK_SECRET || '';
 const STRIPE_API = tenv('STRIPE_API') || 'https://api.stripe.com';   // STRIPE_API : faux Stripe (tests sur ordinateur seulement)
@@ -161,30 +170,33 @@ function purgeTest() {
     const P = DB[k];
     if (!Array.isArray(P.buy) || !P.buy.some(b => /^cs_test_/.test(b.cs || ''))) continue;
     const test = P.buy.filter(b => /^cs_test_/.test(b.cs || '')), keep = P.buy.filter(b => !/^cs_test_/.test(b.cs || ''));
-    for (const b of test) {
-      if (!keep.some(x => x.st === 'paid' && x.c === b.c && x.id === b.id)) {
-        P.own = (P.own || []).filter(x => x !== b.c + ':' + b.id);
-        if (P.skn && P.skn[b.c] === b.id) P.skn[b.c] = '';
-      }
-      n++;
-    }
+    for (const b of test) { takeBack(P, b, keep); n++; }
     P.buy = keep; if (!P.buy.length) delete P.buy; p++;
   }
   if (n) { save(); console.log('Boutique : passage en production, ' + n + ' achat(s) de test efface(s) sur ' + p + ' profil(s)'); }
 }
-if (IS_PRIMARY && STORE_OK && LIVE) purgeTest();
 if (IS_PRIMARY) {
   try { const j = JSON.parse(fs.readFileSync(FX_FILE, 'utf8')); if (fxOk(j.usd)) FX = { usd: j.usd, day: j.day || '', t: j.t || 0 }; } catch (e) {}
   fxLoad(); setInterval(fxLoad, 6 * 3600 * 1000).unref();
 }
 const inCur = (eur, cur) => cur === 'usd' ? Math.round(eur * FX.usd) : eur;
-const priceOf = (c, id) => SHOP[c] && Object.prototype.hasOwnProperty.call(SHOP[c], id) ? PRICE[SHOP[c][id][0]] : 0;
-const owns = (own, c, id) => Array.isArray(own) && own.includes(c + ':' + id);
+const priceOf = (c, id) => isPack(c, id) ? PACKS[id].p : SHOP[c] && Object.prototype.hasOwnProperty.call(SHOP[c], id) ? PRICE[SHOP[c][id][0]] : 0;
+const owns = (own, c, id) => isPack(c, id) ? PACKS[id].items.every(x => owns(own, x[0], x[1])) : Array.isArray(own) && own.includes(c + ':' + id);
+// retrait d'un achat (remboursement, litige, achat de test) : chaque skin est repris, sauf s'il reste paye par un autre achat
+const stillPaid = (buy, c, id) => buy.some(x => x.st === 'paid' && itemsOf(x.c, x.id).some(y => y[0] === c && y[1] === id));
+function takeBack(P, b, buy) {
+  for (const [c, id] of itemsOf(b.c, b.id)) {
+    if (stillPaid(buy, c, id)) continue;
+    P.own = (P.own || []).filter(x => x !== c + ':' + id);
+    if (P.skn && P.skn[c] === id) P.skn[c] = '';
+  }
+}
+if (IS_PRIMARY && STORE_OK && LIVE) purgeTest();
 function cleanSkins(sel, lvl, own) {
   const o = {};
   for (const c in SKIN_LV) {
     const id = sel && typeof sel[c] === 'string' ? sel[c] : '';
-    o[c] = (SKIN_LV[c][id] && lvl >= SKIN_LV[c][id]) || (priceOf(c, id) && owns(own, c, id)) ? id : '';
+    o[c] = (SKIN_LV[c][id] && lvl >= SKIN_LV[c][id]) || ((priceOf(c, id) || PACK_ITEM.has(c + ':' + id)) && owns(own, c, id)) ? id : '';
   }
   return o;
 }
@@ -380,7 +392,7 @@ async function http(req, res, url) {
   // boutique du moment : les 4 skins proposes, leurs prix et l'heure du prochain changement (sans profil : les invites la voient aussi)
   if (op === 'shop') {
     const sl = slotNow();
-    return out(res, 200, { on: STRIPE_KEY ? 1 : 0, cur: SHOP_CUR, curs: SHOP_CURS, fx: { usd: FX.usd, day: FX.day }, items: rotation(sl).map(x => Object.assign(x, { pu: inCur(x.p, 'usd') })), now: Date.now(), next: (Math.floor(Date.now() / ROT_MS) + 1) * ROT_MS });
+    return out(res, 200, { on: STRIPE_KEY ? 1 : 0, cur: SHOP_CUR, curs: SHOP_CURS, fx: { usd: FX.usd, day: FX.day }, items: rotation(sl).map(x => Object.assign(x, { pu: inCur(x.p, 'usd') })), packs: Object.keys(PACKS).map(k => ({ id: k, n: PACKS[k].n, r: PACKS[k].r, p: PACKS[k].p, pu: inCur(PACKS[k].p, 'usd'), items: PACKS[k].items.map(x => ({ c: x[0], id: x[1] })) })), now: Date.now(), next: (Math.floor(Date.now() / ROT_MS) + 1) * ROT_MS });
   }
   const P = auth(m.id, m.s);
   if (!P) return out(res, 404, { err: 'profile' });
@@ -425,17 +437,17 @@ async function http(req, res, url) {
     const c = String(m.c || ''), id = String(m.it || ''), pr = priceOf(c, id);
     if (!pr) return out(res, 400, { err: 'item' });
     if (owns(P.own, c, id)) return out(res, 409, { err: 'owned' });
-    if (!inRotation(c, id)) return out(res, 409, { err: 'rotation' });   // la boutique a change : le jeu recharge la liste
+    if (!isPack(c, id) && !inRotation(c, id)) return out(res, 409, { err: 'rotation' });   // la boutique a change : le jeu recharge la liste
     if (!STRIPE_KEY) return out(res, 503, { err: 'shop' });
     const ret = retUrl(m.ret);
     if (!ret) return out(res, 400, { err: 'ret' });
-    const [r, name] = SHOP[c][id], md = { pid: P.id, c, id }, cur = SHOP_CURS.includes(m.cur) ? m.cur : SHOP_CUR;
+    const pk = isPack(c, id) ? PACKS[id] : null, [r, name] = pk ? [pk.r, pk.n[0]] : SHOP[c][id], md = { pid: P.id, c, id }, cur = SHOP_CURS.includes(m.cur) ? m.cur : SHOP_CUR;
     const q = {
       mode: 'payment', locale: 'auto', client_reference_id: P.id,
       success_url: ret + '?shop=ok&cs={CHECKOUT_SESSION_ID}', cancel_url: ret + '?shop=cancel',
       'line_items[0][quantity]': '1', 'line_items[0][price_data][currency]': cur, 'line_items[0][price_data][unit_amount]': String(inCur(pr, cur)),
       'line_items[0][price_data][product_data][name]': 'Detonate – ' + name,
-      'line_items[0][price_data][product_data][description]': CATN[c] + ' (' + RARN[r] + '). Skin cosmétique, sans avantage de jeu.',
+      'line_items[0][price_data][product_data][description]': pk ? 'Pack ' + RARN[r] + ' : ' + pk.items.map(x => x[2]).join(' + ') + '. Skins cosmétiques, sans avantage de jeu.' : CATN[c] + ' (' + RARN[r] + '). Skin cosmétique, sans avantage de jeu.',
       'custom_text[submit][message]': 'Contenu numérique livré immédiatement dans le jeu. En payant, tu demandes cette livraison immédiate et renonces au droit de rétractation de 14 jours.'
     };
     for (const k in md) { q['metadata[' + k + ']'] = md[k]; q['payment_intent_data[metadata][' + k + ']'] = md[k]; }
@@ -452,7 +464,7 @@ async function http(req, res, url) {
     if (!o) return out(res, 502, { err: 'stripe' });
     const g = fromSession(o);
     if (!g || g.pid !== P.id) return out(res, 404, { err: 'cs' });
-    return out(res, 200, { st: g.st, c: g.c, it: g.id, prof: pub(P) });
+    return out(res, 200, { st: g.st, c: g.c, it: g.id, items: itemsOf(g.c, g.id), prof: pub(P) });
   }
   // code PIN du profil : set (choisir ou changer), check (verifier), forgot (demander un nouveau PIN dans 24 h)
   if (op === 'pin') {
@@ -497,7 +509,7 @@ function grant(P, c, id, info) {
   if (P.buy.some(b => b.cs === info.cs)) return false;
   P.buy.push({ cs: info.cs, pi: info.pi || '', c, id, amt: info.amt | 0, cur: info.cur || '', t: Date.now(), st: 'paid' });
   if (!Array.isArray(P.own)) P.own = [];
-  if (!P.own.includes(c + ':' + id)) P.own.push(c + ':' + id);
+  for (const [ic, ii] of itemsOf(c, id)) if (!P.own.includes(ic + ':' + ii)) P.own.push(ic + ':' + ii);
   save(); console.log('Boutique : achat ' + c + ':' + id + ' (' + ((info.amt | 0) / 100) + ' ' + (info.cur || '') + ') profil ' + P.id);
   return true;
 }
@@ -522,11 +534,8 @@ function revoke(pi, why) {
     for (const b of P.buy) {
       if (b.pi !== pi || b.st !== 'paid') continue;
       b.st = why; n++;
-      if (!P.buy.some(x => x.st === 'paid' && x.c === b.c && x.id === b.id)) {
-        P.own = (P.own || []).filter(x => x !== b.c + ':' + b.id);
-        if (P.skn && P.skn[b.c] === b.id) P.skn[b.c] = '';
-      }
-      console.log('Boutique : ' + (why === 'refunded' ? 'remboursement' : 'litige') + ', skin ' + b.c + ':' + b.id + ' retire, profil ' + P.id);
+      takeBack(P, b, P.buy);
+      console.log('Boutique : ' + (why === 'refunded' ? 'remboursement' : 'litige') + ', ' + (b.c === 'p' ? 'pack ' : 'skin ') + b.c + ':' + b.id + ' retire, profil ' + P.id);
     }
   }
   if (n) save();
