@@ -3539,7 +3539,7 @@ function dropSock(){try{if(netSocket){netSocket.onclose=null;netSocket.close()}}
 // message discret en bas de l'ecran, sans recharger la page (ms : il disparait tout seul)
 function srvUpd(t){let d=$('srvupd');if(!d){d=document.createElement('div');d.id='srvupd';d.style.cssText='position:fixed;bottom:96px;left:50%;transform:translateX(-50%);max-width:min(520px,88vw);z-index:59;background:rgba(10,14,24,.88);border:1px solid rgba(255,215,106,.5);border-radius:12px;color:#ffe9a8;font:600 13px/1.35 system-ui;padding:9px 14px;text-align:center;pointer-events:none';document.body.appendChild(d)}d.textContent=t}
 function netToast(t,ms){srvUpd(t);const d=$('srvupd');clearTimeout(d._t);if(ms)d._t=setTimeout(()=>d.remove(),ms)}
-const BUILD='2026-11-11T14:07Z';   // version du jeu (date de construction, UTC)
+const BUILD='2026-11-11T14:37Z';   // version du jeu (date de construction, UTC)
 setTimeout(()=>{if(HEADLESS)return;const d=document.createElement('div');d.id='buildTag';d.style.cssText='position:fixed;right:30px;top:116px;z-index:70;font:600 10.5px/1 system-ui;color:#7d8899;pointer-events:none;letter-spacing:.02em;text-shadow:0 1px 2px #000';
  d.textContent=LG('Version du ','Version ')+new Date(BUILD).toLocaleString(LANG==='en'?'en-US':'fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});document.body.appendChild(d);
  setInterval(()=>{d.style.display=menu.classList.contains('hidden')?'none':''},700)},0);   // apres le chargement complet du script (LG, LANG)
@@ -11913,7 +11913,7 @@ const SKIN=(()=>{
       o.TR.forEach((q,j)=>{const b=a-Math.sign(o.sp)*(j+1)*.15;q.position.set(Math.cos(b)*o.R_,y*(1-j*.12),Math.sin(b)*o.R_);q.scale.setScalar(o.w*(3.3-j*.55))})}
      tw.forEach((q,i)=>{const f=Math.max(0,Math.sin(t*2.6+i*1.9)),a=i*1.7+Math.floor(t*.41+i*.3)*2.3;q.position.set(Math.cos(a)*8.6,3+2.5*Math.sin(i*2.2),Math.sin(a)*8.6);q.scale.setScalar(.3+2.6*f*f*f)})}}},
   // couronne de cristal : grande couronne qui flotte au-dessus de la tete et tourne lentement. Cristaux limpides eclaires de l'interieur, ouverts en etoile
-  // pour bien se voir en vue de jeu, eclats en orbite, rayons, halo ; la lumiere change de teinte
+  // pour bien se voir en vue de jeu, rayons, halo ; la lumiere change de teinte
   couronne:{n:['Couronne de cristal','Crystal crown'],lv:0,shop:1,r:3,vw:[0,54,0,92,-.75,.55],tz:1.25,b(g){hair(g,0x262234);const K=new THREE.Group(),cg=cryGeo(),oc=G('ecl_o',()=>new THREE.OctahedronGeometry(1,0));g.add(K);
     const pl=M('h_cc_m',()=>new THREE.MeshPhongMaterial({color:0xf2f5fc,emissive:0x4a5266,envMap:skyEnv(),combine:THREE.MixOperation,reflectivity:.45,shininess:200,specular:0xffffff,side:THREE.DoubleSide})),
      cm=M('h_cc_c',()=>new THREE.MeshPhongMaterial({color:0xc9f0ff,emissive:0x2478b8,specular:0xffffff,shininess:110,flatShading:true,transparent:true,opacity:.88,envMap:skyEnv(),combine:THREE.MixOperation,reflectivity:.42})),core=GLOW('h_cc_k',0xe4f9ff,1),gm=B('h_cc_g',0xa8ecff,{fog:false}),edge=GLOW('h_cc_e',0x9fe6ff,.5);
@@ -11924,8 +11924,7 @@ const SKIN=(()=>{
      if(i%2===0){const q=mesh(k,oc,gm,.55,-.2,0);q.scale.set(.55,.65,.55)}}
     // fleuron central : un grand cristal a deux pointes qui flotte au milieu de la couronne
     const ct=new THREE.Group();ct.position.y=5.4;K.add(ct);mesh(ct,oc,cm).scale.set(1.9,4.6,1.9);mesh(ct,oc,core).scale.set(.6,2.4,.6);const cs=new THREE.Sprite(SPR('h_cc_s',0xffffff,1));ct.add(cs);
-    // eclats en orbite autour de la couronne, rayons de lumiere, faisceau, halo
-    const OB=[...Array(8)].map((_,i)=>{const q=new THREE.Group();K.add(q);mesh(q,oc,cm).scale.set(i%2?.8:1.15,i%2?1.9:2.8,i%2?.8:1.15);mesh(q,oc,core).scale.set(.3,1,.3);const s2=new THREE.Sprite(sprGlow('h_cc_u',0xbfeaff,.7));s2.scale.set(i%2?5:7,i%2?5:7,1);q.add(s2);return q});
+    // rayons de lumiere, faisceau, halo
     const rg=G('ray',()=>{const q=new THREE.PlaneGeometry(1,1);q.translate(.5,0,0);return q}),RY=[...Array(8)].map((_,i)=>{const k=new THREE.Group();k.rotation.y=-(i/8*TAU+TAU/16);k.position.y=.8;K.add(k);const q=mesh(k,rg,GLOW('h_cc_r',0xa6e4ff,.34,capTex),6.4,0,0);q.rotation.x=-Math.PI/2;return q});
     const bm=mesh(K,G('cc_beam2',()=>new THREE.CylinderGeometry(5.4,8,12,32,1,true)),GLOW('h_cc_b',0x9fdcff,.3,fadeTex()),0,6.6,0);bm.rotation.x=Math.PI;
     const hl=new THREE.Sprite(sprGlow('h_cc_h',0x7fc8ff,.6));hl.scale.set(44,44,1);hl.position.y=3;K.add(hl);
@@ -11933,7 +11932,6 @@ const SKIN=(()=>{
     AN('cc',t=>{const hu=.56+.14*Math.sin(t*.7);MAT.h_cc_k.color.setHSL(hu,1,.84);MAT.h_cc_c.emissive.setHSL(hu,.9,.42);MAT.h_cc_b.color.setHSL(hu,1,.72);MAT.h_cc_h.color.setHSL(hu,1,.66);MAT.h_cc_g.color.setHSL(hu,1,.8);MAT.h_cc_u.color.setHSL(hu,1,.8);MAT.h_cc_t.color.setHSL(hu,1,.7);MAT.h_cc_e.color.setHSL(hu,1,.74);MAT.h_cc_r.color.setHSL(hu,1,.76);MAT.h_cc_b.opacity=.24+.08*Math.sin(t*2.4);MAT.h_cc_r.opacity=.26+.14*Math.sin(t*3.1);MAT.h_cc_h.opacity=.5+.12*Math.sin(t*2.4)});
     return t=>{K.position.set(0,6.6+.45*Math.sin(t*1.8),0);K.rotation.set(.05*Math.sin(t*1.1),t*.4,.05*Math.cos(t*.9));
      TIP.forEach((q,i)=>{const f=Math.max(0,Math.sin(t*2.4+i*TAU/8*3));q.scale.setScalar(.8+5.5*f*f*f)});ct.rotation.y=-t*1.3;ct.position.y=5.4+.5*Math.sin(t*2.3);cs.scale.setScalar(5+3*Math.sin(t*6));
-     OB.forEach((q,i)=>{const a=i/8*TAU-t*1.15;q.position.set(Math.cos(a)*12.2,2.4+1.4*Math.sin(t*2+i*1.9),Math.sin(a)*12.2);q.rotation.set(.3*Math.sin(t*1.5+i),t*2.2+i,.25)});
      RY.forEach((q,i)=>q.scale.set(9+3.5*Math.sin(t*2.2+i*1.7),1,2.6+.8*Math.sin(t*3+i)));
      UP.forEach((q,i)=>{const p=(t*.22+i/6)%1,a=i*2.4+t*1.1,k=Math.sin(p*Math.PI);q.position.set(Math.cos(a)*3*(1-p*.5),9+11*p,Math.sin(a)*3*(1-p*.5));q.rotation.set(t+i,t*1.6+i*2,0);q.scale.set(.5*k,1.2*k,.5*k)})}}}});
  // ---------- AURAS DE LA BOUTIQUE, serie 2 : trainee ardente, aura de puissance, dragon celeste ----------
@@ -11948,48 +11946,83 @@ const SKIN=(()=>{
     if(i===3||i===5){const c=[b[0]+(r()-.5)*7,b[1]+2+r()*3,b[2]+(r()-.5)*7];P.push(b[0]-w*.7,b[1],b[2],b[0]+w*.7,b[1],b[2],c[0],c[1],c[2])}}
    const ge=new THREE.BufferGeometry();ge.setAttribute('position',new THREE.Float32BufferAttribute(P,3));return ge});
  Object.assign(AUR,{
-  // trainee de feu rouge vif : a l'arret les flammes montent serrees autour du corps ; en courant elles se couchent et s'etirent loin derriere
-  trainee:{n:['Traînée ardente','Blazing trail'],lv:0,shop:1,r:2,vw:[-18,16,0,156,1.0,.6],tz:1.5,b(g,m){const demo=!!(m&&m.demo),ge=fireTube(),FM=[[0xff1004,.62],[0xff4a10,.8],[0xffc868,.9]].map(([c,o],i)=>GLOW('a_tr_f'+i,c,o)),NT=10;
-    flat(g,46,ADD2('a_tr_d',{map:glowTex('a_tr','rgba(255,60,20,.0)','rgba(255,36,8,.75)')}),1.4);
-    const wk=mesh(g,G('a_tr_w',()=>{const q=new THREE.PlaneGeometry(1,1);q.translate(.5,0,0);q.rotateX(-Math.PI/2);return q}),GLOW('a_tr_wm',0xff2408,.6,capTex),0,1.7,0);
-    const TG=[...Array(NT)].map(()=>{const k=new THREE.Group();g.add(k);FM.forEach((mt,j)=>mesh(k,ge,mt).scale.set([1,.78,.5][j],[1,.68,.4][j],[1,.68,.4][j]));return k});
-    const ft=tex('a_sp_f',flameSpr,64),SM=[0xff2a08,0xff7a1c].map((c,j)=>M('a_tr_s'+j,()=>new THREE.SpriteMaterial({map:ft,color:c,transparent:true,opacity:.85,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}))),FS=[...Array(16)].map((_,i)=>{const q=new THREE.Sprite(SM[i%2]);g.add(q);return q});
-    const EM=[...Array(10)].map(()=>{const q=new THREE.Sprite(SPR('a_tr_b',0xffa040,1));g.add(q);return q}),hl=new THREE.Sprite(sprGlow('a_tr_h',0xff3010,.42));hl.position.y=15;g.add(hl);
-    const W=new THREE.Vector3(),P0=new THREE.Vector3(),Lc=new THREE.Vector3();let has=0,dx=-1,dz=0,k=0,vm=0,lt=0;
-    return t=>{const dt=Math.min(.1,Math.max(.001,t-lt));lt=t;
-     if(demo)k=.5-.5*Math.cos(t*1.1+1.2);   // casier et vignettes : la trainee s'etire et se resserre toute seule
-     else{g.getWorldPosition(W);if(has){Lc.copy(P0);g.worldToLocal(Lc);const l=Math.hypot(Lc.x,Lc.z),sp=l<70?l/dt:0;vm=Math.max(vm*(1-dt*.04),sp);const kt=Math.min(1,sp/Math.max(60,vm*.8));k+=(kt-k)*Math.min(1,dt*(kt>k?6:3));
+  // trainee ardente : a l'arret, un foyer de flammes rouge vif monte autour des jambes ; en courant, les flammes se couchent
+  // en une queue de comete et le joueur laisse derriere lui un sillage de feu qui suit son chemin (il brule puis s'eteint).
+  // Le rond de l'equipe (rayon 10 a 13) reste toujours visible : rien de lumineux ne passe dessus.
+  trainee:{n:['Traînée ardente','Blazing trail'],lv:0,shop:1,r:2,vw:[-20,16,0,170,1.0,.6],tz:1.6,b(g,m){const demo=!!(m&&m.demo),ge=fireTube(),FM=[[0xff1004,.6],[0xff5212,.78],[0xffd27a,.92]].map(([c,o],i)=>GLOW('a_tr_f'+i,c,o)),NT=9;
+    // lueur au sol en anneau, juste apres le rond de l'equipe
+    const rt=tex('a_tr_rg',(x,S)=>{const g_=x.createRadialGradient(S/2,S/2,0,S/2,S/2,S/2);g_.addColorStop(0,'rgba(255,60,20,0)');g_.addColorStop(.5,'rgba(255,60,20,0)');g_.addColorStop(.53,'rgba(255,70,24,.75)');g_.addColorStop(.7,'rgba(255,40,10,.3)');g_.addColorStop(1,'rgba(255,30,8,0)');x.fillStyle=g_;x.fillRect(0,0,S,S)},128);
+    const gr=mesh(g,G('a_tr_gr',()=>new THREE.RingGeometry(14.2,27,48)),ADD2('a_tr_d',{map:rt}),0,1.3,0);gr.rotation.x=-Math.PI/2;
+    // sillage lumineux au sol (en course), qui commence derriere le rond
+    const wk=mesh(g,G('a_tr_w',()=>{const q=new THREE.PlaneGeometry(1,1);q.translate(.5,0,0);q.rotateX(-Math.PI/2);return q}),GLOW('a_tr_wm',0xff2408,.55,capTex),0,1.6,0);
+    // flammes principales : foyer a l'arret, queue de comete en course (trois nappes : rouge, orange, coeur clair)
+    const TG=[...Array(NT)].map(()=>{const k=new THREE.Group();g.add(k);FM.forEach((mt,j)=>mesh(k,ge,mt).scale.set([1,.76,.48][j],[1,.66,.38][j],[1,.66,.38][j]));return k});
+    // sillage de feu au sol : des flammes laissees sur le chemin parcouru (position dans le monde), qui montent, rougissent et s'eteignent
+    const ft=tex('a_sp_f',flameSpr,64),SM=[0xff3a0a,0xffa030,0xfff0b0].map((c,j)=>M('a_tr_s'+j,()=>new THREE.SpriteMaterial({map:ft,color:c,transparent:true,opacity:[.8,.85,.9][j],blending:THREE.AdditiveBlending,depthWrite:false,fog:false})));
+    const dg=G('a_tr_pd',()=>{const q=new THREE.PlaneGeometry(1,1);q.rotateX(-Math.PI/2);return q}),dm=ADD2('a_tr_pm',{map:radTex,color:0xff4a12,opacity:.85});
+    const NP=40,PF=[...Array(NP)].map(()=>{const o={w:new THREE.Vector3(),age:9,L:1,s:1,a:0,d:mesh(g,dg,dm),f:[0,1,2].map(j=>{const q=new THREE.Sprite(SM[j]);g.add(q);return q})};o.d.visible=false;o.f.forEach(q=>q.visible=false);return o});
+    // flammeches de la queue, braises qui s'envolent, halo du corps (petit : il ne couvre pas le rond)
+    const FS=[...Array(14)].map((_,i)=>{const q=new THREE.Sprite(SM[i%2]);g.add(q);return q});
+    const EM=[...Array(14)].map(()=>{const q=new THREE.Sprite(SPR('a_tr_b',0xffb050,1));g.add(q);return q}),hl=new THREE.Sprite(sprGlow('a_tr_h',0xff3010,.32));hl.position.y=16;g.add(hl);
+    const W=new THREE.Vector3(),P0=new THREE.Vector3(),Lc=new THREE.Vector3(),DW=new THREE.Vector3();let has=0,dx=-1,dz=0,k=0,vm=0,lt=0,spT=0,pi=0,dv=0;
+    AN('tr',t=>{MAT.a_tr_d.opacity=.75+.2*Math.sin(t*5.3)*Math.sin(t*2.1);MAT.a_tr_wm.opacity=.45+.15*Math.sin(t*7)});
+    return t=>{const dt=Math.min(.1,Math.max(.001,t-lt));lt=t;let sp=0;
+     if(demo){k=.5-.5*Math.cos(t*1.1+1.2);sp=170*k*k}   // casier et vignettes : la trainee s'etire et se resserre toute seule
+     else{g.getWorldPosition(W);if(has){Lc.copy(P0);g.worldToLocal(Lc);const l=Math.hypot(Lc.x,Lc.z);sp=l<70?l/dt:0;vm=Math.max(vm*(1-dt*.04),sp);const kt=Math.min(1,sp/Math.max(60,vm*.8));k+=(kt-k)*Math.min(1,dt*(kt>k?6:3));
        if(sp>6&&l>0){const f=Math.min(1,dt*8);dx+=(Lc.x/l-dx)*f;dz+=(Lc.z/l-dz)*f;const n=Math.hypot(dx,dz)||1;dx/=n;dz/=n}}P0.copy(W);has=1}
-     const psi=Math.atan2(-dz,dx),e=k*k*(3-2*k),Lt=10+44*e;
-     TG.forEach((q,i)=>{let ar=i/NT*TAU;if(ar>Math.PI)ar-=TAU;const yw=psi+ar*(1-e)+(((i*3)%7)-3)*.07*e+.1*e*Math.sin(t*6+i*1.7),pt=1.3*(1-e)+(.06+.06*(i%4))*e,cy=Math.cos(yw),sy=Math.sin(yw),lat=((i%3)-1)*3.2,
-       bx_=cy*7.5*(1-e)+(dx*2+dz*lat)*e,bz=-sy*7.5*(1-e)+(dz*2-dx*lat)*e,by=2.5*(1-e)+(5+(i%5)*4.4)*e,L_=(19+5*(i%3))*(1-e)+(24+7*(i%4))*e,w=5+1*e+(i%2);
-      q.position.set(bx_,by,bz);q.rotation.set(0,yw,pt);q.scale.set(L_*(1+.13*Math.sin(t*9+i*2.3)+.06*Math.sin(t*19+i)),w*(1+.1*Math.sin(t*11+i)),w*(1+.1*Math.cos(t*10+i*2)))});
-     wk.rotation.y=psi;wk.scale.set(10+Lt*1.15*e,1,10+9*e);hl.scale.set(30+10*e,30,1);hl.position.set(dx*6*e,15,dz*6*e);
-     FS.forEach((q,i)=>{const p=(t*(.8+.1*(i%3))+i*.137)%1,a=i*2.399,f=Math.min(1,p*7)*(1-p),lat=1.6*Math.sin(a*1.7+t*3);
-      q.position.set((Math.cos(a)*8.5)*(1-e)+(dx*(3+p*Lt)+dz*lat*3)*e,(2+p*27)*(1-e)+(7+7*Math.sin(a)*.8+5*p+3*f)*e,(Math.sin(a)*8.5)*(1-e)+(dz*(3+p*Lt)-dx*lat*3)*e);q.scale.set(.6+4.6*f,1.2+7.5*f,1)});
-     EM.forEach((q,i)=>{const p=(t*.5+i/10)%1,a=i*2.1+t*.7;q.position.set(Math.cos(a)*(8+3*p)*(1-e)+(dx*(6+p*Lt*1.2)+dz*2.5*Math.sin(a))*e,(3+30*p)*(1-e)+(9+6*Math.sin(a*1.3)+7*p)*e,Math.sin(a)*(8+3*p)*(1-e)+(dz*(6+p*Lt*1.2)-dx*2.5*Math.sin(a))*e);q.scale.setScalar(2.4*Math.sin(p*Math.PI))})}}},
-  // aura de puissance : enveloppe de flammes dorees qui montent autour du corps, pointes de feu, eclairs, cailloux qui levitent ; l'intensite monte et retombe
-  puissance:{n:['Aura de puissance','Power aura'],lv:0,shop:1,r:3,vw:[0,26,0,150,.8,.52],tz:1.25,b(g0){const g=new THREE.Group(),ge=fireTube();g.scale.set(1.08,1.12,1.08);g0.add(g);   // aura serree autour du joueur
-    flat(g,46,ADD2('a_pw_d',{map:glowTex('a_pw','rgba(255,200,60,.0)','rgba(255,170,30,.75)'),opacity:.8}),1.3);   // reflet au sol
-    // enveloppe en forme de flamme : trois coques, la texture defile vers le haut, la lumiere s'eteint vers la pointe
-    const shg=G('a_pw_sh3',()=>{const pts=[];for(let i=0;i<=24;i++){const v=i/24;pts.push(new THREE.Vector2(10*(1+2*v)*Math.pow(1-v,1.25)+.01,v*46))}const q=new THREE.LatheGeometry(pts,40),uv=q.attributes.uv,C=[];for(let i=0;i<uv.count;i++){const v=uv.getY(i),c=Math.min(1,v*7)*Math.pow(1-v,2.4);C.push(c,c,c)}q.setAttribute('color',new THREE.Float32BufferAttribute(C,3));return q});
-    const SH=[[1,0xffa81a,.5,3,1.1,61],[.84,0xfff0a0,.4,3,.9,84],[1.2,0xff7a10,.26,4,1,107]].map(([sc,c,op,rx,ry,sd],i)=>{const t_=tex('a_pw_t'+i,riseTex(sd),128);t_.repeat.set(rx,ry);const q=mesh(g,shg,ADD2('a_pw_s'+i,{map:t_,color:c,opacity:op,vertexColors:true}),0,1,0);q.userData={sc,t:t_};return q});
-    // pointes de feu dressees tout autour
-    const PM=[[0xff9210,.5],[0xffd040,.7],[0xfff6c4,.85]].map(([c,o],i)=>GLOW('a_pw_f'+i,c,o)),PK=[...Array(18)].map((_,i)=>{const a=i/18*TAU+.2*Math.sin(i*5),R_=i%3?10.8:8.6,k=new THREE.Group();k.position.set(Math.cos(a)*R_,1,Math.sin(a)*R_);k.rotation.set(0,-a,Math.PI/2-(i%3?.2:.08));g.add(k);PM.forEach((mt,j)=>mesh(k,ge,mt).scale.set([1,.76,.5][j],[1,.66,.38][j],[1,.66,.38][j]));return k});
-    // onde de choc au sol, halo, eclairs, cailloux, etincelles
-    const wv=ring(g,11,12,GLOW('a_pw_w',0xffe08a,.5),1.9),hl=new THREE.Sprite(sprGlow('a_pw_h',0xffc030,.22));hl.position.y=24;g.add(hl);
-    const BM=GLOW('a_pw_b',0xe6f2ff,.95),BG=GLOW('a_pw_bg',0x5aa0ff,.4),BT=[...Array(5)].map(()=>{const k=new THREE.Group();g.add(k);return[k,mesh(k,boltGeo(0,.28),BM),mesh(k,boltGeo(0,.9),BG)]});
-    const rock=G('a_pw_r',()=>new THREE.DodecahedronGeometry(1,0)),rm=M('a_pw_rm',()=>new THREE.MeshPhongMaterial({color:0x7a6e60,emissive:0x4a3410,specular:0xffe0a0,shininess:30,flatShading:true})),RK=[...Array(13)].map((_,i)=>{const q=mesh(g,rock,rm);q.userData=[.7+1.1*hsh(i,1),7.5+5.5*hsh(i,2),hsh(i,3)*TAU,.16+.12*hsh(i,4)];return q});
+     const psi=Math.atan2(-dz,dx),e=k*k*(3-2*k),Lt=12+48*e;
+     // foyer (arret) : flammes droites serrees contre les jambes, a l'interieur du rond ; course : couchees vers l'arriere, etagees du sol aux epaules
+     TG.forEach((q,i)=>{const ar=i/NT*TAU,yw=psi+((((i*4)%9)-4)*.06+.08*Math.sin(t*6+i*1.7))*e,lat=((i%3)-1)*3,
+       bx_=Math.cos(ar)*7.6*(1-e)+(dx*3+dz*lat)*e,bz=Math.sin(ar)*7.6*(1-e)+(dz*3-dx*lat)*e,by=1.5*(1-e)+(4+(i%5)*4.6)*e,
+       L_=(21+8*(i%3))*(1-e)+(30+11*(i%4))*e,w=4.8+1*e+(i%2)*.8;
+      q.position.set(bx_,by,bz);q.rotation.set(0,(1-e)*(-ar)+e*yw,(Math.PI/2+.05)*(1-e)+(.05+.05*(i%4))*e);
+      q.scale.set(L_*(1+.15*Math.sin(t*9+i*2.3)+.07*Math.sin(t*19+i)),w*(1+.1*Math.sin(t*11+i)),w*(1+.1*Math.cos(t*10+i*2)))});
+     wk.rotation.y=psi;wk.position.set(dx*13,1.6,dz*13);wk.scale.set((8+Lt*1.2)*e+.01,1,(8+6*e)*e+.01);hl.scale.set(18+6*e,22,1);hl.position.set(dx*5*e,16,dz*5*e);
+     // sillage : une nouvelle flamme a chaque bout de chemin parcouru
+     if(e>.2){spT-=dt;dv+=sp*dt;if(spT<=0&&dv>5){spT=.025;dv=0;const o=PF[pi++%NP];o.age=0;o.L=.85+.4*hsh(pi,1);o.s=.85+.45*hsh(pi,2);o.a=(hsh(pi,3)-.5)*6;
+       if(demo)o.w.set(dx*9,0,dz*9);else{DW.set(dx*9+dz*o.a,0,dz*9-dx*o.a);g.localToWorld(DW);o.w.copy(DW)}}}
+     for(const o of PF){o.age+=dt;const u=o.age/o.L,on=u<1;o.d.visible=on;o.f.forEach(q=>q.visible=on);if(!on)continue;
+      if(demo){o.w.x+=dx*sp*dt;o.w.z+=dz*sp*dt;Lc.set(o.w.x+dz*o.a,0,o.w.z-dx*o.a)}else{Lc.copy(o.w);g.worldToLocal(Lc)}
+      const rise=Math.min(1,u*5)*(1-u),hot=1-u;
+      o.d.position.set(Lc.x,1.4,Lc.z);o.d.scale.setScalar((17+6*u)*o.s*(1-u*.55));   // braises au sol : une ligne lumineuse continue sur le chemin
+      const[f0,f1,f2]=o.f,fl=.85+.15*Math.sin(t*23+pi+o.a*5);f0.position.set(Lc.x,4+7*u,Lc.z);f0.scale.set((8+4*u)*o.s*rise*fl,(15+11*u)*o.s*rise*fl,1);
+      f1.position.set(Lc.x,3.4+5*u,Lc.z);f1.scale.set(5.6*o.s*rise*hot*fl,10.5*o.s*rise*hot*fl,1);f2.position.set(Lc.x,2.8+3*u,Lc.z);f2.scale.set(3.2*o.s*rise*hot*hot,6*o.s*rise*hot*hot,1)}
+     FS.forEach((q,i)=>{const p=(t*(.85+.1*(i%3))+i*.137)%1,a=i*2.399,f=Math.min(1,p*7)*(1-p),lat=1.8*Math.sin(a*1.7+t*3);
+      q.position.set((Math.cos(a)*7.4)*(1-e)+(dx*(4+p*Lt)+dz*lat*3)*e,(6+p*24)*(1-e)+(8+6*Math.sin(a)*.8+6*p+3*f)*e,(Math.sin(a)*7.4)*(1-e)+(dz*(4+p*Lt)-dx*lat*3)*e);q.scale.set(.6+4.4*f,1.2+7.5*f,1)});
+     EM.forEach((q,i)=>{const p=(t*.55+i/14)%1,a=i*2.1+t*.9;q.position.set(Math.cos(a)*(5+3*p)*(1-e)+(dx*(6+p*Lt*1.25)+dz*3*Math.sin(a+p*3))*e,(4+32*p)*(1-e)+(9+7*Math.sin(a*1.3)+10*p)*e,Math.sin(a)*(5+3*p)*(1-e)+(dz*(6+p*Lt*1.25)-dx*3*Math.sin(a+p*3))*e);q.scale.setScalar(2.4*Math.sin(p*Math.PI))})}}},
+  // aura de puissance : colonne de flammes dorees qui monte autour du joueur, pointes de feu, flammes qui epousent le corps, eclairs, cailloux qui levitent,
+  // trainees de lumiere ; l'intensite monte et retombe, et toutes les 4 s environ une poussee de puissance (onde de choc, flammes qui jaillissent).
+  // Le rond de l'equipe (rayon 10 a 13) reste visible : tout est soit colle au corps (rayon < 8), soit a l'exterieur du rond (rayon > 14,5).
+  puissance:{n:['Aura de puissance','Power aura'],lv:0,shop:1,r:3,vw:[0,26,0,172,.8,.52],tz:1.45,b(g){const ge=fireTube(),R0=14.8;
+    const rt=tex('a_pw_rg',(x,S)=>{const g_=x.createRadialGradient(S/2,S/2,0,S/2,S/2,S/2);g_.addColorStop(0,'rgba(255,200,60,0)');g_.addColorStop(.52,'rgba(255,200,60,0)');g_.addColorStop(.55,'rgba(255,214,90,.85)');g_.addColorStop(.7,'rgba(255,170,30,.38)');g_.addColorStop(1,'rgba(255,150,20,0)');x.fillStyle=g_;x.fillRect(0,0,S,S)},128);
+    const gr=mesh(g,G('a_pw_gr',()=>new THREE.RingGeometry(R0-.4,28,56)),ADD2('a_pw_d',{map:rt}),0,1.3,0);gr.rotation.x=-Math.PI/2;
+    // colonne de flammes (deux parois qui tournent en sens contraire ; la texture monte, la lumiere s'eteint vers le haut)
+    const col=(k,R,h,c,op,rx,ry,sd)=>{const t_=tex('a_pw_c'+k,riseTex(sd),128);t_.repeat.set(rx,ry);const q=mesh(g,fadeCyl(R,h),ADD2('a_pw_s'+k,{map:t_,color:c,opacity:op,vertexColors:true}),0,1.2+h/2,0);q.userData={t:t_,h};return q};
+    const CL=[col(0,R0+.6,30,0xffb41e,.6,4,1.4,61),col(1,R0+1.8,22,0xfff0a0,.45,5,1.1,84),col(2,R0+.2,40,0xff8a10,.3,3,1.6,107)];
+    // pointes de feu dressees a l'exterieur du rond, penchees vers l'exterieur
+    const PM=[[0xff9a14,.5],[0xffd040,.72],[0xfff8d0,.88]].map(([c,o],i)=>GLOW('a_pw_f'+i,c,o)),pk=(n,R,tilt,sz)=>[...Array(n)].map((_,i)=>{const a=i/n*TAU+.18*Math.sin(i*5+R),k=new THREE.Group();k.position.set(Math.cos(a)*R,1,Math.sin(a)*R);k.rotation.set(0,-a,Math.PI/2-tilt);g.add(k);
+      PM.forEach((mt,j)=>mesh(k,ge,mt).scale.set([1,.76,.5][j],[1,.66,.38][j],[1,.66,.38][j]));k.userData=[sz*(.8+.5*hsh(i,R)),3.8+1.8*hsh(i,R+1),i];return k}),PK=pk(14,R0+1.6,.14,24).concat(pk(10,R0+3.4,.32,15));
+    // flammes qui epousent le corps (a l'interieur du rond) : elles montent de la taille jusqu'au-dessus de la tete
+    const BF=[...Array(8)].map((_,i)=>{const a=i/8*TAU+.4,k=new THREE.Group();k.position.set(Math.cos(a)*6.6,9+3*(i%2),Math.sin(a)*6.6);k.rotation.set(0,-a,Math.PI/2+.1);g.add(k);PM.forEach((mt,j)=>mesh(k,ge,mt).scale.set([1,.7,.45][j],[1,.62,.36][j],[1,.62,.36][j]));k.userData=[13+7*hsh(i,40),2.6+.8*hsh(i,41)];return k});
+    // onde de choc des poussees, eclairs, cailloux, etincelles, trainees de lumiere
+    const wv=mesh(g,G('a_pw_wv',()=>new THREE.RingGeometry(1,1.08,64)),GLOW('a_pw_w',0xfff0b0,.8),0,1.6,0);wv.rotation.x=-Math.PI/2;
+    const BM=GLOW('a_pw_b',0xeef6ff,.95),BG=GLOW('a_pw_bg',0x5aa0ff,.45),BT=[...Array(6)].map(()=>{const k=new THREE.Group();g.add(k);return[k,mesh(k,boltGeo(0,.3),BM),mesh(k,boltGeo(0,1),BG)]});
+    const rock=G('a_pw_r',()=>new THREE.DodecahedronGeometry(1,0)),rm=M('a_pw_rm',()=>new THREE.MeshPhongMaterial({color:0x7a6e60,emissive:0x4a3410,specular:0xffe0a0,shininess:30,flatShading:true})),RK=[...Array(14)].map((_,i)=>{const q=mesh(g,rock,rm);q.userData=[.8+1.2*hsh(i,1),R0+2+6*hsh(i,2),hsh(i,3)*TAU,.16+.12*hsh(i,4)];return q});
     const SP=[...Array(16)].map(()=>{const q=new THREE.Sprite(SPR('a_pw_k',0xfff0b0,1));g.add(q);return q});
-    AN('pw',t=>{SH.forEach((q,i)=>{q.userData.t.offset.y=-t*(.8+i*.22);q.userData.t.offset.x=t*(i%2?.05:-.04)});const I=.5+.5*Math.sin(t*.8+2);MAT.a_pw_s0.opacity=.3+.3*I;MAT.a_pw_s1.opacity=.2+.28*I;MAT.a_pw_s2.opacity=.12+.2*I;MAT.a_pw_h.opacity=.12+.14*I;const p=(t*.7)%1;MAT.a_pw_w.opacity=.55*(1-p)*(.4+.6*I)});
-    return t=>{const I=.5+.5*Math.sin(t*.8+2),J=I*I*(3-2*I),p=(t*.7)%1;   // intensite : monte et retombe en 8 secondes environ
-     SH.forEach((q,i)=>{const s=q.userData.sc*(.9+.16*J)*(1+.035*Math.sin(t*11+i*2));q.scale.set(s,(.78+.3*J)*(1+.05*Math.sin(t*8+i)),s);q.rotation.y=t*(i%2?-.5:.35)});
-     PK.forEach((k,i)=>{const L_=(i%3?13+8*hsh(i,7):24+9*hsh(i,7))*(.6+.75*J)*(1+.26*Math.sin(t*13+i*2.1)+.12*Math.sin(t*29+i)),w=(i%3?4.4:5.4)+1.6*hsh(i,8);k.scale.set(L_,w,w)});
-     wv.scale.setScalar(.8+1*p);hl.scale.set(30+8*J,42+10*J,1);
-     BT.forEach(([k,a,b],i)=>{const q=Math.floor(t*12+i*3.7),h=hsh(q,i),on=h<.12+.5*J;k.visible=on;if(!on)return;const n=Math.floor(hsh(q,i+9)*6),an=hsh(q,i+3)*TAU,r_=7+5*hsh(q,i+5);a.geometry=boltGeo(n,.28);b.geometry=boltGeo(n,.9);k.position.set(Math.cos(an)*r_,1+16*hsh(q,i+6),Math.sin(an)*r_);k.rotation.set((hsh(q,i+7)-.5)*1.1,an,(hsh(q,i+8)-.5)*1.1);k.scale.setScalar(.75+.7*hsh(q,i+2))});
-     RK.forEach((q,i)=>{const[sz,r_,a0,spd]=q.userData,pp=(t*spd+i/13)%1,act=Math.max(0,Math.min(1,(.3+.85*J-i/13)*5)),a=a0+t*.25,up=1-Math.pow(1-pp,2.2),s=sz*act*Math.min(1,pp*9)*Math.min(1,(1-pp)*5);
-      q.position.set(Math.cos(a)*r_,1+up*(9+19*J)+.6*Math.sin(t*3+i),Math.sin(a)*r_);q.rotation.set(t*(1+i%3)+i,t*.8+i*2,i);q.scale.set(s,s*.8,s*.9)});
-     SP.forEach((q,i)=>{const pp=(t*(.7+.5*J)+i/16)%1,a=i*2.399+t*.3,r_=6+6*hsh(i,5);q.position.set(Math.cos(a)*r_*(1-pp*.4),2+44*pp,Math.sin(a)*r_*(1-pp*.4));q.scale.set(.8+1.6*J,(3+6*J)*Math.sin(pp*Math.PI),1)})}}},
+    const ST=[...Array(10)].map(()=>{const q=new THREE.Sprite(sprGlow('a_pw_l',0xffe7a0,.75));g.add(q);return q});
+    const pw=t=>{const I=.5+.5*Math.sin(t*.8+2),J=I*I*(3-2*I),pb=(t*.27)%1,B=pb<.16?Math.pow(1-pb/.16,1.6):0;return{J,B,pb,P:.55+.45*J+.55*B}};   // intensite (8 s) et poussee de puissance (toutes les 3,7 s)
+    AN('pw',t=>{const{J,B,pb,P}=pw(t);CL.forEach((q,i)=>{q.userData.t.offset.y=-t*(.9+i*.25+.8*B);q.userData.t.offset.x=t*(i%2?.06:-.05)});MAT.a_pw_s0.opacity=.34+.26*J+.3*B;MAT.a_pw_s1.opacity=.22+.22*J+.3*B;MAT.a_pw_s2.opacity=.14+.16*J+.2*B;
+     MAT.a_pw_d.opacity=.55+.25*J+.2*B;MAT.a_pw_w.opacity=pb<.4?.85*(1-pb/.4):0});
+    return t=>{const{J,B,pb,P}=pw(t);
+     CL.forEach((q,i)=>{const s=1+.03*Math.sin(t*11+i*2)+.06*B;q.scale.set(s,(.7+.35*J+.45*B)*(1+.05*Math.sin(t*8+i)),s);q.position.y=1.2+q.userData.h*q.scale.y/2;q.rotation.y=t*(i%2?-.6:.45)});
+     PK.forEach(k=>{const[L0,w,i]=k.userData,L_=L0*P*(1+.26*Math.sin(t*13+i*2.1)+.12*Math.sin(t*29+i));k.scale.set(L_,w,w)});
+     BF.forEach((k,i)=>{const[L0,w]=k.userData;k.scale.set(L0*(.7+.4*J+.5*B)*(1+.22*Math.sin(t*12+i*1.9)),w,w)});
+     const ws=R0+(pb<.4?pb/.4:1)*24;wv.scale.setScalar(ws);
+     BT.forEach(([k,a,b],i)=>{const q=Math.floor(t*12+i*3.7),h=hsh(q,i),on=h<.1+.45*J+.6*B;k.visible=on;if(!on)return;const n=Math.floor(hsh(q,i+9)*6),an=hsh(q,i+3)*TAU,r_=R0+1.5+5*hsh(q,i+5);a.geometry=boltGeo(n,.3);b.geometry=boltGeo(n,1);k.position.set(Math.cos(an)*r_,1+14*hsh(q,i+6),Math.sin(an)*r_);k.rotation.set((hsh(q,i+7)-.5)*.6,an,(hsh(q,i+8)-.5)*.6);k.scale.setScalar(.8+.8*hsh(q,i+2))});
+     RK.forEach((q,i)=>{const[sz,r_,a0,spd]=q.userData,pp=(t*spd+i/14)%1,act=Math.max(0,Math.min(1,(.3+.85*J-i/14)*5)),a=a0+t*.25,up=1-Math.pow(1-pp,2.2),s=sz*act*Math.min(1,pp*9)*Math.min(1,(1-pp)*5);
+      q.position.set(Math.cos(a)*r_,1+up*(9+19*J)+.6*Math.sin(t*3+i)+4*B,Math.sin(a)*r_);q.rotation.set(t*(1+i%3)+i,t*.8+i*2,i);q.scale.set(s,s*.8,s*.9)});
+     SP.forEach((q,i)=>{const pp=(t*(.7+.5*J)+i/16)%1,a=i*2.399+t*.3,r_=R0+1+5*hsh(i,5);q.position.set(Math.cos(a)*r_,2+44*pp,Math.sin(a)*r_);q.scale.set(.8+1.6*J,(3+6*J)*Math.sin(pp*Math.PI),1)});
+     ST.forEach((q,i)=>{const pp=(t*(1.1+.3*hsh(i,7))+i/10)%1,a=i*2.4+.3,r_=R0+.8+3*hsh(i,8);q.position.set(Math.cos(a)*r_,3+40*pp,Math.sin(a)*r_);const f=Math.sin(pp*Math.PI)*(.4+.6*P);q.scale.set(1.1*f,(9+10*B)*f,1)})}}},
   // dragon celeste : dragon serpentin de jade et d'or qui s'enroule en spirale autour du personnage et poursuit sa perle lumineuse
   dragon:{n:['Dragon céleste','Celestial dragon'],lv:0,shop:1,r:3,vw:[0,24,0,182,.8,.62],tz:1.6,b(g0){const g=new THREE.Group();g.scale.setScalar(1.34);g0.add(g);   // dragon agrandi d'un tiers
     const jade=M('a_dr',()=>new THREE.MeshPhongMaterial({color:0x35e8a8,emissive:0x08603e,specular:0xd8fff0,shininess:90,flatShading:true})),jd2=M('a_dr2',()=>new THREE.MeshPhongMaterial({color:0x16b47c,emissive:0x054a30,specular:0xd8fff0,shininess:90,flatShading:true})),bel=M('a_dr_b',()=>new THREE.MeshPhongMaterial({color:0xe2fff0,emissive:0x62c8a2,shininess:60,flatShading:true})),au=M('a_dr_g',()=>new THREE.MeshPhongMaterial({color:0xffd24a,emissive:0xa06c08,specular:0xfff0b0,shininess:110,flatShading:true})),
