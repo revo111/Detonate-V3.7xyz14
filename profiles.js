@@ -101,7 +101,7 @@ const TEST = process.env.NODE_ENV !== 'production', tenv = k => TEST ? process.e
 // Secrets Fly : STRIPE_SECRET_KEY (cle sk_test_... ou sk_live_...), STRIPE_WEBHOOK_SECRET (cle whsec_... du webhook).
 const SHOP = {
   o: { costard: [0, 'Costard'], squelette: [1, 'Squelette'], astronaute: [1, 'Astronaute'], samourai: [2, 'Samouraï'], hologramme: [3, 'Hologramme'] },
-  h: { bandana: [0, 'Bandana'], kabuto: [1, 'Casque de samouraï'], bulle: [1, 'Casque spatial'], kitsune: [2, 'Masque de kitsune'], aureole: [3, 'Auréole'] },
+  h: { bandana: [0, 'Bandana'], kabuto: [1, 'Casque de samouraï'], bulle: [1, 'Casque spatial'], kitsune: [2, 'Masque de kitsune'], aureole: [3, 'Auréole'], laurier: [1, 'Laurier doré'], crane: [2, 'Crâne ardent'], eclats: [2, 'Cristaux gravitants'], couronne: [3, 'Couronne de cristal'] },
   g: { bambou: [0, 'Bambou'], graffiti: [1, 'Graffiti'], circuit: [2, 'Circuit'], galaxie: [2, 'Galaxie'], prisme: [3, 'Prisme'] },
   b: { carapace: [0, 'Carapace'], katanas: [1, 'Katanas croisés'], drone: [2, 'Drone compagnon'], demon: [2, 'Ailes de démon'], ange: [3, "Ailes d'ange"] },
   a: { notes: [0, 'Mélodie'], petales: [1, 'Pétales de cerisier'], orbite: [2, 'Orbite'], cercle: [2, "Cercle d'énergie"], spectre: [3, 'Flammes spectrales'] }
@@ -180,6 +180,11 @@ if (IS_PRIMARY) {
   fxLoad(); setInterval(fxLoad, 6 * 3600 * 1000).unref();
 }
 const inCur = (eur, cur) => cur === 'usd' ? Math.round(eur * FX.usd) : eur;
+// Mode test des skins : SKINS_ALL_KEY (variable du serveur) est le mot a mettre dans l'adresse du jeu, ?skin=<mot>. Le profil qui l'ouvre
+// est note « testeur » : tous les skins lui sont debloques (casier, boutique, salons en ligne), sans paiement. ?skin=off l'enleve.
+// Sans la variable, le mode n'existe pas et les profils testeurs redeviennent normaux. Un testeur porte la marque '*' dans sa liste « own ».
+const SKA_KEY = process.env.SKINS_ALL_KEY || '';
+const ownOf = P => SKA_KEY && P.ska ? (P.own || []).concat('*') : (P.own || []).slice();
 const priceOf = (c, id) => isPack(c, id) ? PACKS[id].p : SHOP[c] && Object.prototype.hasOwnProperty.call(SHOP[c], id) ? PRICE[SHOP[c][id][0]] : 0;
 const owns = (own, c, id) => isPack(c, id) ? PACKS[id].items.every(x => owns(own, x[0], x[1])) : Array.isArray(own) && own.includes(c + ':' + id);
 // retrait d'un achat (remboursement, litige, achat de test) : chaque skin est repris, sauf s'il reste paye par un autre achat
@@ -194,9 +199,10 @@ function takeBack(P, b, buy) {
 if (IS_PRIMARY && STORE_OK && LIVE) purgeTest();
 function cleanSkins(sel, lvl, own) {
   const o = {};
+  const all = Array.isArray(own) && own.includes('*');   // testeur : tout skin connu est accepte
   for (const c in SKIN_LV) {
     const id = sel && typeof sel[c] === 'string' ? sel[c] : '';
-    o[c] = (SKIN_LV[c][id] && lvl >= SKIN_LV[c][id]) || ((priceOf(c, id) || PACK_ITEM.has(c + ':' + id)) && owns(own, c, id)) ? id : '';
+    o[c] = (SKIN_LV[c][id] && (all || lvl >= SKIN_LV[c][id])) || (all && (priceOf(c, id) || PACK_ITEM.has(c + ':' + id))) || ((priceOf(c, id) || PACK_ITEM.has(c + ':' + id)) && owns(own, c, id)) ? id : '';
   }
   return o;
 }
@@ -215,7 +221,7 @@ function pinTry(P, pin, who) {
   const n = f && now - f.t < PIN_LOCK ? f.n + 1 : 1; PINF.set(kf, { n, t: now });
   return n >= 5 ? { err: 'locked', wait: PIN_LOCK / 1000 } : { err: 'pin', left: 5 - n };
 }
-const pub = P => { const l = lvlOf(P.xp); return { pin: P.pin ? 1 : 0, pinr: P.pinr ? P.pinr + PIN_WAIT : 0, id: P.id, n: P.n, xp: P.xp, lvl: l, g: P.g, w: P.w, k: P.k, d: P.d, mvp: P.mvp, sk: cleanSkins(P.skn, l, P.own), own: (P.own || []).slice() }; };
+const pub = P => { const l = lvlOf(P.xp); return { pin: P.pin ? 1 : 0, pinr: P.pinr ? P.pinr + PIN_WAIT : 0, id: P.id, n: P.n, xp: P.xp, lvl: l, g: P.g, w: P.w, k: P.k, d: P.d, mvp: P.mvp, sk: cleanSkins(P.skn, l, ownOf(P)), own: ownOf(P) }; };
 function auth(id, s) {
   const P = typeof id === 'string' && DB[id];
   if (!P || typeof s !== 'string' || sha(s) !== P.sk) return null;
@@ -431,7 +437,18 @@ async function http(req, res, url) {
   // debut d'une partie solo : le serveur note l'heure et le mode (la duree de la partie est mesuree par lui)
   if (op === 'start') { SOLO.set(P.id, { t: Date.now(), mode: MODES.has(m.mode) ? m.mode : 'bomb' }); return out(res, 200, { ok: 1 }); }
   // skins equipes : enregistres dans le profil (seulement ceux que le niveau du joueur debloque)
-  if (op === 'skins') { P.skn = cleanSkins(m.sk, lvlOf(P.xp), P.own); save(); return out(res, 200, { prof: pub(P) }); }
+  if (op === 'skins') { P.skn = cleanSkins(m.sk, lvlOf(P.xp), ownOf(P)); save(); return out(res, 200, { prof: pub(P) }); }
+  // mode test des skins (voir SKA_KEY) : le bon mot debloque tout pour ce profil, « off » l'enleve
+  if (op === 'test') {
+    if (!SKA_KEY) return out(res, 404, { err: 'off' });
+    if (m.key === 'off') { if (P.ska) { delete P.ska; P.skn = cleanSkins(P.skn, lvlOf(P.xp), ownOf(P)); save(); } return out(res, 200, { on: 0, prof: pub(P) }); }
+    const kf = P.id + '|ska', f = PINF.get(kf), now = Date.now();   // 5 mauvais mots : 5 minutes d'attente
+    if (f && f.n >= 5 && now - f.t < PIN_LOCK) return out(res, 403, { err: 'locked' });
+    if (String(m.key || '') !== SKA_KEY) { PINF.set(kf, { n: (f && now - f.t < PIN_LOCK ? f.n : 0) + 1, t: now }); return out(res, 403, { err: 'key' }); }
+    PINF.delete(kf);
+    if (!P.ska) { P.ska = 1; save(); console.log('Mode test des skins : profil ' + P.id); }
+    return out(res, 200, { on: 1, prof: pub(P) });
+  }
   // achat : le serveur ouvre une page de paiement Stripe pour ce skin et ce profil, le jeu y envoie le joueur
   if (op === 'buy') {
     const c = String(m.c || ''), id = String(m.it || ''), pr = priceOf(c, id);
@@ -606,7 +623,7 @@ function peekLocal(id, s, sid) {
   if (!P) return { lvl: 0 };
   if (!sessOk(P.id, sid)) return { lvl: -1 };
   const l = lvlOf(P.xp);
-  return { lvl: l, sk: cleanSkins(P.skn, l, P.own), own: (P.own || []).slice() };
+  return { lvl: l, sk: cleanSkins(P.skn, l, ownOf(P)), own: ownOf(P) };
 }
 async function peek(id, s, sid) {
   if (!id || !s) return { lvl: 0 };
