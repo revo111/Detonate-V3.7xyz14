@@ -102,7 +102,7 @@ const TEST = process.env.NODE_ENV !== 'production', tenv = k => TEST ? process.e
 const SHOP = {
   o: { costard: [0, 'Costard'], squelette: [1, 'Squelette'], astronaute: [1, 'Astronaute'], samourai: [2, 'Samouraï'], hologramme: [3, 'Hologramme'] },
   h: { bandana: [0, 'Bandana'], kabuto: [1, 'Casque de samouraï'], bulle: [1, 'Casque spatial'], kitsune: [2, 'Masque de kitsune'], aureole: [3, 'Auréole'], laurier: [1, 'Laurier doré'], crane: [2, 'Crâne ardent'], eclats: [2, 'Cristaux gravitants'], couronne: [3, 'Couronne de cristal'] },
-  g: { bambou: [0, 'Bambou'], graffiti: [1, 'Graffiti'], circuit: [2, 'Circuit'], galaxie: [2, 'Galaxie'], prisme: [3, 'Prisme'] },
+  g: { bambou: [0, 'Bambou'], graffiti: [1, 'Graffiti'], circuit: [2, 'Circuit'], galaxie: [2, 'Galaxie'], prisme: [3, 'Prisme'], fluo: [2, 'Rose fluo'], argent: [2, 'Argent'], diamant: [3, 'Diamant'] },
   b: { carapace: [0, 'Carapace'], katanas: [1, 'Katanas croisés'], drone: [2, 'Drone compagnon'], demon: [2, 'Ailes de démon'], ange: [3, "Ailes d'ange"] },
   a: { notes: [0, 'Mélodie'], petales: [1, 'Pétales de cerisier'], orbite: [2, 'Orbite'], cercle: [2, "Cercle d'énergie"], spectre: [3, 'Flammes spectrales'], trainee: [2, 'Traînée ardente'], puissance: [3, 'Aura de puissance'], dragon: [3, 'Dragon céleste'] }
 };
