@@ -261,7 +261,7 @@ function xpFrom(r, first) {
   // le meme bareme est affiche dans le jeu : bouton « Calcul de l'XP » de la fenetre du profil
   const L = [], add = (k, v, n) => { v = Math.round(v); if (v > 0) L.push([k, v, n || 0]); };
   const F = FIN[r.mode] || FIN.bomb;
-  add('kills', r.k * 5, r.k);
+  add('kills', r.k * 10, r.k);   // 10 XP par elimination
   switch (r.mode) {
     case 'zombie': add('zombies', r.zk * 1, r.zk); add('waves', r.wv * 5, r.wv); break;
     case 'cristal': add('crystals', r.cr * 10, r.cr); break;
