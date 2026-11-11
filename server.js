@@ -111,6 +111,12 @@ const server = http.createServer((req, res) => {
     }, null, 1));
   }
 
+  // version du jeu servie par cette machine (date de construction lue dans index.html) : pour verifier qu'une mise a jour est bien en ligne
+  if (url === '/version') {
+    let v = null; try { const m = /const BUILD='([^']+)'/.exec(fs.readFileSync(INDEX, 'utf8')); v = m ? m[1] : null; } catch (e) {}
+    res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' });
+    return res.end(JSON.stringify({ version: v, region: HERE || null, machine: process.env.FLY_MACHINE_ID || null, demarre: STARTED, profils: !!PROFILES.IS_PRIMARY }, null, 1));
+  }
   if (url === '/health') {
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     return res.end('ok');
@@ -139,6 +145,7 @@ const server = http.createServer((req, res) => {
 });
 
 
+const STARTED = new Date().toISOString();
 const wss = new WebSocketServer({
   noServer: true,
   maxPayload: 256 * 1024,
