@@ -129,6 +129,9 @@ const SHOP = {
 // prix en centimes selon la rarete (commun, rare, epique, legendaire)
 // prix fixes en euros : 0,99 / 1,49 / 1,99 / 2,99 ; au choix du joueur, prix en dollars americains convertis au cours du jour (voir FX)
 const PRICE = [99, 149, 199, 299], SHOP_CUR = 'eur', SHOP_CURS = ['eur', 'usd'];
+// version des CGV en vigueur (meme valeur que LEGAL.v dans le jeu) : l'achat exige que le joueur ait coche la case qui les accepte,
+// demande la livraison immediate et renonce au droit de retractation (article L221-28, 13° du Code de la consommation)
+const CGV_V = '2026-11-12';
 // Packs : plusieurs skins vendus ensemble a prix fixe, en boutique seulement le week-end (du vendredi 0 h au lundi 0 h, heure de New York), hors selection tournante.
 // En semaine, leurs skins sont vendus a l'unite dans la selection tournante ; le week-end, ils en sont retires (seul le pack les vend).
 // Un achat de pack est note { c: 'p', id: <pack> } dans le profil ; il donne tous les skins du pack.
@@ -496,16 +499,17 @@ async function http(req, res, url) {
     if (owns(P.own, c, id)) return out(res, 409, { err: 'owned' });
     if (isPack(c, id) ? !weekendAt(nowT()) : !inRotation(c, id)) return out(res, 409, { err: 'rotation' });   // la boutique a change : le jeu recharge la liste
     if (!STRIPE_KEY) return out(res, 503, { err: 'shop' });
+    if (m.cgv !== CGV_V) return out(res, 400, { err: 'cgv' });   // case des CGV non cochee, ou jeu pas a jour
     const ret = retUrl(m.ret);
     if (!ret) return out(res, 400, { err: 'ret' });
-    const pk = isPack(c, id) ? PACKS[id] : null, [r, name] = pk ? [pk.r, pk.n[0]] : SHOP[c][id], md = { pid: P.id, c, id }, cur = SHOP_CURS.includes(m.cur) ? m.cur : SHOP_CUR;
+    const pk = isPack(c, id) ? PACKS[id] : null, [r, name] = pk ? [pk.r, pk.n[0]] : SHOP[c][id], md = { pid: P.id, c, id, cgv: CGV_V, cgvT: String(Date.now()) }, cur = SHOP_CURS.includes(m.cur) ? m.cur : SHOP_CUR;
     const q = {
       mode: 'payment', locale: 'auto', client_reference_id: P.id,
       success_url: ret + '?shop=ok&cs={CHECKOUT_SESSION_ID}', cancel_url: ret + '?shop=cancel',
       'line_items[0][quantity]': '1', 'line_items[0][price_data][currency]': cur, 'line_items[0][price_data][unit_amount]': String(inCur(pr, cur)),
       'line_items[0][price_data][product_data][name]': 'Detonate – ' + name,
-      'line_items[0][price_data][product_data][description]': pk ? 'Pack ' + RARN[r] + ' : ' + pk.items.map(x => x[2]).join(' + ') + '. Skins cosmétiques, sans avantage de jeu.' : CATN[c] + ' (' + RARN[r] + '). Skin cosmétique, sans avantage de jeu.',
-      'custom_text[submit][message]': 'Contenu numérique livré immédiatement dans le jeu. En payant, tu demandes cette livraison immédiate et renonces au droit de rétractation de 14 jours.'
+      'line_items[0][price_data][product_data][description]': pk ? 'Pack ' + RARN[r] + ' : ' + pk.items.map(x => x[2]).join(' + ') + '. Skins cosmétiques, sans avantage de jeu. Livraison immédiate demandée ; renonciation au droit de rétractation acceptée (CGV).' : CATN[c] + ' (' + RARN[r] + '). Skin cosmétique, sans avantage de jeu. Livraison immédiate demandée ; renonciation au droit de rétractation acceptée (CGV).',
+      'custom_text[submit][message]': 'Contenu numérique livré immédiatement dans le jeu. Tu as accepté les CGV, demandé cette livraison immédiate et renoncé au droit de rétractation de 14 jours (article L221-28, 13° du Code de la consommation).'
     };
     for (const k in md) { q['metadata[' + k + ']'] = md[k]; q['payment_intent_data[metadata][' + k + ']'] = md[k]; }
     const cs = await stripe('POST', 'checkout/sessions', q);
@@ -564,7 +568,7 @@ async function stripe(method, pth, params) {
 function grant(P, c, id, info) {
   if (!Array.isArray(P.buy)) P.buy = [];
   if (P.buy.some(b => b.cs === info.cs)) return false;
-  P.buy.push({ cs: info.cs, pi: info.pi || '', c, id, amt: info.amt | 0, cur: info.cur || '', t: Date.now(), st: 'paid' });
+  P.buy.push(Object.assign({ cs: info.cs, pi: info.pi || '', c, id, amt: info.amt | 0, cur: info.cur || '', t: Date.now(), st: 'paid' }, info.cgv ? { cgv: info.cgv, cgvT: info.cgvT || 0 } : {}));   // cgv : version des CGV acceptee (et date)
   if (!Array.isArray(P.own)) P.own = [];
   for (const [ic, ii] of itemsOf(c, id)) if (!P.own.includes(ic + ':' + ii)) P.own.push(ic + ':' + ii);
   save(); console.log('Boutique : achat ' + c + ':' + id + ' (' + ((info.amt | 0) / 100) + ' ' + (info.cur || '') + ') profil ' + P.id);
@@ -576,7 +580,7 @@ function fromSession(o) {
   if (!P || !priceOf(c, id) || typeof o.id !== 'string') return null;
   if (LIVE && (o.livemode === false || /^cs_test_/.test(o.id))) return null;   // paiement de test refuse en production
   if (o.payment_status === 'paid') {
-    grant(P, c, id, { cs: o.id, pi: typeof o.payment_intent === 'string' ? o.payment_intent : (o.payment_intent && o.payment_intent.id) || '', amt: o.amount_total, cur: o.currency });
+    grant(P, c, id, { cs: o.id, pi: typeof o.payment_intent === 'string' ? o.payment_intent : (o.payment_intent && o.payment_intent.id) || '', amt: o.amount_total, cur: o.currency, cgv: String(md.cgv || ''), cgvT: +md.cgvT || 0 });
     return { pid: P.id, c, id, st: 'paid' };
   }
   return { pid: P.id, c, id, st: o.status === 'expired' ? 'expired' : 'pending' };
