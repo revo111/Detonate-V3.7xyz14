@@ -3540,7 +3540,7 @@ function dropSock(){try{if(netSocket){netSocket.onclose=null;netSocket.close()}}
 // message discret en bas de l'ecran, sans recharger la page (ms : il disparait tout seul)
 function srvUpd(t){let d=$('srvupd');if(!d){d=document.createElement('div');d.id='srvupd';d.style.cssText='position:fixed;bottom:96px;left:50%;transform:translateX(-50%);max-width:min(520px,88vw);z-index:59;background:rgba(10,14,24,.88);border:1px solid rgba(255,215,106,.5);border-radius:12px;color:#ffe9a8;font:600 13px/1.35 system-ui;padding:9px 14px;text-align:center;pointer-events:none';document.body.appendChild(d)}d.textContent=t}
 function netToast(t,ms){srvUpd(t);const d=$('srvupd');clearTimeout(d._t);if(ms)d._t=setTimeout(()=>d.remove(),ms)}
-const BUILD='2026-11-11T23:04Z';   // version du jeu (date de construction, UTC)
+const BUILD='2026-11-11T23:51Z';   // version du jeu (date de construction, UTC)
 setTimeout(()=>{if(HEADLESS)return;const d=document.createElement('div');d.id='buildTag';d.style.cssText='position:fixed;right:30px;top:116px;z-index:70;font:600 10.5px/1 system-ui;color:#7d8899;pointer-events:none;letter-spacing:.02em;text-shadow:0 1px 2px #000';
  d.textContent=LG('Version du ','Version ')+new Date(BUILD).toLocaleString(LANG==='en'?'en-US':'fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});document.body.appendChild(d);
  setInterval(()=>{d.style.display=menu.classList.contains('hidden')?'none':''},700)},0);   // apres le chargement complet du script (LG, LANG)
@@ -11431,7 +11431,18 @@ const SKIN=(()=>{
  const gold=()=>P('gold',0xf2c14a,110,{specular:0xfff0b0});
  // ---------- catalogue ----------
  // n : [francais, anglais] ; lv : niveau qui debloque le skin
+ // ecusson Black Ops : plaque grise, bord clair, inscription blanche
+ const boPatch=(x,S)=>{x.fillStyle='#2a2d33';x.fillRect(0,0,S,S);x.strokeStyle='#9aa0a8';x.lineWidth=S*.08;x.strokeRect(S*.06,S*.06,S*.88,S*.88);x.fillStyle='#eef0f3';x.textAlign='center';x.textBaseline='middle';x.font='900 '+(S*.27|0)+'px system-ui,sans-serif';x.fillText('BLACK',S/2,S*.36);x.fillText('OPS',S/2,S*.68)};
+ // toile noire mate a fine trame (tenue des Black Ops, carte Desert)
+ const boCloth=(x,S,r)=>{x.fillStyle='#1f2125';x.fillRect(0,0,S,S);for(let i=0;i<S;i+=2){x.fillStyle='rgba(255,255,255,'+(.015+r()*.03)+')';x.fillRect(0,i,S,1)}for(let i=0;i<40;i++){x.fillStyle='rgba(0,0,0,.25)';x.fillRect(r()*S,r()*S,2+r()*4,1)}};
  const OUT={
+  // Black Ops : la tenue de l'equipe noire de la carte Desert. Gilet pare-balles, poches a chargeurs, radio, ceinturon, ecussons BLACK OPS
+  blackops:{n:['Black Ops','Black Ops'],lv:7,to:()=>LT('o_bo',boCloth),lg:()=>L('o_bo_l',0x1a1c20),tr:()=>L('o_bo_t',0x2b2f35),
+   ex(g,R,s){const v=L('o_bo_v',0x2b2f35),k=L('o_bo_k',0x15171a),p=L('o_bo_p',0x34393f),e=LT('o_bo_e',boPatch);
+    bx(g,9.9,10.5,13.4,v,0,23.2,0);bx(g,9.7,1.6,15.6,k,0,16.2,0);bx(g,1.4,1.4,1.4,L('o_bo_m',0x8a8f96),4.9,16.2,0);
+    for(const s_ of[-1,1]){bx(g,10,1.1,2.6,k,0,30.4,s_*4.4);for(const z of[1.9,4.6])bx(g,1.8,3.4,2.4,p,5.6,21.5,s_*z);bx(g,1.5,2.2,2.4,p,5.4,26.4,s_*3.3)}
+    bx(g,3,3.6,2.2,k,-1.2,31.6,6.5);cyl(g,.25,.25,6,5,k,-1.8,36,6.8);bx(g,.2,2.4,3.2,e,5.05,26.6,-.2);
+    for(const a of R.ar){const w=a.geometry.parameters.width,sz=a.position.z<0?-1:1;s.g.push(bx(a,3.4,2.6,.3,e,-w*.22,0,sz*2.1))}}},
   foret:{n:['Camouflage forêt','Woodland camo'],lv:4,to:()=>LT('o_for',camo('#4a5a2c',['#2f3d1c','#6b5a34','#1e2414'])),lg:()=>L('o_for_l',0x2e3a1e),tr:()=>L('o_for_t',0x3a3320),
    ex(g){const sc_=L('o_for_s',0x5d6b3a);tor(g,4.7,1.5,sc_,0,30.9,0);for(const s of[-1,1]){bx(g,5,1,4.2,L('o_for_t',0x3a3320),0,30.6,s*5.2);bx(g,2.2,3.2,3,L('o_for_t'),5.2,19.5,s*3.6)}}},
   arctique:{n:['Camouflage arctique','Arctic camo'],lv:9,to:()=>LT('o_arc',camo('#e8eef2',['#b9c4cc','#8d99a3','#ffffff'],22)),lg:()=>L('o_arc_l',0xc9d3da),tr:()=>L('o_arc_t',0x8d99a3),
@@ -11495,7 +11506,7 @@ const SKIN=(()=>{
   sable:{n:['Sable','Sand'],lv:2,bd:()=>LT('g_sab',camo('#c9a96a',['#8a6a3a','#e2cfa0','#5a4326'],24)),ac:()=>L('g_sab_a',0x5a4326),gl:()=>B('g_sab_g',0x2e2416)},
   carbone:{n:['Carbone','Carbon'],lv:7,bd:()=>M('g_car',()=>new THREE.MeshPhongMaterial({map:tex('g_car',carbon),shininess:60,specular:0x666666})),ac:()=>L('g_car_a',0xd82a2a),gl:()=>B('g_car_g',0xff3a30)},
   glacier:{n:['Glacier','Glacier'],lv:12,bd:()=>M('g_gla',()=>new THREE.MeshPhongMaterial({map:tex('g_gla',ice),shininess:130,specular:0xffffff,emissive:0x1a3848})),ac:()=>L('g_gla_a',0xffffff),gl:()=>B('g_gla_g',0x6fd0ff)},
-  neon:{n:['Néon','Neon'],lv:18,bd:()=>L('g_neo',0x150c26,{emissive:0x2c0c5a}),ac:()=>B('g_neo_a',0x3ff0ff,{fog:false}),gl:()=>B('g_neo_a',0x3ff0ff,{fog:false}),
+  neon:{n:['Néon','Neon'],lv:18,r:3,bd:()=>L('g_neo',0x150c26,{emissive:0x2c0c5a}),ac:()=>B('g_neo_a',0x3ff0ff,{fog:false}),gl:()=>B('g_neo_a',0x3ff0ff,{fog:false}),
    // contours en tubes de neon (couleur qui defile), halo de la meme couleur qui pulse
    fx(g,bb,edges){const tm=GLOW('g_neo_t',0x3ff0ff,1),eg=mesh(g,edges(.32),tm),H=gunGlow(g,bb,GLOW('g_neo_h',0x3ff0ff,.5,capTex),3.6);
     const sp=[...Array(3)].map(()=>{const q=new THREE.Sprite(SPR('g_neo_s',0xffffff,1));g.add(q);return q});
@@ -11916,7 +11927,7 @@ const SKIN=(()=>{
      tw.forEach((q,i)=>{const f=Math.max(0,Math.sin(t*2.6+i*1.9)),a=i*1.7+Math.floor(t*.41+i*.3)*2.3;q.position.set(Math.cos(a)*8.6,3+2.5*Math.sin(i*2.2),Math.sin(a)*8.6);q.scale.setScalar(.3+2.6*f*f*f)})}}},
   // couronne de cristal : grande couronne qui flotte au-dessus de la tete et tourne lentement. Cristaux limpides eclaires de l'interieur, ouverts en etoile
   // pour bien se voir en vue de jeu, rayons, halo ; la lumiere change de teinte
-  couronne:{n:['Couronne de cristal','Crystal crown'],lv:0,shop:1,r:3,vw:[0,54,0,92,-.75,.55],tz:1.25,b(g){hair(g,0x262234);const K=new THREE.Group(),cg=cryGeo(),oc=G('ecl_o',()=>new THREE.OctahedronGeometry(1,0));g.add(K);
+  couronnecristal:{n:['Couronne de cristal','Crystal crown'],lv:0,shop:1,r:3,vw:[0,54,0,92,-.75,.55],tz:1.25,b(g){hair(g,0x262234);const K=new THREE.Group(),cg=cryGeo(),oc=G('ecl_o',()=>new THREE.OctahedronGeometry(1,0));g.add(K);
     const pl=M('h_cc_m',()=>new THREE.MeshPhongMaterial({color:0xf2f5fc,emissive:0x4a5266,envMap:skyEnv(),combine:THREE.MixOperation,reflectivity:.45,shininess:200,specular:0xffffff,side:THREE.DoubleSide})),
      cm=M('h_cc_c',()=>new THREE.MeshPhongMaterial({color:0xc9f0ff,emissive:0x2478b8,specular:0xffffff,shininess:110,flatShading:true,transparent:true,opacity:.88,envMap:skyEnv(),combine:THREE.MixOperation,reflectivity:.42})),core=GLOW('h_cc_k',0xe4f9ff,1),gm=B('h_cc_g',0xa8ecff,{fog:false}),edge=GLOW('h_cc_e',0x9fe6ff,.5);
     // bandeau d'or blanc : deux joncs, un anneau, des pierres ; lisere lumineux
@@ -12145,7 +12156,7 @@ const SKIN=(()=>{
      for(let i=0;i<8;i++){const m=MAT['g_dia_s'+i];if(m)m.color.setHSL((i/8+t*.2)%1,1,.8)}});
     return t=>twTick(sp,t,2.8)}}});
  const CATS=[['o',['Tenue','Outfit'],OUT],['h',['Bonnet','Hat'],HAT],['g',['Arme','Weapon'],GUN],['b',['Sac','Bag'],BAG],['a',['Aura','Aura'],AUR]],DEF={o:OUT,h:HAT,g:GUN,b:BAG,a:AUR};
- const RAR=l=>l>=25?3:l>=17?2:l>=9?1:0,RARN=[['Commun','Common'],['Rare','Rare'],['Épique','Epic'],['Légendaire','Legendary']],RARC=['#a3b1c2','#3fa2ff','#b768ff','#ffae2b'],rarOf=it=>it.shop?it.r:RAR(it.lv);
+ const RAR=l=>l>=25?3:l>=17?2:l>=9?1:0,RARN=[['Commun','Common'],['Rare','Rare'],['Épique','Epic'],['Légendaire','Legendary']],RARC=['#a3b1c2','#3fa2ff','#b768ff','#ffae2b'],rarOf=it=>it.shop||it.r!=null?it.r:RAR(it.lv);   // r : rarete imposee (ex. arme Neon legendaire au niveau 18)
  // couleurs de rarete pour les cartes (variables CSS) : teinte pleine, fond leger, bord, halo derriere le modele
  const RSTY=r=>{const h=RARC[r],n=parseInt(h.slice(1),16),c=[n>>16,n>>8&255,n&255].join(',');return'--rc:'+h+';--rca:rgba('+c+',.13);--rcb:rgba('+c+',.42);--rcg:rgba('+c+',.62)'};
  // ---------- poser / retirer un skin sur un personnage ----------
@@ -12293,7 +12304,7 @@ const SKIN=(()=>{
   $('skTabs').innerHTML='<div class="shHead"><b>'+LG('Nouveaux skins dans ','New skins in ')+'<span id="shLeft">'+(SHOPI&&SHOPI.end?left():'…')+'</span></b><small>'+(!SHOPI?'':on_?(CUR==='usd'&&SHOPI.fx?LG('Prix convertis au cours du jour : 1 € = ','Prices converted at today’s rate: €1 = ')+new Intl.NumberFormat(LANG==='en'?'en-US':'fr-FR',{minimumFractionDigits:4,maximumFractionDigits:4}).format(SHOPI.fx.usd)+' $':LG('8 skins, deux par rareté · paiement sécurisé par Stripe','8 skins, two per rarity · secure payment by Stripe')):LG('boutique bientôt disponible','shop coming soon'))+'</small></div>'+
    '<div class="shCur" role="group" aria-label="'+LG('Devise','Currency')+'"><button data-cur="eur" class="'+(CUR==='eur'?'on':'')+'">€ EUR</button><button data-cur="usd" class="'+(CUR==='usd'?'on':'')+'">$ USD</button></div>';
   const PK=(SHOPI&&SHOPI.packs||[]).filter(p=>packOf(p.id)).map(p=>{const own=packOwned(p),on=p.items.every(q=>cur[q.c]===q.id);
-    return'<button class="skPack pk_'+p.id+(on?' on':'')+'" data-pack="'+p.id+'"><span class="skPkT"><i>'+LG('Pack légendaire','Legendary pack')+'</i><b>'+esc(LGn(p.n))+'</b><small>'+p.items.map(q=>esc((q.c==='g'?LGn(CATN.g)+' ':'')+LGn(DEF[q.c][q.id].n))).join(' + ')+'</small>'+(own?'<span class="skPkO">✓ '+LG('Possédé','Owned')+'</span>':'<span class="skPkP">'+(on_?money(CUR==='usd'&&p.pu?p.pu:p.p):'…')+'</span>')+'</span>'+
+    return'<button class="skPack pk_'+p.id+(on?' on':'')+'" data-pack="'+p.id+'"><span class="skPkT"><i>'+LG('Pack du week-end','Weekend pack')+(SHOPI&&SHOPI.packEnd?' · '+LG('jusqu’à dimanche','until Sunday'):'')+'</i><b>'+esc(LGn(p.n))+'</b><small>'+p.items.map(q=>esc((q.c==='g'?LGn(CATN.g)+' ':'')+LGn(DEF[q.c][q.id].n))).join(' + ')+'</small>'+(own?'<span class="skPkO">✓ '+LG('Possédé','Owned')+'</span>':'<span class="skPkP">'+(on_?money(CUR==='usd'&&p.pu?p.pu:p.p):'…')+'</span>')+'</span>'+
      '<span class="skPkI">'+p.items.map(q=>{const k=q.c+q.id+132;return TH[k]?'<img class="skI" alt="" src="'+TH[k]+'">':(TQ.push({c:q.c,id:q.id}),'<img class="skI ld" alt="" data-k="'+q.c+q.id+'" src="'+PX+'">')}).join('')+'</span></button>'}).join('');
   $('skGrid').innerHTML=PK+(L.length?L.filter(q=>DEF[q.c]&&DEF[q.c][q.id]).map(q=>{const it=DEF[q.c][q.id],r=rarOf(it),own=owned(q.c,q.id),on=cur[q.c]===q.id,k=q.c+q.id+132;
     return'<button class="skC r'+r+(on?' on':'')+'" data-c="'+q.c+'" data-id="'+q.id+'" style="'+RSTY(r)+'">'+(own?'<span class="skOwn">'+LG('Possédé','Owned')+'</span>':'<span class="skPr">'+(on_?money(CUR==='usd'&&q.pu?q.pu:q.p):'…')+'</span>')+
@@ -12361,14 +12372,14 @@ const SKIN=(()=>{
  // ---------- recompenses : skins debloques par les niveaux gagnes ----------
  const CATN={o:['Tenue','Outfit'],h:['Bonnet','Hat'],g:['Arme','Weapon'],b:['Sac','Bag'],a:['Aura','Aura']};
  function rewards(l0,l1){const r=[];for(const c in DEF)for(const id in DEF[c]){const lv=DEF[c][id].lv;if(!DEF[c][id].shop&&lv>l0&&lv<=l1)r.push({c,id,lv})}return r.sort((a,b)=>a.lv-b.lv)}
- function nextReward(lv){let best=null;for(const c in DEF)for(const id in DEF[c]){const l=DEF[c][id].lv;if(!DEF[c][id].shop&&l>lv&&(!best||l<best.lv))best={c,id,lv:l}}if(!best)return null;const it=DEF[best.c][best.id],r=RAR(it.lv);
+ function nextReward(lv){let best=null;for(const c in DEF)for(const id in DEF[c]){const l=DEF[c][id].lv;if(!DEF[c][id].shop&&l>lv&&(!best||l<best.lv))best={c,id,lv:l}}if(!best)return null;const it=DEF[best.c][best.id],r=rarOf(it);
   return{lv:best.lv,name:LGn(it.n),cat:LGn(CATN[best.c]),rar:LGn(RARN[r]),col:RARC[r],r,sty:RSTY(r),img:thumb(best.c,best.id)}}
  // carte affichee sur l'ecran de fin quand un niveau gagne debloque un ou plusieurs skins
  let RQ=[];
  function announce(l0,l1){const r=rewards(l0,l1);if(!r.length)return;RQ=r;const b=$('skRew'),lv=l1;
   b.querySelector('.srT').textContent=LG('Niveau ','Level ')+lv+LG(' atteint !',' reached!');b.querySelector('.srS').textContent=r.length>1?LG(r.length+' nouveaux skins débloqués',r.length+' new skins unlocked'):LG('Nouveau skin débloqué','New skin unlocked');
-  b.querySelector('.srL').innerHTML=r.map((q,i)=>{const it=DEF[q.c][q.id],rr=RAR(it.lv);return'<div class="srI r'+rr+'" style="'+RSTY(rr)+'"><img alt="" src="'+thumb(q.c,q.id)+'"><b>'+esc(LGn(it.n))+'</b><small>'+esc(LGn(CATN[q.c]))+'</small><span class="srR">'+esc(LGn(RARN[rr]))+'</span><button class="srE" data-i="'+i+'">'+LG('Équiper','Equip')+'</button></div>'}).join('');
-  b.classList.toggle('leg',r.some(q=>RAR(q.lv)===3));b.classList.add('on');try{boostSnd()}catch(e){}}
+  b.querySelector('.srL').innerHTML=r.map((q,i)=>{const it=DEF[q.c][q.id],rr=rarOf(it);return'<div class="srI r'+rr+'" style="'+RSTY(rr)+'"><img alt="" src="'+thumb(q.c,q.id)+'"><b>'+esc(LGn(it.n))+'</b><small>'+esc(LGn(CATN[q.c]))+'</small><span class="srR">'+esc(LGn(RARN[rr]))+'</span><button class="srE" data-i="'+i+'">'+LG('Équiper','Equip')+'</button></div>'}).join('');
+  b.classList.toggle('leg',r.some(q=>rarOf(DEF[q.c][q.id])===3));b.classList.add('on');try{boostSnd()}catch(e){}}
  function initRew(){const b=document.createElement('div');b.id='skRew';b.innerHTML='<div class="srP" role="dialog" aria-modal="true"><div class="srGlow"></div><div class="srT"></div><div class="srS"></div><div class="srL"></div><button class="srX">'+LG('Continuer','Continue')+'</button></div>';document.body.appendChild(b);
   const shut=()=>b.classList.remove('on');b.querySelector('.srX').onclick=shut;b.addEventListener('pointerdown',e=>{if(e.target===b)shut()});
   // un appui sur la carte ne doit pas declencher le bouton de l'ecran de fin dessine dessous
