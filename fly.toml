@@ -14,9 +14,6 @@ kill_timeout = '300s'
   PORT = '8080'
   PROFILE_REGION = 'iad'
   REGIONS = 'cdg,lax,iad,sin'
-  # Mode test des skins : ouvrir le jeu avec ?skin=all debloque tous les skins pour le profil connecte (?skin=off l'enleve).
-  # Avant de vendre pour de vrai : remplacer 'all' par un mot connu de toi seul, ou supprimer cette ligne.
-  SKINS_ALL_KEY = 'all'
 
 [[mounts]]
   source = 'detonate_data'
