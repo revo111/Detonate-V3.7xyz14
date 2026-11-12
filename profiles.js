@@ -52,6 +52,26 @@ if (IS_PRIMARY) {
     if (STORE_OK) console.log('Profils : ' + Object.keys(DB).length + ' charges depuis ' + FILE);
   }
 }
+// skins renommes : la Couronne de cristal (boutique) avait le meme nom interne que la Couronne du niveau 29 (« couronne ») et la masquait.
+// Elle s'appelle maintenant « couronnecristal » ; les achats deja faits sont convertis au demarrage.
+const RENAMED = { 'h:couronne': 'couronnecristal' }, renamed = (c, id) => RENAMED[c + ':' + id] || id;
+function migrate() {
+  let n = 0;
+  for (const k in DB) {
+    const P = DB[k]; if (!P || typeof P !== 'object') continue;
+    for (const old in RENAMED) {
+      const [c] = old.split(':'), nw = c + ':' + RENAMED[old];
+      if (!Array.isArray(P.own) || !P.own.includes(old)) continue;
+      P.own = P.own.map(x => x === old ? nw : x).filter((x, i, a) => a.indexOf(x) === i);
+      if (Array.isArray(P.buy)) for (const b of P.buy) if (b.c === c && b.id === old.split(':')[1]) b.id = RENAMED[old];
+      // couronne portee par un acheteur : c'etait celle de cristal, sauf s'il a le niveau de la couronne doree
+      if (P.skn && P.skn[c] === old.split(':')[1] && lvlOf(+P.xp || 0) < 29) P.skn[c] = RENAMED[old];
+      n++;
+    }
+  }
+  if (n) { setTimeout(() => save(), 0); console.log('Profils : ' + n + ' achat(s) de skin renomme(s)'); }
+}
+if (IS_PRIMARY && STORE_OK) migrate();
 // copie du fichier une fois par jour (profiles-AAAA-MM-JJ.json, les 7 dernieres sont gardees)
 function backup() {
   const d = new Date().toISOString().slice(0, 10);
@@ -87,7 +107,7 @@ const cleanName = n => String(n || '').replace(/[<>&"']/g, '').trim().slice(0, 1
 // tenue (o), bonnet (h), arme (g), sac (b), aura (a). Le serveur ne garde et ne transmet que des skins debloques.
 // Dans le profil, les skins equipes sont dans « skn » (« sk » est l'empreinte du secret du joueur).
 const SKIN_LV = {
-  o: { foret: 4, arctique: 9, urbain: 14, hazmat: 19, furtif: 23, elite: 27 },
+  o: { blackops: 7, foret: 4, arctique: 9, urbain: 14, hazmat: 19, furtif: 23, elite: 27 },
   h: { casquette: 3, bonnet: 8, beret: 13, ranger: 17, viking: 22, couronne: 29 },
   g: { sable: 2, carbone: 7, glacier: 12, neon: 18, lave: 24, or: 28 },
   b: { tactique: 5, sport: 10, radio: 15, jetpack: 21, cristal: 26 },
@@ -101,15 +121,16 @@ const TEST = process.env.NODE_ENV !== 'production', tenv = k => TEST ? process.e
 // Secrets Fly : STRIPE_SECRET_KEY (cle sk_test_... ou sk_live_...), STRIPE_WEBHOOK_SECRET (cle whsec_... du webhook).
 const SHOP = {
   o: { costard: [0, 'Costard'], squelette: [1, 'Squelette'], astronaute: [1, 'Astronaute'], samourai: [2, 'Samouraï'], hologramme: [3, 'Hologramme'] },
-  h: { bandana: [0, 'Bandana'], kabuto: [1, 'Casque de samouraï'], bulle: [1, 'Casque spatial'], kitsune: [2, 'Masque de kitsune'], aureole: [3, 'Auréole'], laurier: [1, 'Laurier doré'], crane: [2, 'Crâne ardent'], eclats: [2, 'Cristaux gravitants'], couronne: [3, 'Couronne de cristal'] },
-  g: { bambou: [0, 'Bambou'], graffiti: [1, 'Graffiti'], circuit: [2, 'Circuit'], galaxie: [2, 'Galaxie'], prisme: [3, 'Prisme'], fluo: [2, 'Rose fluo'], argent: [2, 'Argent'], diamant: [3, 'Diamant'] },
-  b: { carapace: [0, 'Carapace'], katanas: [1, 'Katanas croisés'], drone: [2, 'Drone compagnon'], demon: [2, 'Ailes de démon'], ange: [3, "Ailes d'ange"] },
+  h: { bandana: [0, 'Bandana'], kabuto: [1, 'Casque de samouraï'], bulle: [1, 'Casque spatial'], kitsune: [2, 'Masque de kitsune'], aureole: [3, 'Auréole'], laurier: [1, 'Laurier doré'], crane: [2, 'Crâne ardent'], eclats: [2, 'Cristaux gravitants'], couronnecristal: [3, 'Couronne de cristal'] },
+  g: { bambou: [0, 'Bambou'], graffiti: [1, 'Graffiti'], circuit: [2, 'Circuit'], galaxie: [2, 'Galaxie'], prisme: [3, 'Prisme'], fluo: [2, 'Rose fluo'], argent: [2, 'Argent'], diamant: [3, 'Diamant'], rubis: [3, 'Rubis'] },
+  b: { carapace: [0, 'Carapace'], katanas: [1, 'Katanas croisés'], drone: [2, 'Drone compagnon'], demon: [2, 'Ailes de démon'], ange: [3, "Ailes d'ange"], ailesrubis: [3, 'Ailes de rubis'] },
   a: { notes: [0, 'Mélodie'], petales: [1, 'Pétales de cerisier'], orbite: [2, 'Orbite'], cercle: [2, "Cercle d'énergie"], spectre: [3, 'Flammes spectrales'], trainee: [2, 'Traînée ardente'], puissance: [3, 'Aura de puissance'], dragon: [3, 'Dragon céleste'] }
 };
 // prix en centimes selon la rarete (commun, rare, epique, legendaire)
 // prix fixes en euros : 0,99 / 1,49 / 1,99 / 2,99 ; au choix du joueur, prix en dollars americains convertis au cours du jour (voir FX)
 const PRICE = [99, 149, 199, 299], SHOP_CUR = 'eur', SHOP_CURS = ['eur', 'usd'];
-// Packs : plusieurs skins vendus ensemble a prix fixe, toujours en boutique (hors selection tournante). Leurs skins ne se vendent pas a l'unite.
+// Packs : plusieurs skins vendus ensemble a prix fixe, en boutique seulement le week-end (vendredi, samedi, dimanche, heure UTC), hors selection tournante.
+// En semaine, leurs skins sont vendus a l'unite dans la selection tournante ; le week-end, ils en sont retires (seul le pack les vend).
 // Un achat de pack est note { c: 'p', id: <pack> } dans le profil ; il donne tous les skins du pack.
 const PACKS = {
   rubis: { n: ['Pack Rubis', 'Ruby Pack'], p: 499, r: 3, items: [['g', 'rubis', 'arme Rubis'], ['b', 'ailesrubis', 'Ailes de rubis']] }
@@ -128,12 +149,16 @@ const SHOP_ALL = []; for (const c in SHOP) for (const id in SHOP[c]) SHOP_ALL.pu
 // Le tirage ne depend que du creneau horaire : toutes les regions et tous les joueurs voient la meme boutique.
 // Une meme paire ne sort jamais deux creneaux de suite pour une rarete.
 const ROT_MS = 8 * 3600 * 1000, ROT_N = 2;
+// week-end : creneau d'un vendredi, samedi ou dimanche (UTC). Les creneaux commencent a 0 h, 8 h, 16 h UTC : chacun tient dans une seule journee.
+const weekend = slot => [5, 6, 0].includes(new Date(slot * ROT_MS).getUTCDay());
+// fin du week-end en cours (lundi 0 h UTC)
+const weekendEnd = slot => { const d = new Date(slot * ROT_MS); d.setUTCHours(0, 0, 0, 0); d.setUTCDate(d.getUTCDate() + ((8 - d.getUTCDay()) % 7 || 7)); return d.getTime(); };
 const BY_R = [[], [], [], []]; for (const c in SHOP) for (const id in SHOP[c]) BY_R[SHOP[c][id][0]].push({ c, id });
 const rnd32 = s => () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 function rotation(slot) {
   const res = [];
   BY_R.forEach((L, r) => {
-    const draw = k => { const a = L.slice(), f = rnd32(Math.imul(k, 2654435761) + r * 104729 + 977); f(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(f() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+    const draw = k => { const a = weekend(k) ? L.filter(x => !PACK_ITEM.has(x.c + ':' + x.id)) : L.slice(), f = rnd32(Math.imul(k, 2654435761) + r * 104729 + 977); f(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(f() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
     const pair = (a, o) => a.slice(o, o + ROT_N), key = q => q.map(x => x.c + ':' + x.id).sort().join();
     // pas de meme paire deux creneaux de suite : on repart d'un creneau repere (tous les 64) et on avance jusqu'au creneau demande
     const s0 = Math.floor(slot / 64) * 64, b = draw(s0 - 1), a0 = draw(s0), no = [key(pair(b, 0)), key(pair(b, 1))];
@@ -398,7 +423,7 @@ async function http(req, res, url) {
   // boutique du moment : les 4 skins proposes, leurs prix et l'heure du prochain changement (sans profil : les invites la voient aussi)
   if (op === 'shop') {
     const sl = slotNow();
-    return out(res, 200, { on: STRIPE_KEY ? 1 : 0, cur: SHOP_CUR, curs: SHOP_CURS, fx: { usd: FX.usd, day: FX.day }, items: rotation(sl).map(x => Object.assign(x, { pu: inCur(x.p, 'usd') })), packs: Object.keys(PACKS).map(k => ({ id: k, n: PACKS[k].n, r: PACKS[k].r, p: PACKS[k].p, pu: inCur(PACKS[k].p, 'usd'), items: PACKS[k].items.map(x => ({ c: x[0], id: x[1] })) })), now: Date.now(), next: (Math.floor(Date.now() / ROT_MS) + 1) * ROT_MS });
+    return out(res, 200, { on: STRIPE_KEY ? 1 : 0, cur: SHOP_CUR, curs: SHOP_CURS, fx: { usd: FX.usd, day: FX.day }, items: rotation(sl).map(x => Object.assign(x, { pu: inCur(x.p, 'usd') })), packEnd: weekend(sl) ? weekendEnd(sl) : 0, packs: (weekend(sl) ? Object.keys(PACKS) : []).map(k => ({ id: k, n: PACKS[k].n, r: PACKS[k].r, p: PACKS[k].p, pu: inCur(PACKS[k].p, 'usd'), items: PACKS[k].items.map(x => ({ c: x[0], id: x[1] })) })), now: Date.now(), next: (Math.floor(Date.now() / ROT_MS) + 1) * ROT_MS });
   }
   const P = auth(m.id, m.s);
   if (!P) return out(res, 404, { err: 'profile' });
@@ -454,7 +479,7 @@ async function http(req, res, url) {
     const c = String(m.c || ''), id = String(m.it || ''), pr = priceOf(c, id);
     if (!pr) return out(res, 400, { err: 'item' });
     if (owns(P.own, c, id)) return out(res, 409, { err: 'owned' });
-    if (!isPack(c, id) && !inRotation(c, id)) return out(res, 409, { err: 'rotation' });   // la boutique a change : le jeu recharge la liste
+    if (isPack(c, id) ? !weekend(slotNow()) : !inRotation(c, id)) return out(res, 409, { err: 'rotation' });   // la boutique a change : le jeu recharge la liste
     if (!STRIPE_KEY) return out(res, 503, { err: 'shop' });
     const ret = retUrl(m.ret);
     if (!ret) return out(res, 400, { err: 'ret' });
@@ -532,7 +557,7 @@ function grant(P, c, id, info) {
 }
 // session de paiement Stripe -> { pid, c, id, st } ; donne le skin si le paiement est fait
 function fromSession(o) {
-  const md = o && o.metadata || {}, P = typeof md.pid === 'string' && DB[md.pid], c = String(md.c || ''), id = String(md.id || '');
+  const md = o && o.metadata || {}, P = typeof md.pid === 'string' && DB[md.pid], c = String(md.c || ''), id = renamed(c, String(md.id || ''));
   if (!P || !priceOf(c, id) || typeof o.id !== 'string') return null;
   if (LIVE && (o.livemode === false || /^cs_test_/.test(o.id))) return null;   // paiement de test refuse en production
   if (o.payment_status === 'paid') {
