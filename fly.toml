@@ -14,6 +14,18 @@ kill_timeout = '300s'
   PORT = '8080'
   PROFILE_REGION = 'iad'
   REGIONS = 'cdg,lax,iad,sin'
+  # Informations légales (mentions légales, CGV, politique de confidentialité) : à remplir, elles s'affichent dans le jeu
+  # (pages /mentions-legales, /cgv, /confidentialite). Un champ vide s'affiche « [à compléter] » en orange.
+  LEGAL_NOM = ''                 # prénom et nom de l'entrepreneur individuel (ex. 'Jean Dupont')
+  LEGAL_ADRESSE = ''             # adresse postale (domicile ou adresse de domiciliation de l'entreprise)
+  LEGAL_IMMAT = ''               # immatriculation (ex. 'RCS Pointe-à-Pitre 123 456 789' ou 'RNE, SIREN 123 456 789')
+  LEGAL_EMAIL = ''               # e-mail de contact (service client, données personnelles)
+  LEGAL_TEL = ''                 # téléphone de contact
+  LEGAL_TVA = ''                 # vide = 'TVA non applicable, article 293 B du Code général des impôts' (franchise en base de TVA)
+  LEGAL_DIRECTEUR = ''           # directeur de la publication (vide = même personne que LEGAL_NOM)
+  LEGAL_MEDIATEUR = ''           # nom du médiateur de la consommation auquel vous avez adhéré
+  LEGAL_MEDIATEUR_SITE = ''      # site internet du médiateur
+  LEGAL_MEDIATEUR_ADRESSE = ''   # adresse postale du médiateur
 
 [[mounts]]
   source = 'detonate_data'
