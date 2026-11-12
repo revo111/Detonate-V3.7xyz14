@@ -3401,6 +3401,16 @@ const farSt=(s,f)=>{let b=0,bd=-1;STG[s].forEach((p,i)=>{const d=Math.hypot(p[0]
 const pick=(a,r)=>a[(r|0)%a.length];
 // un attaquant ne sait qu'un desamorcage est en cours que s'il voit le desamorceur ou s'il est a portee d'oreille de la bombe
 const defSpot=e=>E.some(m=>m.team!==e.team&&m.alive&&m.act&&m.can==2&&(e.sv&&e.sv[m.id]||Math.hypot(e.x-bomb.x,e.y-bomb.y)<450));
+// dernier attaquant en vie avec la bombe : site tire au hasard a chaque manche (pondere par la distance, les defenseurs vus pres des sites
+// et le temps restant), en evitant le site choisi seul aux manches precedentes ; on ne change ensuite que pour une vraie raison
+const LONEH=[[],[]];
+function loneSite(e,hot,A){const n=SITES.length,H=LONEH[e.team]||(LONEH[e.team]=[]);if(!A.lr){A.lr=SITES.map(()=>Math.random());A.lh=H.slice()}
+ const P=A.lh,d=i=>Math.hypot(SITES[i].x-e.x,SITES[i].y-e.y),ok=i=>d(i)*1.35/125+7<st.clock,   // un bot avance d'environ 125 unites par seconde
+  sc=i=>d(i)*.55+hot(i)*520+A.lr[i]*1500+(P[P.length-1]===i?900:0)+(P[P.length-2]===i?350:0)+(ok(i)?0:1e6);
+ let b=0;for(let i=1;i<n;i++)if(sc(i)<sc(b))b=i;
+ if(A.ls!==undefined&&A.ls!==b&&A.ls<n&&sc(A.ls)<1e6&&sc(A.ls)-sc(b)<450)b=A.ls;   // pas de va-et-vient pour une petite difference
+ if(A.lsP===undefined){A.lsP=1;H.push(b);if(H.length>4)H.shift()}else H[H.length-1]=b;
+ A.ls=b;return b}
 function think(e){
 const at=e.team==atk,A=PLN[e.team],foe=PLN[1-e.team],ms=E.filter(m=>m.team==e.team&&m.alive),idx=ms.indexOf(e),
 en=E.filter(m=>m.team!=e.team),alive=en.filter(m=>m.alive).length,adv=ms.length-alive,
@@ -3484,12 +3494,12 @@ if(at){
  // couverture pendant la pose
  if(ms.some(m=>m!==e&&m.act&&m.can==1)){obj('cov'+e.id+(e.hslot||0),[slot(HOLD,S)],'hold',[SITES[S].x,SITES[S].y]);return}
  // fin de manche : le porteur vise le site le plus proche et toute l'equipe le suit
- if(st.clock<45&&bomb.car>=0&&E[bomb.car]&&E[bomb.car].alive){const c=E[bomb.car];S=[0,1,2].sort((a,b)=>Math.hypot(SITES[a].x-c.x,SITES[a].y-c.y)-Math.hypot(SITES[b].x-c.x,SITES[b].y-c.y))[0];A.s1=S}
+ if(st.clock<45&&!lone&&bomb.car>=0&&E[bomb.car]&&E[bomb.car].alive){const c=E[bomb.car];S=[0,1,2].sort((a,b)=>Math.hypot(SITES[a].x-c.x,SITES[a].y-c.y)-Math.hypot(SITES[b].x-c.x,SITES[b].y-c.y))[0];A.s1=S}
  // porteur : droit au site ; les autres : angles d'approche differents, puis tenue
  const v=pick(STG[S],e.id+S+(A.rot|0));
  // execution synchronisee : on se regroupe chacun a son point d'approche, puis tout le monde entre en meme temps
  // (au lieu d'arriver un par un et de se faire eliminer separement)
- if(lone&&e.id===bomb.car){A.go=1;if(!e.cs||T-e.cs>6){e.cs=T;S=A.s1=[0,1,2].sort((a,b)=>(hot(a)*900+Math.hypot(SITES[a].x-e.x,SITES[a].y-e.y))-(hot(b)*900+Math.hypot(SITES[b].x-e.x,SITES[b].y-e.y)))[0]}}
+ if(lone&&e.id===bomb.car){A.go=1;if(!e.cs||T-e.cs>4||A.ls===undefined){e.cs=T;A.s1=loneSite(e,hot,A)}S=A.s1}
  if(!A.go){const ready=ms.filter(m=>{const w=pick(STG[S],m.id+S+(A.rot|0));return Math.hypot(m.x-w[0],m.y-w[1])<260}).length;
   if(A.mode=='rush'||ready>=Math.max(1,ms.length-1)||A.t>(A.exT||(A.exT=8+Math.random()*12))||st.clock<55||adv>0)A.go=1}
  if(!A.go){obj('st'+S+e.id,[v],'hold',[SITES[S].x,SITES[S].y]);return}
@@ -3804,7 +3814,7 @@ ${LITE?'':`<h3>7. Conditions de vente</h3>
   fromHash()}
  return{init,open,close,isOpen,v:V}})();
 setTimeout(()=>{if(typeof HEADLESS!=='undefined'&&HEADLESS)return;try{LEGAL.init()}catch(e){console.error(e)}},0);
-const BUILD='2026-11-12T19:58Z';   // version du jeu (date de construction, UTC)
+const BUILD='2026-11-12T22:13Z';   // version du jeu (date de construction, UTC)
 function netBannerOff(){const d=$('netb');if(d)d.remove()}
 // fin de partie (ou partie arretee) : retour dans le salon, sans recharger la page
 function toMenu(){try{dropSock()}catch(e){}netMode=false;isHost=false;netStarted=false;netRoomCode='';netPlayers=[];netInputs={};netRecon=0;netBye=false;localSlot=0;rematchAsked=false;ENDT0=0;SBO=false;ENDR.length=0;netBannerOff();try{quitBox.style.display='none'}catch(e){}try{for(const k in keys)keys[k]=0;mouse.down=0}catch(e){}try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur()}catch(e){}menu.classList.remove('hidden');menuShow('mainMenu');try{menuMessage('')}catch(e){}GM='obj';try{loadMap(mapId());newRound();MBGa=Math.PI/2;FORCE=1}catch(e){console.error(e)}}
@@ -11260,7 +11270,7 @@ if(!SH&&!WARM()&&!CRM())for(const e of E){const t=e.team,i=e.id-(t?TS:0),ally=t=
  pcard(x,y,cw,chh,e,ally,e.id===localSlot);if(ally)CARDR.push([x,y,cw,chh,e.id]);if(ally&&e.id===specId&&isSpectating()){g.lineWidth=2;g.strokeStyle='#ffd27a';g.beginPath();g.roundRect?g.roundRect(x-2,y-2,cw+4,chh+4,7):g.rect(x-2,y-2,cw+4,chh+4);g.stroke()}}
 const HB=CRM()?crTop(mt,now,narrow,SH):(SH?sy+26:py+ph+(side||WARM()?0:chh+6));if(!CRM()){const ext=side&&!WARM()?TS*(cw+3)+6:0;SBR=SH?[pcx-62,sy-4,124,34]:[px-ext,py-4,pw+2*ext,HB-py+8]}if(!SH&&!CRM())txt('▾',pcx,py+ph-4,9,'rgba(255,255,255,.5)',null,700);
 const inGame=!!(menu.classList&&menu.classList.contains&&menu.classList.contains('hidden'))&&st.s!=='end';if(quitBtn&&quitBtn.style){stySet(quitBtn,'display',inGame?'flex':'none')}
-if(CRM()){}else if(SH){const tm_=TDM()?Math.max(0,Math.ceil(st.tl??TDM_T)):ZONEMODE()?Math.max(0,Math.ceil(ZN.t)):live?-1:cl,ts_=tm_<0?String(Math.ceil(Math.max(0,bomb.t))):Math.floor(tm_/60)+':'+String(tm_%60).padStart(2,'0'),sv=ZONEMODE()?[ZN.pts[0]||0,ZN.pts[1]||0]:score;
+if(CRM()){}else if(SH){const tm_=TDM()?Math.max(0,Math.ceil(st.tl??TDM_T)):ZONEMODE()?Math.max(0,Math.ceil(ZN.t)):live?-1:cl,ts_=tm_<0?String(Math.ceil(Math.max(0,bomb.t))):Math.floor(tm_/60)+':'+String(tm_%60).padStart(2,'0'),sv=ZONEMODE()?[0,1].map(t=>Math.min(ZONE_WIN,Math.floor(ZN.pts[t]||0))):score;
  pill(pcx-60,sy,120,26,10,'rgba(8,12,22,.62)');pill(pcx-60,sy,30,26,10,TD(0).pill);pill(pcx+30,sy,30,26,10,TD(1).pill);txt(sv[0],pcx-45,sy+14,14,TD(0).txt,null,700);txt(sv[1],pcx+45,sy+14,14,TD(1).txt,null,700);txt(ts_,pcx,sy+14,13,live?'#ff6a5a':'#fff',null,700)}
 else{txt(score[0],px+32,py+ph/2+1,22,TD(0).txt,null,700);txt(score[1],px+pw-32,py+ph/2+1,22,TD(1).txt,null,700);
 if(TDM()){const tl=Math.max(0,Math.ceil(st.tl??TDM_T));txt(Math.floor(tl/60)+':'+String(tl%60).padStart(2,'0'),pcx,py+ph/2+1,18,tl<=60?'#ff6a5a':'#fff',null,700);
@@ -12543,6 +12553,159 @@ const SKIN=(()=>{
     AN('dia',t=>{sweep('g_dia_w',t,2.6,.8);MAT.g_dia_f.uniforms.t.value=t;const h=(t*.12)%1;MAT.g_dia_e.color.setHSL(h,.75,.8);MAT.g_dia_h.opacity=.38+.12*Math.sin(t*2.1);MAT.g_dia.emissiveIntensity=.9+.25*Math.sin(t*2.4);
      for(let i=0;i<8;i++){const m=MAT['g_dia_s'+i];if(m)m.color.setHSL((i/8+t*.2)%1,1,.8)}});
     return t=>twTick(sp,t,2.8)}}});
+ // ---------- SACS DE LA BOUTIQUE, serie 2 : cape blanche en fourrure, flamme multicolore, ailes de papillon scintillantes ----------
+ // vitesse du porteur, mesuree d'une image a l'autre sur la position du sac dans le monde (la cape se souleve quand on court)
+ const speedOf=g=>{const p=new THREE.Vector3(),q=new THREE.Vector3();let t0=-1,v=0;return t=>{g.getWorldPosition(q);const dt=t-t0;if(t0>=0&&dt>0&&dt<.5)v+=(Math.min(320,q.distanceTo(p)/dt)-v)*Math.min(1,dt*5);else if(t0>=0)v=0;p.copy(q);t0=t;return v}};
+ // --- fourrure : touffe bosselee (sphere deformee, normales lissees) et texture de poils
+ const furGeo=()=>G('furG',()=>{const g=new THREE.SphereGeometry(1,12,9),p=g.attributes.position,v=new THREE.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i);v.multiplyScalar(1+.15*Math.sin(v.x*7.3+v.y*3.1)*Math.sin(v.z*6.1-v.y*4.7)+.07*Math.sin(v.x*15+v.z*11+v.y*5));p.setXYZ(i,v.x,v.y,v.z)}g.computeVertexNormals();return g});
+ const furTex=(x,S,r)=>{x.fillStyle='#e9edf3';x.fillRect(0,0,S,S);x.lineCap='round';for(let i=0;i<1100;i++){const px=r()*S,py=r()*S,l=2+r()*6,a=1.1+r()*.9,c=205+r()*50|0;x.strokeStyle='rgba('+c+','+c+','+Math.min(255,c+10)+','+(.3+r()*.5)+')';x.lineWidth=.7+r()*.9;for(const ox of[-S,0,S])for(const oy of[-S,0,S]){x.beginPath();x.moveTo(px+ox,py+oy);x.lineTo(px+ox+Math.cos(a)*l,py+oy+Math.sin(a)*l);x.stroke()}}};
+ // --- cape : satin blanc, poils fins, flocon brode argent au centre du dos, liseres argentes ; doublure bleu glacier
+ const capeTex=(x,S,r)=>{const g=x.createLinearGradient(0,0,0,S);g.addColorStop(0,'#ffffff');g.addColorStop(1,'#e6ebf3');x.fillStyle=g;x.fillRect(0,0,S,S);
+  x.lineCap='round';for(let i=0;i<700;i++){const px=r()*S,py=r()*S,l=3+r()*6,c=212+r()*40|0;x.strokeStyle='rgba('+c+','+c+','+(c+12)+','+(.18+r()*.3)+')';x.lineWidth=.6+r()*.7;x.beginPath();x.moveTo(px,py);x.lineTo(px+(r()-.5)*2,py+l);x.stroke()}
+  x.strokeStyle='#b8c8dc';x.lineWidth=3;x.beginPath();x.moveTo(S*.07,0);x.lineTo(S*.07,S*.93);x.lineTo(S*.93,S*.93);x.lineTo(S*.93,0);x.stroke();x.strokeStyle='#eef4fb';x.lineWidth=1;x.stroke();
+  const cx=S/2,cy=S*.44,R=S*.17,arm=(w,c)=>{x.strokeStyle=c;x.lineWidth=w;for(let k=0;k<6;k++){const a=k*Math.PI/3-Math.PI/2,ux=Math.cos(a),uy=Math.sin(a),px=-uy,py=ux;x.beginPath();x.moveTo(cx,cy);x.lineTo(cx+ux*R,cy+uy*R);
+    for(const[f,l]of[[.42,.3],[.7,.22]])for(const s of[-1,1]){x.moveTo(cx+ux*R*f,cy+uy*R*f);x.lineTo(cx+ux*R*(f+l*.7)+px*s*R*l,cy+uy*R*(f+l*.7)+py*s*R*l)}x.stroke()}
+   x.beginPath();for(let k=0;k<=6;k++){const a=k*Math.PI/3-Math.PI/2,rr=R*.2;k?x.lineTo(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr):x.moveTo(cx+Math.cos(a)*rr,cy+Math.sin(a)*rr)}x.stroke()};
+  arm(6,'#9fb6d4');arm(2.2,'#f4f9ff');x.fillStyle='#cfe4ff';for(let k=0;k<6;k++){const a=k*Math.PI/3-Math.PI/2;x.beginPath();x.arc(cx+Math.cos(a)*R*1.08,cy+Math.sin(a)*R*1.08,3,0,TAU);x.fill()}};
+ const liningTex=(x,S)=>{const g=x.createLinearGradient(0,0,S,S);g.addColorStop(0,'#d9e9f8');g.addColorStop(.5,'#a9c7e8');g.addColorStop(1,'#cfe2f6');x.fillStyle=g;x.fillRect(0,0,S,S);x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=2;for(let i=-S;i<S*2;i+=9){x.beginPath();x.moveTo(i,0);x.lineTo(i+S*.3,S);x.stroke()}};
+ // cape : grille souple recalculee a chaque image (tombe dans le dos a l'arret, se souleve et ondule en courant)
+ const CNU=8,CNV=12;
+ function capeGeo(){const g=new THREE.BufferGeometry(),n=(CNU+1)*(CNV+1),U=[],I=[];for(let i=0;i<=CNU;i++)for(let j=0;j<=CNV;j++)U.push(i/CNU,1-j/CNV);
+  for(let i=0;i<CNU;i++)for(let j=0;j<CNV;j++){const a=i*(CNV+1)+j,b=a+CNV+1;I.push(a,a+1,b,b,a+1,b+1)}
+  g.setAttribute('position',new THREE.Float32BufferAttribute(new Float32Array(n*3),3));g.setAttribute('uv',new THREE.Float32BufferAttribute(U,2));g.setIndex(I);return g}
+ Object.assign(BAG,{
+  capefourrure:{n:['Cape blanche en fourrure','White fur cape'],lv:0,shop:1,r:1,vw:[-4,16,0,118,2.45,.42],tz:1.3,b(g){
+    const geo=capeGeo(),pos=geo.attributes.position,out=M('b_cap',()=>new THREE.MeshLambertMaterial({map:tex('b_cap',capeTex,256),emissive:0x1c2028,side:THREE.FrontSide})),inn=M('b_cap_i',()=>new THREE.MeshLambertMaterial({map:tex('b_cap_i',liningTex,64),side:THREE.BackSide}));
+    const c1=mesh(g,geo,out),c2=mesh(g,geo,inn);c1.frustumCulled=c2.frustumCulled=false;
+    // touffes : col tout autour du cou (fixe) + bordure de la cape (suit le tissu), dans un seul InstancedMesh
+    const fm=M('b_cap_f',()=>new THREE.MeshLambertMaterial({map:tex('b_cap_f',furTex,64),color:0xffffff,emissive:0x2a2e36})),NC0=26,NST=17,NC=NC0+NST,NE=CNU*2+1+2*(CNV-1),fur=new THREE.InstancedMesh(furGeo(),fm,NC+NE);fur.frustumCulled=false;g.add(fur);
+    const m4=new THREE.Matrix4(),qq=new THREE.Quaternion(),e=new THREE.Euler(),vp=new THREE.Vector3(),vs=new THREE.Vector3(),R_=[...Array(NC+NE)].map((_,i)=>[Math.sin(i*12.9898)*43758.5453%1,Math.sin(i*78.233)*12345.678%1]);
+    const put=(i,x,y,z,s)=>{const r=R_[i];qq.setFromEuler(e.set(r[0]*3,r[1]*3,r[0]*r[1]*5));vs.set(s,s*.85,s);m4.compose(vp.set(x,y,z),qq,vs);fur.setMatrixAt(i,m4)};
+    // haut de la cape : au ras du dos au centre, puis par-dessus les epaules jusque sur les cotes (toujours hors du torse)
+    const top=uu=>{const a=Math.abs(uu),k=Math.pow(Math.max(0,(a-.45)/.55),1.6);return[-.6+6.06*k,8.15-.25*k,uu*8.35]};
+    for(let i=0;i<NC0;i++){const a=i/NC0*TAU,r=Math.abs(R_[i][0]);put(i,6.3+Math.cos(a)*5.9,8.9+.5*Math.sin(a*3)+r*.6,Math.sin(a)*7.3,1.55+r*.75)}
+    // etole : une deuxieme rangee de touffes posee sur le haut de la cape, du milieu du dos jusqu'aux epaules
+    for(let i=0;i<NST;i++){const uu=-1+2*i/(NST-1),[x,y,z]=top(uu),r=Math.abs(R_[NC0+i][1]);put(NC0+i,x-.35,y+.55+r*.3,z*1.02,1.7+r*.55)}
+    // fermoir : medaillon d'argent et pierre bleu glacier, sur le devant du col
+    const sil=P('b_cap_m',0xdfe6ee,120,{specular:0xffffff}),cl=new THREE.Group();cl.position.set(12.6,7.9,0);cl.rotation.z=-.2;g.add(cl);const d=cyl(cl,1.7,1.7,.7,14,sil,0,0,0);d.rotation.z=Math.PI/2;sph(cl,1,B('b_cap_g',0x9fe0ff,{fog:false}),.5,0,0);
+    for(const s of[-1,1]){const k=cyl(cl,.35,.35,4,6,sil,0,0,s*2.6);k.rotation.x=Math.PI/2}
+    const gl=[...Array(4)].map(()=>{const q=new THREE.Sprite(SPR('b_cap_s',0xe6f4ff,1));g.add(q);return q}),GL=[[3,4],[6,7],[1,9],[5,11]];
+    const spd=speedOf(g);let sp=0,last=-1;
+    const up=t=>{const v=spd(t),dt=last<0?0:Math.min(.1,t-last);last=t;sp+=(Math.min(1,v/190)-sp)*Math.min(1,dt*3);
+     const th0=.16+.85*sp,th1=.3+.55*sp,L=21.5,ds=L/CNV,B0=NC,B1=NC+CNU+1;let k=NC+2*CNU+1;
+     for(let i=0;i<=CNU;i++){const u=i/CNU,uu=2*u-1;let[x,y,z0]=top(uu),th=th0;const Lk=1-.07*uu*uu;
+      for(let j=0;j<=CNV;j++){const v_=j/CNV;
+       if(j>0){const vm=(j-.5)/CNV;th=th0+th1*vm*vm+(.05+.06*sp)*Math.sin(t*(1.9+3*sp)-vm*4+uu*1.6)*(.3+vm)+.12*sp*vm*Math.sin(t*8.5-vm*7+uu*2.2);x-=Math.sin(th)*ds*Lk;y-=Math.cos(th)*ds*Lk}
+       const f=(j?1:0)*.7*Math.cos(u*TAU*2.5+.4)*(.2+v_)*(1-.5*sp)+.35*sp*v_*Math.sin(t*7.5+uu*5-v_*4),z=z0*(1+(j?.12:0)+.4*v_),px=x-Math.cos(th)*f,py=y+Math.sin(th)*f;
+       pos.setXYZ(i*(CNV+1)+j,px,py,z);
+       // bordure de fourrure : bas de la cape et ses deux cotes
+       if(j===CNV)put(B0+i,px-.3,py-.4,z,1.3+.25*Math.abs(R_[B0+i][0]));
+       else if(j>0&&(i===0||i===CNU))put(k++,px-.2,py,z+(i?.55:-.55),1.05+.2*Math.abs(R_[k-1][0]))}}
+     // touffes intermediaires du bas, au milieu de deux voisines
+     for(let i=0;i<CNU;i++){const a=i*(CNV+1)+CNV,b=a+CNV+1;put(B1+i,(pos.getX(a)+pos.getX(b))/2-.3,(pos.getY(a)+pos.getY(b))/2-.4,(pos.getZ(a)+pos.getZ(b))/2,1.2+.25*Math.abs(R_[B1+i][1]))}
+     fur.instanceMatrix.needsUpdate=true;pos.needsUpdate=true;geo.computeVertexNormals();
+     gl.forEach((q,i)=>{const[a,b]=GL[i],n=a*(CNV+1)+b,f=Math.max(0,Math.sin(t*2.1+i*1.9));q.position.set(pos.getX(n)-.8,pos.getY(n),pos.getZ(n));q.scale.setScalar(.3+2.6*f*f*f)})};
+    up(0);return up}},
+  bouledefeu:{n:['Flamme multicolore','Rainbow flame'],lv:0,shop:1,r:2,vw:[-9,20,0,104,2.4,.38],tz:1.2,b(g){
+    // flamme libre qui flotte dans le dos, sans support : trois enveloppes emboitees (exterieure, milieu, coeur presque blanc)
+    // qui ondulent, vacillent et changent de couleur en montant ; des langues de feu se detachent du sommet, des etincelles s'envolent
+    const fl=new THREE.Group();fl.position.set(-11.4,-4.2,0);g.add(fl);
+    const TOP=[[7.6,25,7.6,0,0,.62,1.3],[5.3,18.5,5.3,.05,.2,.75,4.1],[2.7,11.5,2.7,.1,.85,1,7.7]];
+    const L=TOP.map(([sx,sy,sz,k,o,a,sd],i)=>{const q=mesh(fl,flameLathe(),flameMat('b_fl'+i,k,o,a,sd,i===2));q.scale.set(sx,sy,sz);q.renderOrder=3+i;return q});
+    const TG=[0,1,2].map(i=>{const q=mesh(fl,flameLathe(),flameMat('b_flt',.5,.2,.7,2.9));q.renderOrder=3;return q});
+    const HN=6,sparkM=[...Array(HN)].map((_,i)=>M('b_fb_s'+i,()=>new THREE.SpriteMaterial({map:starTex,color:0xffffff,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}))),
+     seedM=M('b_fl_k',()=>new THREE.SpriteMaterial({map:radTex,color:0xffffff,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));
+const seed=new THREE.Sprite(seedM);seed.scale.set(9,9,1);seed.position.y=2.4;fl.add(seed);
+    const GLM=[0,1,2].map(i=>M('b_fl_g'+i,()=>new THREE.SpriteMaterial({map:radTex,color:0xffffff,transparent:true,opacity:.55,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}))),GS=GLM.map((m,i)=>{const q=new THREE.Sprite(m);q.position.y=4+i*4.5;fl.add(q);return q});
+    const SK=[...Array(14)].map((_,i)=>{const q=new THREE.Sprite(sparkM[i%HN]);fl.add(q);return q});
+    const anF=t=>{FLU.uT.value=t%1000;GLM.forEach(m=>m.opacity=.5+.1*Math.sin(t*11.3+m.id));for(let i=0;i<HN;i++)sparkM[i].color.setHSL((t*.09+i/HN)%1,1,.72);for(let i=0;i<3;i++)GLM[i].color.setHSL((t*.09+.08+i*.12)%1,1,.6);seedM.color.setHSL((t*.09+.05)%1,.6,.8)};AN('bfl',anF);anF(0);
+    // la flamme se couche vers l'arriere quand on court (comme une vraie flamme), un peu inclinee a l'arret
+    const spd=speedOf(g);let sp=0,last=-1;
+    const up=t=>{const v=spd(t),dt=last<0?0:Math.min(.1,t-last);last=t;sp+=(Math.min(1,v/190)-sp)*Math.min(1,dt*2.5);fl.rotation.z=.2+.85*sp+.04*Math.sin(t*1.7);fl.rotation.x=.05*Math.sin(t*1.3);
+     GS.forEach((q,i)=>q.scale.setScalar((14-i*3)*(1+.08*Math.sin(t*9.7+i*2))));TG.forEach((q,i)=>{const p=(t*.75+i/3)%1,k=Math.sin(Math.min(1,p*3)*Math.PI*.5)*(1-p);q.position.set(1.3*Math.sin(t*1.7+i*2.1)*p,15+p*14,1.1*Math.cos(t*1.3+i*1.7)*p);q.scale.set(2.2*k,6*k,2.2*k)});
+     SK.forEach((q,i)=>{const p=(t*(.42+.07*(i%3))+i/14)%1,a=i*2.399+t*1.4+p*2.5,r=2+p*7.5;q.position.set(Math.cos(a)*r,3+p*28,Math.sin(a)*r);q.scale.setScalar(2.6*Math.sin(p*Math.PI)*(.6+.4*Math.sin(t*9+i)))})};
+    up(0);return up}},
+  papillon:{n:['Ailes de papillon scintillantes','Sparkling butterfly wings'],lv:0,shop:1,r:3,vw:[-8,24,0,170,2.55,.62],tz:1.5,b(g){
+    // deux grandes ailes d'un seul tenant (lobe du haut et lobe du bas avec sa queue), legerement pliees vers l'arriere,
+    // irisees (la teinte glisse avec l'angle de vue), bordure noire perlee, reflet qui balaie, points qui scintillent, paillettes
+    const body=P('b_pap_b',0x2a1446,130,{specular:0xd8b8ff}),gem=B('b_pap_g',0xc8f2ff,{fog:false}),F=[];
+    for(const[y,sc]of[[8.6,.85],[5,1.15],[1.2,1],[-2.4,.75]]){const q=sph(g,1.5,body,-1.6,y,0);q.scale.set(.85*sc,1.45*sc,.85*sc)}sph(g,.95,gem,-2.75,5,0);sph(g,.55,gem,-2.5,1.2,0);
+    const hl=new THREE.Sprite(M('b_pap_h',()=>new THREE.SpriteMaterial({map:radTex,color:0xa070ff,transparent:true,opacity:.3,blending:THREE.AdditiveBlending,depthWrite:false,fog:false})));hl.scale.set(80,56,1);hl.position.set(-12,6,0);g.add(hl);
+    const wm=papMat(),DUST=[0xff7ae0,0x6ae8ff,0xb68cff,0xfff0a8,0xffffff].map((c,i)=>SPR('b_pap_d'+i,c,1));
+    for(const s_ of[-1,1]){const W=new THREE.Group();W.position.set(-2,5.6,s_*1.5);wingBasis(W,s_,.16,0);g.add(W);const f=new THREE.Group();W.add(f);mesh(f,papGeo(s_),wm).renderOrder=2;
+     const SP=PAPS.map(([u,v],i)=>{const q=new THREE.Sprite(SPR('b_pap_s',0xffffff,1));q.position.copy(papAt(u,v,s_));q.position.z+=(s_>0?1:-1)*.3;f.add(q);return q});F.push([f,s_,SP])}
+    const DU=[...Array(16)].map((_,i)=>{const q=new THREE.Sprite(DUST[i%5]);g.add(q);return q});
+    const anP=t=>{PAPU.uT.value=t%1000;MAT.b_pap_h.opacity=.26+.08*Math.sin(t*1.9)};AN('bpap',anP);anP(0);
+    const up=t=>{const fl=Math.pow(.5+.5*Math.sin(t*2.2),1.6)+.12*Math.max(0,Math.sin(t*9))*Math.max(0,Math.sin(t*.7));
+     F.forEach(([f,s_,SP])=>{f.rotation.y=-s_*(.1+.42*fl);SP.forEach((q,i)=>{const k=Math.max(0,Math.sin(t*3.1+i*1.9+s_));q.scale.setScalar(.25+3.4*k*k*k)})});
+     DU.forEach((q,i)=>{const p=(t*.12+i/16)%1,s_=i%2?1:-1;q.position.set(-8-12*p-3*Math.sin(i*2.7),12-28*p+1.5*Math.sin(t*1.7+i),s_*(6+((i*5.7)%19))+2*Math.sin(t*1.2+i*2.3));q.scale.setScalar(2*Math.sin(p*Math.PI))})};
+    up(.4);return up}}});
+ // ---------- flamme : enveloppe en forme de goutte (tour), deformee et coloree par un shader ----------
+ const NOISE='float h3(vec3 p){p=fract(p*.3183099+.1);p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}'+
+  'float n3(vec3 x){vec3 i=floor(x),f=fract(x);f=f*f*(3.-2.*f);return mix(mix(mix(h3(i),h3(i+vec3(1,0,0)),f.x),mix(h3(i+vec3(0,1,0)),h3(i+vec3(1,1,0)),f.x),f.y),mix(mix(h3(i+vec3(0,0,1)),h3(i+vec3(1,0,1)),f.x),mix(h3(i+vec3(0,1,1)),h3(i+vec3(1,1,1)),f.x),f.y),f.z);}'+
+  'float fb(vec3 p){return .55*n3(p)+.3*n3(p*2.07)+.15*n3(p*4.31);}vec3 hsv(float h,float s,float v){vec3 k=clamp(abs(mod(h*6.+vec3(0.,4.,2.),6.)-3.)-1.,0.,1.);return v*mix(vec3(1.),k,s);}';
+ const FLU={uT:{value:0}};
+ const flameLathe=()=>G('flLathe',()=>{const P=[];for(let i=0;i<=20;i++){const y=i/20,r=Math.pow(Math.min(1,y/.2),.55)*Math.pow(1-y,1.25)*1.12;P.push(new THREE.Vector2(Math.max(.0001,r),y))}return new THREE.LatheGeometry(P,28)});
+ // enveloppes exterieures en melange normal (les couleurs restent visibles sur un sol clair), coeur en mode additif (lueur)
+ const flameMat=(k,hk,wo,al,sd,add)=>M(k,()=>new THREE.ShaderMaterial({uniforms:{uT:FLU.uT,uK:{value:hk},uO:{value:wo},uA:{value:al},uS:{value:sd}},precision:'highp',transparent:true,depthWrite:false,blending:add?THREE.AdditiveBlending:THREE.NormalBlending,
+   vertexShader:'uniform float uT,uS;varying float vH;varying vec3 vN,vV,vP;'+NOISE+'void main(){vec3 p=position;float h=clamp(p.y,0.,1.),a=atan(p.z,p.x);'+
+    'p.xz*=1.+.55*h*(n3(vec3(cos(a)*1.6+uS,sin(a)*1.6,h*3.2-uT*3.4))-.5);p.x+=sin(uT*2.6+h*3.1+uS)*.3*h*h;p.z+=cos(uT*2.05+h*2.6+uS*1.7)*.26*h*h;p.y*=1.+.08*sin(uT*8.1+uS)+.05*sin(uT*12.7+uS*2.);'+
+    'vH=h;vP=position;vec4 mv=modelViewMatrix*vec4(p,1.);vN=normalize(normalMatrix*normal);vV=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}',
+   fragmentShader:'uniform float uT,uK,uO,uA,uS;varying float vH;varying vec3 vN,vV,vP;'+NOISE+'void main(){float d=abs(dot(normalize(vN),normalize(vV)));'+
+    'float n=fb(vec3(vP.x*2.2+uS,vP.y*3.4-uT*2.6,vP.z*2.2));float a=(.42+.58*pow(d,1.2))*smoothstep(0.,.14,vH)*(1.-smoothstep(.5,1.,vH+.18*(n-.5)))*(.5+.95*n);'+
+    'vec3 c=hsv(fract(uT*.09+vH*.75+uK+n*.12),.95-.55*uO,1.);c=mix(c,vec3(1.,.97,.9),uO*pow(1.-vH,1.5)*.8);'+(add?'gl_FragColor=vec4(c*a*uA,1.);}':'gl_FragColor=vec4(c*(1.1+.4*n),clamp(a*uA,0.,1.));}')}));
+ // ---------- ailes de papillon ----------
+ // contour d'une aile : bord d'attaque jusqu'a l'apex, bord exterieur, encoche, lobe du bas, queue, bord interieur (coordonnees u vers l'exterieur, v vers le haut)
+ const PAPC=[[0,1.2],[[2.5,9.5,9,18.5,18.8,21.6],[22.6,22.8,25.6,21.4,25.2,17.4],[24.8,12.4,22.4,6.6,18.6,3.2],[21.4,.4,22.4,-4.6,20.6,-8.6],[19,-12,16.4,-13.6,14.6,-15],[13.8,-17.6,13,-20.2,11.4,-22.4],[10,-19.6,9,-16.6,7.6,-14.2],[4.6,-10.4,1.6,-5.4,0,-1.2]]];
+ const papShape=()=>{const s=new THREE.Shape();s.moveTo(...PAPC[0]);for(const c of PAPC[1])s.bezierCurveTo(...c);s.lineTo(...PAPC[0]);return s};
+ let PAPP=null;const papPoly=()=>PAPP||(PAPP=papShape().getSpacedPoints(240));
+ const PB=[-.5,-23,26.5,46.5];   // cadre de l'aile [u0,v0,largeur,hauteur]
+ const inPoly=(x,y,P)=>{let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const a=P[i],b=P[j];if((a.y>y)!==(b.y>y)&&x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)c=!c}return c};
+ // pli : le lobe du haut part vers le haut et l'arriere, le lobe du bas vers le bas et l'arriere ; le bout de l'aile se recourbe un peu
+ const papAt=(u,v,s_)=>{const ps=-.1+(v>0?.8:.92)*Math.tanh(v/3.2),bz=s_>0?1:-1;return new THREE.Vector3(u,v*Math.cos(ps),bz*(v*Math.sin(ps)+.006*u*u))};
+ const papGeo=s_=>G('papW'+(s_>0?'p':'n'),()=>{const P=papPoly(),N=46,M_=82,pos=[],uv=[],idx=[],id=new Int32Array((N+1)*(M_+1)).fill(-1),ins=[];
+   for(let j=0;j<=M_;j++)for(let i=0;i<=N;i++){const u=PB[0]+PB[2]*i/N,v=PB[1]+PB[3]*j/M_;ins.push(inPoly(u,v,P)||inPoly(u+.5,v,P)||inPoly(u-.5,v,P)||inPoly(u,v+.5,P)||inPoly(u,v-.5,P))}
+   const vid=(i,j)=>{const k=j*(N+1)+i;if(id[k]<0){id[k]=pos.length/3;const u=PB[0]+PB[2]*i/N,v=PB[1]+PB[3]*j/M_,q=papAt(u,v,s_);pos.push(q.x,q.y,q.z);uv.push(i/N,j/M_)}return id[k]};
+   for(let j=0;j<M_;j++)for(let i=0;i<N;i++){const a=j*(N+1)+i;if(!(ins[a]||ins[a+1]||ins[a+N+1]||ins[a+N+2]))continue;const p0=vid(i,j),p1=vid(i+1,j),p2=vid(i,j+1),p3=vid(i+1,j+1);idx.push(p0,p1,p2,p2,p1,p3)}
+   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g});
+ // points scintillants (coordonnees de l'aile)
+ const PAPS=[[7,9],[13,14.5],[19,18],[22.5,16],[16,8],[10,4],[16,-5],[12,-10],[18.5,-6.5],[12.2,-18],[5,-6]];
+ // peinture de l'aile (512) : bleu profond a la racine, cyan, violet, rose vers le bord ; nervures ; bordure noire veloutee
+ // avec liseré lumineux, deux rangees de perles ; queue doree ; transparente hors de l'aile
+ const papTex=(x,S,r)=>{const X=u=>(u-PB[0])/PB[2]*S,Y=v=>(1-(v-PB[1])/PB[3])*S,P=papPoly(),path=()=>{x.beginPath();P.forEach((p,i)=>i?x.lineTo(X(p.x),Y(p.y)):x.moveTo(X(p.x),Y(p.y)));x.closePath()};
+  x.clearRect(0,0,S,S);x.save();path();x.clip();
+  const g=x.createRadialGradient(X(0),Y(0),0,X(0),Y(0),S*.62);g.addColorStop(0,'#0a0c48');g.addColorStop(.16,'#1630b8');g.addColorStop(.38,'#12b4ff');g.addColorStop(.58,'#5ae6ff');g.addColorStop(.74,'#8f5cff');g.addColorStop(.9,'#ff4fd2');g.addColorStop(1,'#ff9fe6');x.fillStyle=g;x.fillRect(0,0,S,S);
+  // voile nacre et grain scintillant
+  const q=x.createRadialGradient(X(13),Y(9),0,X(13),Y(9),S*.24);q.addColorStop(0,'rgba(210,255,255,.42)');q.addColorStop(1,'rgba(210,255,255,0)');x.fillStyle=q;x.fillRect(0,0,S,S);
+  const q2=x.createRadialGradient(X(13),Y(-7),0,X(13),Y(-7),S*.16);q2.addColorStop(0,'rgba(255,200,250,.35)');q2.addColorStop(1,'rgba(255,200,250,0)');x.fillStyle=q2;x.fillRect(0,0,S,S);
+  for(let i=0;i<500;i++){x.fillStyle='rgba(255,255,255,'+(.08+r()*.22)+')';x.fillRect(r()*S,r()*S,1.4,1.4)}
+  // nervures : cellule centrale, puis nervures qui rayonnent jusqu'au bord en se divisant
+  x.lineCap='round';x.lineJoin='round';const vein=(pts,w)=>{x.lineWidth=w;x.beginPath();x.moveTo(X(pts[0][0]),Y(pts[0][1]));for(let i=1;i<pts.length;i++)x.lineTo(X(pts[i][0]),Y(pts[i][1]));x.stroke()};
+  const VC=[[1.5,1.2],[9,6.5],[14.5,8.2],[11.5,2.2],[6,-1.2],[1.5,-.6]];
+  x.strokeStyle='rgba(6,6,40,.75)';vein(VC.concat([VC[0]]),S*.007);
+  const ends=[[19,21.4],[22.7,20.8],[25,17],[24,11],[21.4,6],[20.9,-1.5],[20.3,-8.8],[16.6,-13.6],[12.6,-19.6],[8.4,-15.4],[4.8,-10.8]],starts=[[9,6.5],[11.5,7.4],[14.5,8.2],[14.5,8.2],[13.2,5.3],[11.5,2.2],[11.5,2.2],[9,1],[6,-1.2],[6,-1.2],[3,-1]];
+  ends.forEach((e,i)=>{const s0=starts[i],m=[(s0[0]+e[0])/2+(r()-.5)*1.2,(s0[1]+e[1])/2+(r()-.5)*1.2];vein([s0,m,[e[0]*.97,e[1]*.97]],S*.0055)});
+  x.strokeStyle='rgba(6,6,40,.6)';vein([[1.5,1.2],[5,9],[12,16.5],[18.6,20.8]],S*.006);vein([[1.5,-.6],[4,-6],[7.6,-12]],S*.005);
+  // bordure : bande noire, liseré cyan lumineux a l'interieur, perles blanches et roses en deux rangees
+  path();x.strokeStyle='#07051a';x.lineWidth=S*.085;x.stroke();
+  x.save();x.translate(X(10),Y(0));x.scale(.915,.93);x.translate(-X(10),-Y(0));path();x.strokeStyle='rgba(120,240,255,.85)';x.lineWidth=S*.006;x.stroke();x.restore();
+  const D=papShape().getSpacedPoints(64);D.forEach((p,i)=>{if(Math.hypot(p.x,p.y)<6)return;const c=[10,0],k=.955,px=c[0]+(p.x-c[0])*k,py=c[1]+(p.y-c[1])*k;x.fillStyle=i%2?'#ffffff':'#ffb8f0';x.beginPath();x.arc(X(px),Y(py),S*(i%2?.0085:.006),0,TAU);x.fill()});
+  const D2=papShape().getSpacedPoints(30);D2.forEach((p,i)=>{if(Math.hypot(p.x,p.y)<7)return;const c=[10,0],k=.86,px=c[0]+(p.x-c[0])*k,py=c[1]+(p.y-c[1])*k;x.fillStyle='rgba(255,255,255,.75)';x.beginPath();x.ellipse(X(px),Y(py),S*.009,S*.0055,Math.atan2(p.y,p.x),0,TAU);x.fill()});
+  // queue : bout dore
+  const gq=x.createLinearGradient(X(12),Y(-17),X(11.4),Y(-22.4));gq.addColorStop(0,'rgba(255,214,110,0)');gq.addColorStop(1,'rgba(255,222,140,1)');x.fillStyle=gq;x.fillRect(X(8),Y(-16.5),X(15)-X(8),Y(-23)-Y(-16.5));
+  x.restore()};
+ const PAPU={uT:{value:0}};
+ // matiere de l'aile : peinture + irisation selon l'angle de vue + reflet qui balaie + leger relief ; decoupe nette par la transparence de la peinture
+ const papMat=()=>M('b_pap',()=>{const t=tex('b_papT',papTex,512);t.wrapS=t.wrapT=THREE.ClampToEdgeWrapping;t.anisotropy=4;
+   return new THREE.ShaderMaterial({uniforms:{uT:PAPU.uT,uTex:{value:t}},side:THREE.DoubleSide,precision:'highp',
+    vertexShader:'varying vec2 vU;varying vec3 vN,vV;void main(){vU=uv;vec4 mv=modelViewMatrix*vec4(position,1.);vN=normalize(normalMatrix*normal);vV=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}',
+    fragmentShader:'uniform float uT;uniform sampler2D uTex;varying vec2 vU;varying vec3 vN,vV;'+
+     'vec3 hsv(float h,float s,float v){vec3 k=clamp(abs(mod(h*6.+vec3(0.,4.,2.),6.)-3.)-1.,0.,1.);return v*mix(vec3(1.),k,s);}'+
+     'void main(){vec4 c=texture2D(uTex,vU);if(c.a<.5)discard;vec3 n=normalize(vN);if(!gl_FrontFacing)n=-n;float d=abs(dot(n,normalize(vV)));'+
+     'float l=dot(c.rgb,vec3(.3,.59,.11));vec3 ir=hsv(fract(.52+(1.-d)*.55+uT*.045+vU.x*.12),.75,1.);'+
+     'vec3 col=c.rgb*(.82+.3*d)+ir*.42*l*(1.-.35*d);'+
+     'float ph=fract(uT*.27)*2.4-.5,b=exp(-pow((vU.x*.85+vU.y*.5-ph)*6.,2.));col+=vec3(1.,.96,1.)*b*.55*l;'+
+     'col+=vec3(.6,.9,1.)*pow(1.-d,3.)*.25*l;gl_FragColor=vec4(col,1.);}'})});
  const CATS=[['o',['Tenue','Outfit'],OUT],['h',['Bonnet','Hat'],HAT],['g',['Arme','Weapon'],GUN],['b',['Sac','Bag'],BAG],['a',['Aura','Aura'],AUR]],DEF={o:OUT,h:HAT,g:GUN,b:BAG,a:AUR};
  const RAR=l=>l>=25?3:l>=17?2:l>=9?1:0,RARN=[['Commun','Common'],['Rare','Rare'],['Épique','Epic'],['Légendaire','Legendary']],RARC=['#a3b1c2','#3fa2ff','#b768ff','#ffae2b'],rarOf=it=>it.shop||it.r!=null?it.r:RAR(it.lv);   // r : rarete imposee (ex. arme Neon legendaire au niveau 18)
  // couleurs de rarete pour les cartes (variables CSS) : teinte pleine, fond leger, bord, halo derriere le modele
