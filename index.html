@@ -3492,7 +3492,7 @@ const $=id=>document.getElementById(id),menu=$('menu');
 const myName=()=>{const v=($('nameInput')&&$('nameInput').value.trim())||'';return v||('Joueur'+(10+Math.random()*89|0))};
 function menuShow(id){['mainMenu','privateMenu','lobby'].forEach(x=>$(x).classList.toggle('hidden',x!==id));$('mapPick').classList.toggle('hidden',id==='lobby')}
 function menuMessage(t,cls=''){const inL=!$('lobby').classList.contains('hidden'),a=$(inL?'menuMsg':'menuMsgMain'),b=$(inL?'menuMsgMain':'menuMsg');a.className=cls;a.textContent=t||'';b.textContent=''}
-function netBanner(t,ms){let d=$('netb');if(!d){d=document.createElement('div');d.id='netb';d.style.cssText='position:fixed;top:40%;left:0;right:0;text-align:center;z-index:60;background:#000c;color:#fff;font:600 17px system-ui;padding:14px';document.body.appendChild(d)}d.textContent=t;if(ms)setTimeout(()=>location.reload(),ms)}
+function netBanner(t,ms,rl){let d=$('netb');if(!d){d=document.createElement('div');d.id='netb';d.style.cssText='position:fixed;top:40%;left:0;right:0;text-align:center;z-index:60;background:#000c;color:#fff;font:600 17px system-ui;padding:14px';document.body.appendChild(d)}d.textContent=t;if(ms)setTimeout(()=>{if(rl)location.reload();else toMenu()},ms)}
 function wsConnect(region){if(region!==undefined)netRegion=region;return new Promise((resolve,reject)=>{if(netSocket&&netSocket.readyState===1&&netSocket._rg===netRegion)return resolve();if(netSocket){try{netSocket.onclose=null;netSocket.close()}catch(x){}netSocket=null}
  const ws=new WebSocket(NET_URL.replace(/\/$/,'')+'/?region='+encodeURIComponent(netRegion||srvChoice||''));netSocket=ws;const timer=setTimeout(()=>{try{ws.close()}catch(x){}reject(new Error('Serveur inaccessible.'))},50000);
  ws._rg=netRegion;ws.onopen=()=>{clearTimeout(timer);netConnected=true;resolve()};
@@ -3543,12 +3543,13 @@ function dropSock(){try{if(netSocket){netSocket.onclose=null;netSocket.close()}}
 // message discret en bas de l'ecran, sans recharger la page (ms : il disparait tout seul)
 function srvUpd(t){let d=$('srvupd');if(!d){d=document.createElement('div');d.id='srvupd';d.style.cssText='position:fixed;bottom:96px;left:50%;transform:translateX(-50%);max-width:min(520px,88vw);z-index:59;background:rgba(10,14,24,.88);border:1px solid rgba(255,215,106,.5);border-radius:12px;color:#ffe9a8;font:600 13px/1.35 system-ui;padding:9px 14px;text-align:center;pointer-events:none';document.body.appendChild(d)}d.textContent=t}
 function netToast(t,ms){srvUpd(t);const d=$('srvupd');clearTimeout(d._t);if(ms)d._t=setTimeout(()=>d.remove(),ms)}
-const BUILD='2026-11-12T00:32Z';   // version du jeu (date de construction, UTC)
+const BUILD='2026-11-12T01:32Z';   // version du jeu (date de construction, UTC)
 setTimeout(()=>{if(HEADLESS)return;const d=document.createElement('div');d.id='buildTag';d.style.cssText='position:fixed;right:30px;top:116px;z-index:70;font:600 10.5px/1 system-ui;color:#7d8899;pointer-events:none;letter-spacing:.02em;text-shadow:0 1px 2px #000';
  d.textContent=LG('Version du ','Version ')+new Date(BUILD).toLocaleString(LANG==='en'?'en-US':'fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});document.body.appendChild(d);
  setInterval(()=>{d.style.display=menu.classList.contains('hidden')?'none':''},700)},0);   // apres le chargement complet du script (LG, LANG)
 function netBannerOff(){const d=$('netb');if(d)d.remove()}
 // fin de partie (ou partie arretee) : retour dans le salon, sans recharger la page
+function toMenu(){try{dropSock()}catch(e){}netMode=false;isHost=false;netStarted=false;netRoomCode='';netPlayers=[];netInputs={};netRecon=0;netBye=false;localSlot=0;rematchAsked=false;ENDT0=0;SBO=false;ENDR.length=0;netBannerOff();try{quitBox.style.display='none'}catch(e){}try{for(const k in keys)keys[k]=0;mouse.down=0}catch(e){}try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur()}catch(e){}menu.classList.remove('hidden');menuShow('mainMenu');try{menuMessage('')}catch(e){}GM='obj';try{loadMap(mapId());newRound();MBGa=Math.PI/2;FORCE=1}catch(e){console.error(e)}}
 function backToLobby(){netStarted=false;rematchAsked=false;ENDT0=0;SBO=false;ENDR.length=0;netBannerOff();try{quitBox.style.display='none'}catch(e){}try{for(const k in keys)keys[k]=0;mouse.down=0}catch(e){}
  const me=netPlayers.find(p=>p.id===netPlayerId);isHost=!!(me&&me.host);menu.classList.remove('hidden');menuShow('lobby');renderLobby();rcSave()}
 async function createRoom(){try{localStorage.setItem('detonate_name',nameRaw())}catch(e){}netBye=false;menuMessage('Connexion… (un serveur gratuit peut mettre 30 s à se réveiller)');try{await wsRetry(srvChoice);sendNet({type:'create',name:myName(),map:mapId(),mode:mapChoice==='guerre'||mapChoice==='tetris'?'obj':(mapChoice==='neige'||mapChoice==='foret'?'obj':modeChoice)})}catch(e){menuMessage(e.message,'danger')}}
@@ -3579,7 +3580,7 @@ function netMessage(m){
  if((m.type==='srvupd'||m.type==='closed')&&!(netMode&&netRoomCode)){dropSock();return}
  // serveur en cours de mise a jour : la partie en cours va jusqu'au bout, la suivante se jouera sur la nouvelle version
  if(m.type==='srvupd'){srvUpd(LG('Mise à jour du serveur : la partie continue jusqu’à la fin, puis le jeu se rechargera sur la nouvelle version.','Server update: this game carries on to the end, then the game reloads on the new version.'));return}
- if(m.type==='closed'){netBye=true;netBanner(m.upd?LG('Le serveur vient d’être mis à jour — rechargement du jeu…','The server has just been updated — reloading the game…'):LG("La partie s'est arrêtée — retour au menu…",'The game has stopped — back to menu…'),m.upd?2500:3500);return}
+ if(m.type==='closed'){netBye=true;netBanner(m.upd?LG('Le serveur vient d’être mis à jour — rechargement du jeu…','The server has just been updated — reloading the game…'):LG("La partie s'est arrêtée — retour au menu…",'The game has stopped — back to menu…'),m.upd?2500:3500,!!m.upd);return}
 }
 // nom d'un joueur dans le salon : hote, toi, pret, deconnecte
 function lobName(p){return p.name+(p.host?' 👑':'')+(p.id===netPlayerId?LG(' (toi)',' (you)'):'')+(p.off?' <span class="offl">· '+LG('déconnecté','offline')+'</span>':(p.ready&&!p.host?' <span class="rdy">✓ '+LG('PRÊT','READY')+'</span>':''))}
@@ -3729,7 +3730,7 @@ if(!HEADLESS){try{const nm=localStorage.getItem('detonate_name');if(nm&&$('nameI
 $('teamBtn').onclick=()=>sendNet({type:'switch'});
 $('codeInput').addEventListener('input',e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,5));
 $('copyBtn').onclick=async()=>{try{await navigator.clipboard.writeText(netRoomCode);menuMessage(LG('Code copié.','Code copied.'),'ok')}catch(x){menuMessage('Code : '+netRoomCode)}};
-$('leaveBtn').onclick=()=>{netBye=true;rcSave();sendNet({type:'leave'});try{netSocket&&netSocket.close()}catch(x){}location.reload()};
+$('leaveBtn').onclick=()=>{netBye=true;rcSave();sendNet({type:'leave'});setTimeout(toMenu,120)};
 
 
 // ---------- plein ecran (telephone uniquement) ----------
@@ -3799,7 +3800,7 @@ addEventListener('pointerdown',e=>{if(e.target.tagName==='BUTTON'||(e.target.clo
 if(isSpectating()){const hitR=r=>e.clientX>=r[0]&&e.clientX<=r[0]+r[2]&&e.clientY>=r[1]&&e.clientY<=r[1]+r[3];
  for(const r of SPECR)if(hitR(r)){specCycle(r[4]);return}for(const r of CARDR)if(hitR(r)&&E[r[4]]&&E[r[4]].alive&&E[r[4]].team===MT&&r[4]!==localSlot){specId=r[4];return}}try{cv.setPointerCapture(e.pointerId)}catch(x){}if(st.s==='end'){const hb=ENDR.find(r=>e.clientX>=r[0]&&e.clientX<=r[0]+r[2]&&e.clientY>=r[1]&&e.clientY<=r[1]+r[3]);if(!hb)return;
  const nw=performance.now();if(ENDP&&nw-ENDP.t<450)return;ENDP={k:hb[4],t:nw};uiClick();
- if(hb[4]==='q'){try{if(netMode){netBye=true;rcSave();sendNet({type:'leave'})}}catch(_){}setTimeout(()=>location.reload(),netMode?250:200);return}
+ if(hb[4]==='q'){try{if(netMode){netBye=true;rcSave();sendNet({type:'leave'})}}catch(_){}setTimeout(toMenu,netMode?250:0);return}
  if(netMode){sendNet({type:'tolobby'});backToLobby();return}
  setTimeout(()=>{if(st.s!=='end')return;SBO=false;score=[0,0];HEAT=[0,0,0];PRES=[0,0,0];round=0;newRound()},180);return}
 {const inG=menu.classList.contains('hidden')&&st.s!=='end';if(inG&&SBO){SBO=false;return}
@@ -4431,7 +4432,7 @@ const quitBtn=document.getElementById('quitBtn'),quitBox=document.getElementById
 if(quitBtn&&quitBtn.addEventListener){const stop=e=>{e.stopPropagation()};['pointerdown','touchstart'].forEach(t=>{quitBtn.addEventListener(t,stop);quitBox.addEventListener(t,stop)});
  quitBtn.addEventListener('click',e=>{e.preventDefault();document.getElementById('quitSub').textContent=netMode?LG('L’IA prend ta place et cette partie ne te rapportera pas d’XP. Tu pourras revenir dans la partie depuis « Salons récents ».','The AI takes your place and this game will give you no XP. You can come back from “Recent rooms”.'):LG('La partie en cours sera perdue et ne rapportera pas d’XP.','The current game will be lost and will give no XP.');quitBox.style.display='flex';for(const k in keys)keys[k]=0;mouse.down=0});
  document.getElementById('quitNo').addEventListener('click',()=>{quitBox.style.display='none'});
- document.getElementById('quitYes').addEventListener('click',()=>{try{if(netMode){netBye=true;rcSave();sendNet({type:'leave'})}}catch(e){}setTimeout(()=>location.reload(),netMode?150:0)})}
+ document.getElementById('quitYes').addEventListener('click',()=>{try{if(netMode){netBye=true;rcSave();sendNet({type:'leave'})}}catch(e){}setTimeout(toMenu,netMode?150:0)})}
 // ecrit une propriete de style seulement si elle change (evite un travail du navigateur a chaque image)
 function stySet(el,k,v){if(el.style[k]!==v)el.style[k]=v}
 function pill(x,y,w,h,r,c){g.fillStyle=c;g.beginPath();if(g.roundRect)g.roundRect(x,y,w,h,r);else g.rect(x,y,w,h);g.fill()}
@@ -7584,7 +7585,7 @@ function zElim(){ZELR.length=0;const pl=ZS.pl[MT];if(!pl||st.s!=='live')return;c
  if(netMode){txt(LG('Tu regardes les survivants…','Watching the survivors…'),W/2,y+60,11,'rgba(255,255,255,.6)',null,600);return}
  const b2=(bw-30)/2;for(const[k,l,c,bx]of[['re',LG('REJOUER','PLAY AGAIN'),'#1f6a3a',x+10],['q',LG('QUITTER','QUIT'),'#7a2a24',x+20+b2]]){pill(bx,y+60,b2,38,10,c);txt(l,bx+b2/2,y+79,13,'#fff',null,800);ZELR.push([bx,y+60,b2,38,k])}}
 function zElimClick(e){if(!ZMB()||!ZELR.length||st.s!=='live')return false;const r=ZELR.find(r=>e.clientX>=r[0]&&e.clientX<=r[0]+r[2]&&e.clientY>=r[1]&&e.clientY<=r[1]+r[3]);if(!r)return false;uiClick();
- if(r[4]==='q'){setTimeout(()=>location.reload(),150);return true}setTimeout(()=>{SBO=false;score=[0,0,0,0,0];round=0;newRound()},150);return true}
+ if(r[4]==='q'){setTimeout(toMenu,150);return true}setTimeout(()=>{SBO=false;score=[0,0,0,0,0];round=0;newRound()},150);return true}
 // commandes (PC)
 function zControls(a){if(a<=0)return;const R_=[[['Z','Q','S','D','/','W','A','S','D'],LG('Se déplacer','Move')],[[LG('Souris','Mouse')],LG('Viser','Aim')],[[LG('Clic gauche','Left click'),'/','F'],LG('Tirer · coup de poignard / de lance','Shoot · knife / spear attack')],
   [['E','/',LG('Espace','Space')],LG('Ramasser · fouiller · boire · relever (maintenir)','Pick up · search · drink · revive (hold)')],[[0,1,2,3].map(zSlotKey),LG('Objets 1 à 4 : utiliser (maintenir : lâcher)','Items 1-4: use (hold: drop)')],
@@ -11161,7 +11162,7 @@ const PROF=(()=>{
  // et repasse en invite ; pour revenir sur le profil ici, il faut y saisir le code de sauvegarde a nouveau.
  function gone(){if(!I)return;const id=I.id;try{put(KH,(get(KH)||[]).filter(x=>x&&x.id!==id));localStorage.removeItem(KI);localStorage.removeItem(KI0);localStorage.removeItem(KC)}catch(e){}
   I=null;SID='';sput(KS,'');P=Object.assign({},P0,{n:gname()});ST='guest';
-  if(!HEADLESS){try{const t_=LG('Ton profil a été ouvert sur un autre appareil : celui-ci est déconnecté et passe en invité. Pour y revenir, saisis ton code de sauvegarde (Profil → « J’ai déjà un code »).','Your profile was opened on another device: this one is signed out and switches to guest. To come back, enter your save code (Profile → “I already have a code”).');if(typeof netToast==='function')netToast(t_,12000);else netBanner(t_,9000)}catch(e){}try{fill()}catch(e){}}
+  if(!HEADLESS){try{const t_=LG('Ton profil a été ouvert sur un autre appareil : celui-ci est déconnecté et passe en invité. Pour y revenir, saisis ta clé privée (Profil → « J’ai déjà une clé privée »).','Your profile was opened on another device: this one is signed out and switches to guest. To come back, enter your private key (Profile → “I have a private key”).');if(typeof netToast==='function')netToast(t_,12000);else netBanner(t_,9000)}catch(e){}try{fill()}catch(e){}}
   ui()}
  function lost(){old(I);I=null;SID='';sput(KS,'');try{localStorage.removeItem(KI)}catch(e){}P=Object.assign({},P0,{n:gname()});setSt('guest')}
  // ouvrir le profil sur cet onglet (take : le reprendre a un autre appareil)
@@ -11240,7 +11241,7 @@ const PROF=(()=>{
   b.querySelector('.ppStats').innerHTML=S.map(s=>'<div><b>'+esc(s[1])+'</b><span>'+esc(s[0])+'</span></div>').join('');
   $('profCode').value=CSHOW?code():CMASK;const nn=$('profNew');if(nn&&!nn.value&&document.activeElement!==nn)nn.value=gname();
   const mg=b.querySelector('.ppMig');mg.style.display=MIG?'block':'none';if(MIG)mg.textContent=LG('Ta progression précédente sera reprise (niveau ','Your previous progress will be carried over (level ')+lvlOf(Math.min(3000,+MIG.xp||0))+').';
-  $('profImpB').textContent=I?LG('Changer de profil','Switch profile'):LG('J’ai déjà un code','I have a code')}
+  $('profImpB').textContent=I?LG('Changer de profil','Switch profile'):LG('J’ai déjà une clé privée','I have a private key')}
  function info(){const b=$('profBox');b.querySelector('.ppInfo').innerHTML=XPT().map(([t,rows])=>'<div class="ppIT">'+esc(t)+'</div><div class="ppIL">'+rows.map(r=>'<div><span>'+esc(r[0])+'</span><b>'+esc(r[1])+'</b></div>').join('')+'</div>').join('');
   b.dataset.v='info';fill();b.querySelector('.ppPanel').scrollTop=0;try{uiClick()}catch(e){}}
  function home(){const b=$('profBox');b.dataset.v='home';fill()}
@@ -11255,13 +11256,13 @@ const PROF=(()=>{
   msg(LG('Création…','Creating…'),1);try{const j=await api('new',{n,mig:MIG,dev:DV,pin});$('profNewPin').value='';
    if(!(j.id&&j.s&&j.sid))return msg(j._st===429?LG('Trop de profils créés depuis ta connexion : réessaie dans une heure.','Too many profiles created from your connection: try again in an hour.'):UNR(),0);
    I={id:j.id,s:j.s};put(KI,I);SID=j.sid;sput(KS,SID);if(MIG){MIG=null;const c0=get(KC0);if(c0&&c0.v===1)put(KC0,Object.assign(c0,{v:0}))}
-   keep(j.prof);setName(P.n);setSt('on');$('profBox').classList.remove('imp');fill();msg(LG('Profil créé ! Copie ton code de sauvegarde et garde-le.','Profile created! Copy your save code and keep it.'),1)}catch(e){msg(UNR(),0)}}
+   keep(j.prof);setName(P.n);setSt('on');$('profBox').classList.remove('imp');fill();msg(LG('Profil créé ! Copie ta clé privée et garde-la.','Profile created! Copy your private key and keep it.'),1)}catch(e){msg(UNR(),0)}}
  // reprendre son profil ouvert sur un autre appareil (l'autre passe en invite)
  async function take(){msg(LG('Connexion…','Connecting…'),1);await sync(true);fill();
   if(ST==='on')msg(LG('Ton profil est maintenant actif ici. L’autre onglet passe en invité.','Your profile is now active here. The other tab switches to guest.'),1);else msg(UNR(),0)}
  // importer un code : le profil s'ouvre sur cet appareil (s'il est ouvert ailleurs : bouton « Jouer ici »)
  let IPM='',IPQ='';   // saisie du code sur un nouvel appareil : '' sans PIN, 'pin' PIN demande, 'new' nouveau PIN a choisir (apres un oubli)
- async function imp(){const q=parse($('profImp').value);if(!q)return msg(LG('Code invalide : vérifie qu’il est complet (il commence par DTN2.).','Invalid code: check that it is complete (it starts with DTN2.).'),0);
+ async function imp(){const q=parse($('profImp').value);if(!q)return msg(LG('Clé privée invalide : vérifie qu’elle est complète (elle commence par DTN2.).','Invalid private key: check that it is complete (it starts with DTN2.).'),0);
   if(I&&q.id===I.id){if(ST==='on')return msg(LG('C’est déjà le profil de cet appareil.','This is already this device’s profile.'),1);return take()}
   const pb=$('profImpPinBox'),pv=$('profImpPin').value.trim(),pinAsk=(mode,t)=>{IPM=mode;IPQ=q.id;pb.classList.add('on');$('profImpPinT').textContent=t;$('profImpF').style.display=mode==='pin'?'':'none';$('profImpPin').value='';try{$('profImpPin').focus()}catch(e){}};
   if(IPQ!==q.id){IPM='';pb.classList.remove('on')}
@@ -11272,12 +11273,12 @@ const PROF=(()=>{
     if(j.err==='needpin'){pinAsk('pin',LG('Ce profil est protégé par un code PIN. Entre-le, puis appuie sur « Importer », pour l’ouvrir sur cet appareil.','This profile is protected by a PIN. Enter it, then press “Import”, to open it on this device.'));return msg('',1)}
     $('profImpPin').value='';return msg(j.err==='locked'?LG('Trop d’essais : réessaie dans ','Too many tries: try again in ')+Math.ceil((j.wait||300)/60)+' min.':LG('Code PIN incorrect. Essais restants : ','Wrong PIN. Tries left: ')+(j.left||0)+'.',0)}
    IPM='';IPQ='';pb.classList.remove('on');$('profImpPin').value='';
-   if(j._st===404)return msg(LG('Aucun profil ne correspond à ce code.','No profile matches this code.'),0);
+   if(j._st===404)return msg(LG('Aucun profil ne correspond à cette clé privée.','No profile matches this private key.'),0);
    if(!j.sid&&j._st!==409)return msg(UNR(),0);
    const prev=code();old(I);I=q;put(KI,I);P=Object.assign({},P0);MIG=null;
    if(j.sid){SID=j.sid;sput(KS,SID);keep(j.prof);setSt('on')}else{SID='';sput(KS,'');setSt('busy')}
    const ip=$('nameInput');if(ip&&P.n)ip.value=P.n;$('profBox').classList.remove('imp');fill();$('profImp').value='';
-   msg((j.sid?LG('Profil récupéré : niveau ','Profile restored: level ')+lvlOf(P.xp)+LG('. Il n’est plus accessible sur tes autres appareils : ils passent en invité.','. It is no longer available on your other devices: they switch to guest.'):LG('Profil récupéré, mais il est ouvert sur un autre appareil : « Jouer ici » pour l’utiliser sur celui-ci.','Profile restored, but it is open on another device: “Play here” to use it on this one.'))+(prev?LG(' Ancien code de cet appareil (toujours valable) : ',' Previous code of this device (still valid): ')+prev:''),1)}catch(e){msg(UNR(),0)}}
+   msg((j.sid?LG('Profil récupéré : niveau ','Profile restored: level ')+lvlOf(P.xp)+LG('. Il n’est plus accessible sur tes autres appareils : ils passent en invité.','. It is no longer available on your other devices: they switch to guest.'):LG('Profil récupéré, mais il est ouvert sur un autre appareil : « Jouer ici » pour l’utiliser sur celui-ci.','Profile restored, but it is open on another device: “Play here” to use it on this one.'))+(prev?LG(' Ancienne clé privée de cet appareil (toujours valable) : ',' Previous private key of this device (still valid): ')+prev:''),1)}catch(e){msg(UNR(),0)}}
  function init(){if(HEADLESS)return;load();
   const logo=document.querySelector('#menu .logo');if(!logo)return;
   const c=document.createElement('button');c.id='profChip';c.type='button';c.setAttribute('aria-label',LG('Mon profil','My profile'));
@@ -11288,15 +11289,15 @@ const PROF=(()=>{
     '<div class="ppGuest"><span class="ppGBadge"><b>+</b></span><p>'+LG('Crée ton profil pour sauvegarder ton XP.','Create your profile to save your XP.')+'</p>'+
      '<div class="ppRow"><input id="profNew" maxlength="14" autocomplete="off" placeholder="'+LG('Ton pseudo','Your name')+'"></div>'+
      '<div class="ppRow ppRow2"><input id="profNewPin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="'+LG('Code PIN (4 chiffres)','PIN (4 digits)')+'"><button class="ppB" id="profMake">'+LG('Créer','Create')+'</button></div>'+
-     '<p class="ppPinH">'+LG('Le code PIN protège ton profil : il sera demandé pour voir ton code de sauvegarde et pour ouvrir ton profil sur un autre appareil. Retiens-le bien.','The PIN protects your profile: it is asked to show your save code and to open your profile on another device. Remember it.')+'</p><p class="ppMig"></p></div>'+
+     '<p class="ppPinH">'+LG('Le code PIN protège ton profil : il sera demandé pour voir ta clé privée et pour ouvrir ton profil sur un autre appareil. Retiens-le bien.','The PIN protects your profile: it is asked to show your private key and to open your profile on another device. Remember it.')+'</p><p class="ppMig"></p></div>'+
     '<div class="ppBusyBox"><p>'+LG('Ton profil est ouvert dans un autre onglet ou une autre fenêtre de cet appareil.','Your profile is open in another tab or window on this device.')+'</p><button class="ppB ppWide" id="profTake">'+LG('Jouer ici avec mon profil','Play here with my profile')+'</button></div>'+
     '<div class="ppMain"><div class="ppHead"><span class="ppBadge"><b>1</b></span><div class="ppId"><label for="profName">'+LG('Pseudo','Name')+'</label><input id="profName" maxlength="14" autocomplete="off" placeholder="'+LG('Joueur','Player')+'"><span class="ppLv"></span></div></div>'+
      '<div class="ppBar"><i></i></div><div class="ppXp"></div><div class="ppNext"></div><div class="ppStats"></div>'+
-     '<div class="ppCodeBox"><div class="ppT">'+LG('Code de sauvegarde','Save code')+'</div><div class="ppRow"><input id="profCode" readonly autocomplete="off" spellcheck="false"><button class="ppB ppB2" id="profShow">'+LG('Voir','Show')+'</button><button class="ppB" id="profCopy">'+LG('Copier','Copy')+'</button></div>'+
+     '<div class="ppCodeBox"><div class="ppT">'+LG('Clé privée','Private key')+'</div><div class="ppRow"><input id="profCode" readonly autocomplete="off" spellcheck="false"><button class="ppB ppB2" id="profShow">'+LG('Voir','Show')+'</button><button class="ppB" id="profCopy">'+LG('Copier','Copy')+'</button></div>'+
       '<div class="ppPin" id="profPin"><p class="ppPinT"></p><div class="ppRow"><input id="profPinI" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="• • • •"><button class="ppB" id="profPinOk">OK</button><button class="ppB ppB2" id="profPinNo">'+LG('Annuler','Cancel')+'</button></div><button class="ppPinF" id="profPinF">'+LG('PIN oublié ?','Forgot PIN?')+'</button></div>'+
-      '<div class="ppKeep"><b>'+LG('Garde ce code secret et en lieu sûr.','Keep this code secret and safe.')+'</b>'+
-       '<p>'+LG('C’est la seule clé de ton profil : XP, niveau et skins achetés. Sans lui, ton profil est perdu si tu changes d’appareil ou si les données du navigateur sont effacées.','It is the only key to your profile: XP, level and purchased skins. Without it, your profile is lost if you change device or if the browser data is cleared.')+'</p>'+
-       '<p>'+LG('Ne le donne à personne et ne le montre pas en vidéo ou en direct : quiconque l’a peut prendre ton profil. Il ne change jamais.','Never give it to anyone and never show it on video or stream: anyone who has it can take your profile. It never changes.')+'</p><p>'+LG('Un seul appareil à la fois : saisir ce code sur un autre appareil déconnecte celui-ci.','One device at a time: entering this code on another device signs this one out.')+'</p></div></div></div>'+
+      '<div class="ppKeep"><b>'+LG('Garde cette clé secrète et en lieu sûr.','Keep this key secret and safe.')+'</b>'+
+       '<p>'+LG('Elle seule donne accès à ton profil : XP, niveau et skins achetés. Sans elle, ton profil est perdu si tu changes d’appareil ou si les données du navigateur sont effacées.','It alone gives access to your profile: XP, level and purchased skins. Without it, your profile is lost if you change device or if the browser data is cleared.')+'</p>'+
+       '<p>'+LG('Ne la donne à personne et ne la montre pas en vidéo ou en direct : quiconque l’a peut prendre ton profil. Elle ne change jamais.','Never give it to anyone and never show it on video or stream: anyone who has it can take your profile. It never changes.')+'</p><p>'+LG('Un seul appareil à la fois : saisir cette clé sur un autre appareil déconnecte celui-ci.','One device at a time: entering this key on another device signs this one out.')+'</p></div></div></div>'+
     '<button class="ppSkin" id="profSkinB">'+LG('Skins','Skins')+'</button>'+
     '<div class="ppLinks"><button class="ppL" id="profInfoB">'+LG('Calcul de l’XP','How XP is counted')+'</button><button class="ppL" id="profImpB"></button></div>'+
     '<div class="ppImp"><div class="ppRow"><input id="profImp" placeholder="DTN2.…" autocomplete="off"><button class="ppB" id="profGo">'+LG('Importer','Import')+'</button></div>'+
@@ -11314,7 +11315,7 @@ const PROF=(()=>{
   let UNL=0,PTHEN=null,PMODE='';const pinBox=$('profPin'),pinI=$('profPinI'),pinT=pinBox.querySelector('.ppPinT');
   const pinHide=()=>{pinBox.classList.remove('on');PTHEN=null;pinI.value=''};
   const pinAsk=(mode)=>{PMODE=mode;pinI.value='';$('profPinF').style.display=mode==='ask'?'':'none';
-   pinT.textContent=mode==='new'?LG('Choisis un code PIN à 4 chiffres. Il sera demandé pour voir ou copier ton code de sauvegarde : retiens-le bien.','Choose a 4-digit PIN. It will be asked to show or copy your save code: remember it.'):mode==='reset'?LG('Choisis ton nouveau code PIN à 4 chiffres.','Choose your new 4-digit PIN.'):LG('Entre ton code PIN pour voir ou copier ton code de sauvegarde.','Enter your PIN to show or copy your save code.');
+   pinT.textContent=mode==='new'?LG('Choisis un code PIN à 4 chiffres. Il sera demandé pour voir ou copier ta clé privée : retiens-le bien.','Choose a 4-digit PIN. It will be asked to show or copy your private key: remember it.'):mode==='reset'?LG('Choisis ton nouveau code PIN à 4 chiffres.','Choose your new 4-digit PIN.'):LG('Entre ton code PIN pour voir ou copier ta clé privée.','Enter your PIN to show or copy your private key.');
    pinBox.classList.add('on');try{pinI.focus()}catch(e){}};
   const needPin=then=>{if(!I)return;if(Date.now()<UNL)return then();if(!isOn()){msg(LG('Serveur du jeu injoignable : impossible de vérifier ton code PIN pour le moment.','Game server unreachable: your PIN cannot be checked right now.'),0);return}
    PTHEN=then;pinAsk(!P.pin?'new':P.pinr&&Date.now()>=P.pinr?'reset':'ask')};
@@ -11330,8 +11331,8 @@ const PROF=(()=>{
   $('profShow').onclick=()=>CSHOW?showC(0):needPin(()=>showC(1));showC(0);
   // PIN oublie sur un nouvel appareil : demande faite avec le code ; nouveau PIN possible 24 heures plus tard
   $('profImpF').onclick=async()=>{const q=parse($('profImp').value);if(!q)return;let j;try{j=await api('pin',{id:q.id,s:q.s,a:'forgot',dev:DV})}catch(e){j={}}
-   msg(j.pinr?LG('Par sécurité, tu pourras choisir un nouveau code PIN 24 heures après ta demande : ','For safety, you can choose a new PIN 24 hours after your request: ')+when(j.pinr)+LG('. Reviens à ce moment-là et saisis ton code de sauvegarde ici.','. Come back then and enter your save code here.'):UNR(),j.pinr?1:0)};setInterval(()=>{if(!b.classList.contains('on')){if(CSHOW)showC(0);if(pinBox.classList.contains('on'))pinHide();UNL=0}},400);
-  $('profCopy').onclick=()=>needPin(doCopy);const doCopy=async()=>{const t=$('profCode');if(!I)return;const okT=LG('Code copié. Colle-le dans un endroit sûr et privé (notes, gestionnaire de mots de passe).','Code copied. Paste it somewhere safe and private (notes, password manager).');
+   msg(j.pinr?LG('Par sécurité, tu pourras choisir un nouveau code PIN 24 heures après ta demande : ','For safety, you can choose a new PIN 24 hours after your request: ')+when(j.pinr)+LG('. Reviens à ce moment-là et saisis ta clé privée ici.','. Come back then and enter your private key here.'):UNR(),j.pinr?1:0)};setInterval(()=>{if(!b.classList.contains('on')){if(CSHOW)showC(0);if(pinBox.classList.contains('on'))pinHide();UNL=0}},400);
+  $('profCopy').onclick=()=>needPin(doCopy);const doCopy=async()=>{const t=$('profCode');if(!I)return;const okT=LG('Clé privée copiée. Colle-la dans un endroit sûr et privé (notes, gestionnaire de mots de passe).','Private key copied. Paste it somewhere safe and private (notes, password manager).');
    try{await navigator.clipboard.writeText(code());msg(okT,1)}catch(e){const was=CSHOW;t.value=code();t.select();try{document.execCommand('copy');msg(okT,1)}catch(x){msg(LG('Code PIN accepté : appuie de nouveau sur « Copier ».','PIN accepted: press “Copy” again.'),1)}try{getSelection().removeAllRanges()}catch(x){}if(!was)showC(0)}};
   const ip=$('nameInput');if(ip){if(!ip.value&&P.n)ip.value=P.n;ip.addEventListener('change',()=>{const v=ip.value.trim().slice(0,14);if(v&&v!==P.n)setName(v)})}
   // en ligne : le profil (avec la session de cet onglet) est annonce au serveur en creant ou en rejoignant un salon ; invite : rien
