@@ -131,7 +131,7 @@ const SHOP = {
 const PRICE = [99, 149, 199, 299], SHOP_CUR = 'eur', SHOP_CURS = ['eur', 'usd'];
 // version des CGV en vigueur (meme valeur que LEGAL.v dans le jeu) : l'achat exige que le joueur ait coche la case qui les accepte,
 // demande la livraison immediate et renonce au droit de retractation (article L221-28, 13° du Code de la consommation)
-const CGV_V = '2026-11-12';
+const CGV_V = '2026-11-12b';
 // Packs : plusieurs skins vendus ensemble a prix fixe, en boutique seulement le week-end (du vendredi 0 h au lundi 0 h, heure de New York), hors selection tournante.
 // En semaine, leurs skins sont vendus a l'unite dans la selection tournante ; le week-end, ils en sont retires (seul le pack les vend).
 // Un achat de pack est note { c: 'p', id: <pack> } dans le profil ; il donne tous les skins du pack.
@@ -148,10 +148,10 @@ const STRIPE_API = tenv('STRIPE_API') || 'https://api.stripe.com';   // STRIPE_A
 // cle Stripe reelle (sk_live_ ou rk_live_) : seuls les paiements reels comptent ; les achats faits en mode test sont effaces au demarrage
 const LIVE = /^(sk|rk)_live_/.test(STRIPE_KEY);
 const SHOP_ALL = []; for (const c in SHOP) for (const id in SHOP[c]) SHOP_ALL.push(c + ':' + id);
-// Selection : la boutique propose 8 skins a la fois, deux par rarete, tires au hasard toutes les 8 heures (0 h, 8 h, 16 h UTC).
+// Selection : la boutique propose 8 skins a la fois, deux par rarete, tires au hasard toutes les 4 heures (0 h, 4 h, 8 h, 12 h, 16 h, 20 h UTC).
 // Le tirage ne depend que du creneau horaire : toutes les regions et tous les joueurs voient la meme boutique.
 // Une meme paire ne sort jamais deux creneaux de suite pour une rarete.
-const ROT_MS = 8 * 3600 * 1000, ROT_N = 2;
+const ROT_MS = 4 * 3600 * 1000, ROT_N = 2;
 // week-end du pack : du vendredi 0 h au lundi 0 h, heure de New York (heure d'hiver et d'ete comprises).
 const NYF = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hourCycle: 'h23', weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
 const ny = t => { const o = {}; for (const p of NYF.formatToParts(new Date(t))) o[p.type] = p.value; return { wd: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(o.weekday), y: +o.year, m: +o.month, d: +o.day, h: +o.hour % 24, mi: +o.minute }; };
@@ -178,7 +178,7 @@ function rotation(slot) {
   });
   return res;
 }
-const nowT = () => Date.now() + (+tenv('SHOP_SLOT_ADD') || 0) * ROT_MS;   // SHOP_SLOT_ADD : tests sur ordinateur (avance de N creneaux de 8 h)
+const nowT = () => Date.now() + (+tenv('SHOP_SLOT_ADD') || 0) * ROT_MS;   // SHOP_SLOT_ADD : tests sur ordinateur (avance de N creneaux de 4 h)
 const slotNow = () => Math.floor(nowT() / ROT_MS);
 const inRotation = (c, id) => tenv('SHOP_ANY') === '1' || rotation(slotNow()).some(x => x.c === c && x.id === id);   // SHOP_ANY=1 : tests
 // ---------- cours du dollar : cours de reference de la Banque centrale europeenne (1 euro = FX.usd dollars) ----------
@@ -304,7 +304,7 @@ function xpFrom(r, first) {
   // le meme bareme est affiche dans le jeu : bouton « Calcul de l'XP » de la fenetre du profil
   const L = [], add = (k, v, n) => { v = Math.round(v); if (v > 0) L.push([k, v, n || 0]); };
   const F = FIN[r.mode] || FIN.bomb;
-  add('kills', r.k * 10, r.k);   // 10 XP par elimination
+  add('kills', r.k * 7, r.k);   // 7 XP par elimination
   switch (r.mode) {
     case 'zombie': add('zombies', r.zk * 1, r.zk); add('waves', r.wv * 5, r.wv); break;
     case 'cristal': add('crystals', r.cr * 10, r.cr); break;
