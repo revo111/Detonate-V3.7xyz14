@@ -3814,7 +3814,7 @@ ${LITE?'':`<h3>7. Conditions de vente</h3>
   fromHash()}
  return{init,open,close,isOpen,v:V}})();
 setTimeout(()=>{if(typeof HEADLESS!=='undefined'&&HEADLESS)return;try{LEGAL.init()}catch(e){console.error(e)}},0);
-const BUILD='2026-11-12T23:22Z';   // version du jeu (date de construction, UTC)
+const BUILD='2026-11-12T23:53Z';   // version du jeu (date de construction, UTC)
 function netBannerOff(){const d=$('netb');if(d)d.remove()}
 // fin de partie (ou partie arretee) : retour dans le salon, sans recharger la page
 function toMenu(){try{dropSock()}catch(e){}netMode=false;isHost=false;netStarted=false;netRoomCode='';netPlayers=[];netInputs={};netRecon=0;netBye=false;localSlot=0;rematchAsked=false;ENDT0=0;SBO=false;ENDR.length=0;netBannerOff();try{quitBox.style.display='none'}catch(e){}try{for(const k in keys)keys[k]=0;mouse.down=0}catch(e){}try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur()}catch(e){}menu.classList.remove('hidden');menuShow('mainMenu');try{menuMessage('')}catch(e){}GM='obj';try{loadMap(mapId());newRound();MBGa=Math.PI/2;FORCE=1}catch(e){console.error(e)}}
@@ -12554,8 +12554,6 @@ const SKIN=(()=>{
      for(let i=0;i<8;i++){const m=MAT['g_dia_s'+i];if(m)m.color.setHSL((i/8+t*.2)%1,1,.8)}});
     return t=>twTick(sp,t,2.8)}}});
  // ---------- SACS DE LA BOUTIQUE, serie 2 : cape blanche en fourrure, flamme multicolore, ailes de papillon scintillantes ----------
- // vitesse du porteur, mesuree d'une image a l'autre sur la position du sac dans le monde (la cape se souleve quand on court)
- const speedOf=g=>{const p=new THREE.Vector3(),q=new THREE.Vector3();let t0=-1,v=0;return t=>{g.getWorldPosition(q);const dt=t-t0;if(t0>=0&&dt>0&&dt<.5)v+=(Math.min(320,q.distanceTo(p)/dt)-v)*Math.min(1,dt*5);else if(t0>=0)v=0;p.copy(q);t0=t;return v}};
  // deplacement du porteur dans son propre repere : f vers l'avant, l sur le cote, s vitesse, vx/vz vitesse dans le monde (lissees)
  // mesure sur le personnage entier (un simple demi-tour sur place ne compte pas comme un deplacement)
  const motionOf=g=>{const p=new THREE.Vector3(),q=new THREE.Vector3(),v=new THREE.Vector3(),qq=new THREE.Quaternion(),o={f:0,l:0,s:0,vx:0,vz:0};let t0=-1;
@@ -12563,6 +12561,16 @@ const SKIN=(()=>{
    if(t0>=0&&dt>0&&dt<.5){v.subVectors(q,p).divideScalar(dt);v.y=0;const s_=v.length(),c=s_>320?320/s_:1,k=Math.min(1,dt*6);v.multiplyScalar(c);o.vx+=(v.x-o.vx)*k;o.vz+=(v.z-o.vz)*k;o.s+=(s_*c-o.s)*k;
     g.getWorldQuaternion(qq);v.applyQuaternion(qq.invert());o.f+=(v.x-o.f)*k;o.l+=(v.z-o.l)*k}
    else if(t0>=0)o.f=o.l=o.s=o.vx=o.vz=0;p.copy(q);t0=t;return o}};
+ const sstep=(e0,e1,x)=>{const k=Math.min(1,Math.max(0,(x-e0)/(e1-e0)));return k*k*(3-2*k)};
+ // particules dans le monde (groupe pose dans la scene, pas sous le personnage) : elles restent en place quand le joueur tourne
+ // brusquement ou se deplace ; le groupe part avec le skin ; on n'emet que si le personnage est visible
+ function worldFX(g,N){const W=new THREE.Group(),P=[...Array(N)].map(()=>{const q=new THREE.Sprite();q.visible=false;W.add(q);return{q,p:new THREE.Vector3(),v:new THREE.Vector3(),l:0,L:1,s:1,gr:0,dr:1}});let pi=0;
+  g.addEventListener('removed',()=>{if(W.parent)W.parent.remove(W)});
+  return{vis(){for(let o=g;o;o=o.parent)if(!o.visible)return false;return true},
+   emit(pt,vx,vy,vz,L,sz,gr,dr,mat){const o=P[pi++%N];o.p.copy(pt);o.v.set(vx,vy,vz);o.L=o.l=L;o.s=sz;o.gr=gr;o.dr=dr;o.q.material=mat;o.q.visible=true},
+   step(t,dt){let r=g;while(r.parent)r=r.parent;if(r.isScene&&W.parent!==r)r.add(W);
+    for(const o of P){if(o.l<=0){if(o.q.visible)o.q.visible=false;continue}o.l-=dt;o.v.multiplyScalar(Math.max(0,1-o.dr*dt));o.v.y+=o.gr*dt;o.p.addScaledVector(o.v,dt);const a=Math.max(0,o.l/o.L);
+     o.q.position.copy(o.p);o.q.scale.setScalar(o.s*Math.sin(Math.min(1,(1-a)*7)*Math.PI*.5)*Math.pow(a,.55)*(.7+.3*Math.sin(t*23+o.s*9)))}}}}
  // --- fourrure : touffe bosselee (sphere deformee, normales lissees) et texture de poils
  const furGeo=()=>G('furG',()=>{const g=new THREE.SphereGeometry(1,12,9),p=g.attributes.position,v=new THREE.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i);v.multiplyScalar(1+.15*Math.sin(v.x*7.3+v.y*3.1)*Math.sin(v.z*6.1-v.y*4.7)+.07*Math.sin(v.x*15+v.z*11+v.y*5));p.setXYZ(i,v.x,v.y,v.z)}g.computeVertexNormals();return g});
  const furTex=(x,S,r)=>{x.fillStyle='#e9edf3';x.fillRect(0,0,S,S);x.lineCap='round';for(let i=0;i<1100;i++){const px=r()*S,py=r()*S,l=2+r()*6,a=1.1+r()*.9,c=205+r()*50|0;x.strokeStyle='rgba('+c+','+c+','+Math.min(255,c+10)+','+(.3+r()*.5)+')';x.lineWidth=.7+r()*.9;for(const ox of[-S,0,S])for(const oy of[-S,0,S]){x.beginPath();x.moveTo(px+ox,py+oy);x.lineTo(px+ox+Math.cos(a)*l,py+oy+Math.sin(a)*l);x.stroke()}}};
@@ -12617,51 +12625,70 @@ const SKIN=(()=>{
      fur.instanceMatrix.needsUpdate=true;pos.needsUpdate=true;geo.computeVertexNormals();
      gl.forEach((q,i)=>{const[a,b]=GL[i],n=a*(CNV+1)+b,f=Math.max(0,Math.sin(t*2.1+i*1.9));q.position.set(pos.getX(n)-.8,pos.getY(n),pos.getZ(n));q.scale.setScalar(.3+2.6*f*f*f)})};
     up(0);return up}},
-  bouledefeu:{n:['Flamme multicolore','Rainbow flame'],lv:0,shop:1,r:2,vw:[-9,20,0,104,2.4,.38],tz:1.2,b(g){
-    // flamme libre qui flotte dans le dos, sans support : trois enveloppes emboitees (exterieure, milieu, coeur presque blanc)
-    // qui ondulent, vacillent et changent de couleur en montant ; des langues de feu se detachent du sommet, des etincelles s'envolent
-    const fl=new THREE.Group();fl.position.set(-11.4,-4.2,0);g.add(fl);
-    const TOP=[[7.6,25,7.6,0,0,.62,1.3],[5.3,18.5,5.3,.05,.2,.75,4.1],[2.7,11.5,2.7,.1,.85,1,7.7]];
-    const L=TOP.map(([sx,sy,sz,k,o,a,sd],i)=>{const q=mesh(fl,flameLathe(),flameMat('b_fl'+i,k,o,a,sd,i===2));q.scale.set(sx,sy,sz);q.renderOrder=3+i;return q});
-    const TG=[0,1,2].map(i=>{const q=mesh(fl,flameLathe(),flameMat('b_flt',.5,.2,.7,2.9));q.renderOrder=3;return q});
+  bouledefeu:{n:['Flamme multicolore','Rainbow flame'],lv:0,shop:1,r:2,vw:[-13,28,0,138,2.4,.36],tz:1.3,b(g){
+    // grande flamme libre qui flotte dans le dos (sans support) : un foyer central et trois langues de feu autour, comme un brasier ;
+    // couleurs de l'arc-en-ciel qui montent, coeur blanc ; braises qui tourbillonnent autour ; elle se couche vers l'arriere en courant
+    // et laisse une traine de braises et de bouffees de feu (dans le monde : elles restent sur place quand on tourne)
+    const fl=new THREE.Group();fl.position.set(-13.2,-5.4,0);g.add(fl);
+    [[10.5,34,10.5,0,0,.74,1.3],[7.4,25,7.4,.05,.2,.82,4.1],[4,15.5,4,.1,.85,1,7.7]].forEach(([sx,sy,sz,k,o,a,sd],i)=>{const q=mesh(fl,flameLathe(),flameMat('b_fl'+i,k,o,a,sd,i===2));q.scale.set(sx,sy,sz);q.renderOrder=3+i});
+    const SD=[0,1,2].map(i=>{const a=i/3*TAU+.6,pv=new THREE.Group();pv.position.set(Math.cos(a)*4.8,.4,Math.sin(a)*4.8);pv.rotation.set(Math.sin(a)*.34,0,-Math.cos(a)*.34);fl.add(pv);
+     const q=mesh(pv,flameLathe(),flameMat('b_fls'+i,.12+i*.09,.12,.78,11+i*3.7));q.scale.set(5.4,18,5.4);q.renderOrder=3;return[pv,q]});
+    const TG=[0,1,2,3].map(i=>{const q=mesh(fl,flameLathe(),flameMat('b_flt',.5,.2,.75,2.9));q.renderOrder=3;return q});
     const HN=6,sparkM=[...Array(HN)].map((_,i)=>M('b_fb_s'+i,()=>new THREE.SpriteMaterial({map:starTex,color:0xffffff,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}))),
-     seedM=M('b_fl_k',()=>new THREE.SpriteMaterial({map:radTex,color:0xffffff,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}));
-const seed=new THREE.Sprite(seedM);seed.scale.set(9,9,1);seed.position.y=2.4;fl.add(seed);
-    const GLM=[0,1,2].map(i=>M('b_fl_g'+i,()=>new THREE.SpriteMaterial({map:radTex,color:0xffffff,transparent:true,opacity:.55,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}))),GS=GLM.map((m,i)=>{const q=new THREE.Sprite(m);q.position.y=4+i*4.5;fl.add(q);return q});
-    const SK=[...Array(14)].map((_,i)=>{const q=new THREE.Sprite(sparkM[i%HN]);fl.add(q);return q});
-    const anF=t=>{FLU.uT.value=t%1000;GLM.forEach(m=>m.opacity=.5+.1*Math.sin(t*11.3+m.id));for(let i=0;i<HN;i++)sparkM[i].color.setHSL((t*.09+i/HN)%1,1,.72);for(let i=0;i<3;i++)GLM[i].color.setHSL((t*.09+.08+i*.12)%1,1,.6);seedM.color.setHSL((t*.09+.05)%1,.6,.8)};AN('bfl',anF);anF(0);
-    // la flamme se couche vers l'arriere quand on court (comme une vraie flamme), un peu inclinee a l'arret
-    const spd=speedOf(g);let sp=0,last=-1;
-    const up=t=>{const v=spd(t),dt=last<0?0:Math.min(.1,t-last);last=t;sp+=(Math.min(1,v/190)-sp)*Math.min(1,dt*2.5);fl.rotation.z=.2+.85*sp+.04*Math.sin(t*1.7);fl.rotation.x=.05*Math.sin(t*1.3);
-     GS.forEach((q,i)=>q.scale.setScalar((14-i*3)*(1+.08*Math.sin(t*9.7+i*2))));TG.forEach((q,i)=>{const p=(t*.75+i/3)%1,k=Math.sin(Math.min(1,p*3)*Math.PI*.5)*(1-p);q.position.set(1.3*Math.sin(t*1.7+i*2.1)*p,15+p*14,1.1*Math.cos(t*1.3+i*1.7)*p);q.scale.set(2.2*k,6*k,2.2*k)});
-     SK.forEach((q,i)=>{const p=(t*(.42+.07*(i%3))+i/14)%1,a=i*2.399+t*1.4+p*2.5,r=2+p*7.5;q.position.set(Math.cos(a)*r,3+p*28,Math.sin(a)*r);q.scale.setScalar(2.6*Math.sin(p*Math.PI)*(.6+.4*Math.sin(t*9+i)))})};
+     emM=[...Array(HN)].map((_,i)=>M('b_fle'+i,()=>new THREE.SpriteMaterial({map:radTex,color:0xffffff,transparent:true,opacity:1,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}))),
+     pfM=[0,1,2].map(i=>M('b_flp'+i,()=>new THREE.SpriteMaterial({map:radTex,color:0xffffff,transparent:true,opacity:.7,blending:THREE.AdditiveBlending,depthWrite:false,fog:false}))),
+     seedM=M('b_fl_k',()=>new THREE.SpriteMaterial({map:radTex,color:0xffffff,transparent:true,opacity:.9,blending:THREE.AdditiveBlending,depthWrite:false,fog:false})),
+     GLM=[0,1,2].map(i=>M('b_fl_g'+i,()=>new THREE.SpriteMaterial({map:radTex,color:0xffffff,transparent:true,opacity:.55,blending:THREE.AdditiveBlending,depthWrite:false,fog:false})));
+    const seed=new THREE.Sprite(seedM);seed.scale.set(12,12,1);seed.position.y=3;fl.add(seed);
+    const GS=GLM.map((m,i)=>{const q=new THREE.Sprite(m);q.position.y=6+i*6.5;fl.add(q);return q});
+    const SK=[...Array(24)].map((_,i)=>{const q=new THREE.Sprite(sparkM[i%HN]);fl.add(q);return q});
+    const anF=t=>{FLU.uT.value=t%1000;GLM.forEach(m=>m.opacity=.5+.1*Math.sin(t*11.3+m.id));for(let i=0;i<HN;i++){const h=(t*.09+i/HN)%1;sparkM[i].color.setHSL(h,1,.72);emM[i].color.setHSL((h+.04)%1,1,.6)}
+     for(let i=0;i<3;i++){GLM[i].color.setHSL((t*.09+.08+i*.12)%1,1,.6);pfM[i].color.setHSL((t*.09+i*.2)%1,1,.55)}seedM.color.setHSL((t*.09+.05)%1,.6,.8)};AN('bfl',anF);anF(0);
+    const mot=motionOf(g),fx=worldFX(g,170),tmp=new THREE.Vector3();let sp=0,sl=0,last=-1,aE=0,aP=0;
+    const up=t=>{const mo=mot(t),dt=last<0?0:Math.min(.1,t-last);last=t;const kk=Math.min(1,dt*2.5);sp+=(Math.max(-.12,Math.min(1,mo.f/170))-sp)*kk;sl+=(Math.max(-1,Math.min(1,mo.l/170))-sl)*kk;const run=Math.min(1,mo.s/150);
+     // comme une vraie flamme, elle se couche a l'oppose du deplacement : vers l'arriere en avancant, sur le cote en pas de cote (un peu inclinee a l'arret)
+     fl.rotation.z=.2+.85*sp+.04*Math.sin(t*1.7);fl.rotation.x=-.62*sl+.05*Math.sin(t*1.3);
+     SD.forEach(([pv,q],i)=>{q.scale.y=18*(1+.12*Math.sin(t*(5.3+i)+i*2))});
+     GS.forEach((q,i)=>q.scale.setScalar((19-i*4)*(1+.08*Math.sin(t*9.7+i*2))));
+     TG.forEach((q,i)=>{const p=(t*.7+i/4)%1,k=Math.sin(Math.min(1,p*3)*Math.PI*.5)*(1-p);q.position.set(1.9*Math.sin(t*1.7+i*2.1)*p,21+p*20,1.6*Math.cos(t*1.3+i*1.7)*p);q.scale.set(3*k,8.5*k,3*k)});
+     SK.forEach((q,i)=>{const p=(t*(.38+.06*(i%3))+i/24)%1,a=i*2.399+t*1.5+p*3,r=3+p*10.5;q.position.set(Math.cos(a)*r,3+p*40,Math.sin(a)*r);q.scale.setScalar(3.4*Math.sin(p*Math.PI)*(.6+.4*Math.sin(t*9+i)))});
+     // traine : braises qui montent et bouffees de feu (quelques braises a l'arret)
+     if(fx.vis()&&dt>0){aE+=dt*(6+48*run);aP+=dt*(16*run);if(aE>=1||aP>=1)fl.updateWorldMatrix(true,false);
+      while(aE>=1){aE-=1;tmp.set((Math.random()-.5)*8,2+Math.random()*18,(Math.random()-.5)*8).applyMatrix4(fl.matrixWorld);
+       fx.emit(tmp,-mo.vx*.12+(Math.random()-.5)*16,10+Math.random()*18,-mo.vz*.12+(Math.random()-.5)*16,.8+Math.random()*1,2.5+Math.random()*4,16,1.3,Math.random()<.35?sparkM[(Math.random()*HN)|0]:emM[(Math.random()*HN)|0])}
+      while(aP>=1){aP-=1;tmp.set((Math.random()-.5)*6,3+Math.random()*12,(Math.random()-.5)*6).applyMatrix4(fl.matrixWorld);
+       fx.emit(tmp,-mo.vx*.05+(Math.random()-.5)*6,6+Math.random()*8,-mo.vz*.05+(Math.random()-.5)*6,.45+Math.random()*.4,11+Math.random()*8,20,2.2,pfM[(Math.random()*3)|0])}}
+     fx.step(t,dt)};
     up(0);return up}},
   papillon:{n:['Ailes de papillon scintillantes','Sparkling butterfly wings'],lv:0,shop:1,r:3,vw:[-8,24,0,170,2.55,.62],tz:1.5,b(g){
-    // deux grandes ailes d'un seul tenant (lobe du haut et lobe du bas avec sa queue), legerement pliees vers l'arriere,
-    // irisees (la teinte glisse avec l'angle de vue), bordure noire perlee, reflet qui balaie, points qui scintillent, paillettes
+    // deux grandes ailes d'un seul tenant (lobe du haut et lobe du bas avec sa queue), legerement pliees vers l'arriere, irisees,
+    // bord lumineux, paillettes ; battement souple (le bout de l'aile et le lobe du bas suivent avec un retard), par rafales a l'arret,
+    // continu et plus rapide quand on bouge ; poudre lumineuse qui reste dans l'air derriere soi
     const body=P('b_pap_b',0x2a1446,130,{specular:0xd8b8ff}),gem=B('b_pap_g',0xc8f2ff,{fog:false}),F=[];
     for(const[y,sc]of[[8.6,.85],[5,1.15],[1.2,1],[-2.4,.75]]){const q=sph(g,1.5,body,-1.6,y,0);q.scale.set(.85*sc,1.45*sc,.85*sc)}sph(g,.95,gem,-2.75,5,0);sph(g,.55,gem,-2.5,1.2,0);
     const hl=new THREE.Sprite(M('b_pap_h',()=>new THREE.SpriteMaterial({map:radTex,color:0xa070ff,transparent:true,opacity:.3,blending:THREE.AdditiveBlending,depthWrite:false,fog:false})));hl.scale.set(80,56,1);hl.position.set(-12,6,0);g.add(hl);
-    const wm=papMat(),DUST=[0xff7ae0,0x6ae8ff,0xb68cff,0xfff0a8,0xffffff].map((c,i)=>SPR('b_pap_d'+i,c,1));
+    // matieres propres a ce joueur (la flexion des ailes depend de son battement), meme programme et meme peinture pour tous
+    const wm=papMatI(),em=papEdgeMatI(),DUST=[0xff7ae0,0x6ae8ff,0xb68cff,0xfff0a8,0xffffff].map((c,i)=>SPR('b_pap_d'+i,c,1));
     for(const s_ of[-1,1]){const W=new THREE.Group();W.position.set(-2,5.6,s_*1.5);wingBasis(W,s_,.16,0);g.add(W);const f=new THREE.Group();W.add(f);mesh(f,papGeo(s_),wm).renderOrder=2;
-     mesh(f,papEdge(s_),papEdgeMat()).renderOrder=3;
-     const SP=PAPS.map(([u,v],i)=>{const q=new THREE.Sprite(SPR('b_pap_s',0xffffff,1));q.position.copy(papAt(u,v,s_));q.position.z+=(s_>0?1:-1)*.3;f.add(q);return q});F.push([f,s_,SP])}
+     mesh(f,papEdge(s_),em).renderOrder=3;
+     const SP=PAPS.map(([u,v],i)=>{const q=new THREE.Sprite(SPR('b_pap_s',0xffffff,1));f.add(q);return q});F.push([f,s_,SP,W])}
     const DU=[...Array(16)].map((_,i)=>{const q=new THREE.Sprite(DUST[i%5]);g.add(q);return q});
-    // poudre lumineuse : des grains de lumiere se detachent des ailes et restent un instant dans l'air (quelques-uns a l'arret, une traine quand on bouge)
     const PM=[0xff7ae0,0x6ae8ff,0xb68cff,0xfff0a8,0xffffff,0x9affd8].map((c,i)=>M('b_pap_p'+i,()=>new THREE.SpriteMaterial({map:radTex,color:c,transparent:true,opacity:.95,blending:THREE.AdditiveBlending,depthWrite:false,fog:false})));
-    const PN=110,PW=[...Array(PN)].map((_,i)=>{const q=new THREE.Sprite(i%3?PM[i%6]:DUST[i%5]);q.visible=false;g.add(q);return{q,p:new THREE.Vector3(),v:new THREE.Vector3(),l:0,L:1,s:1}});
-    const mot=motionOf(g),inv=new THREE.Matrix4(),tmp=new THREE.Vector3(),PI_=papIn();let acc=0,lastP=-1,pi=0;
-    const powder=t=>{const mo=mot(t),dt=lastP<0?0:Math.min(.1,t-lastP);lastP=t;const run=Math.min(1,mo.s/150);acc+=dt*(4+80*run);
-     if(acc>=1)for(const w of F)w[0].updateWorldMatrix(true,false);
-     while(acc>=1){acc-=1;const w=F[pi%2],[u,v]=PI_[(Math.random()*PI_.length)|0],o=PW[pi++%PN];o.p.copy(papAt(u,v,w[1])).applyMatrix4(w[0].matrixWorld);
-      o.v.set(-mo.vx*.15+(Math.random()-.5)*16,(Math.random()-.25)*9,-mo.vz*.15+(Math.random()-.5)*16);o.L=o.l=1.1+Math.random()*1.3;o.s=2.2+Math.random()*3.8;o.q.visible=true}
-     g.updateWorldMatrix(true,false);inv.copy(g.matrixWorld).invert();
-     for(const o of PW){if(o.l<=0){if(o.q.visible)o.q.visible=false;continue}o.l-=dt;o.v.multiplyScalar(Math.max(0,1-1.9*dt));o.v.y-=4.5*dt;o.p.addScaledVector(o.v,dt);const a=Math.max(0,o.l/o.L);
-      o.q.position.copy(tmp.copy(o.p).applyMatrix4(inv));o.q.scale.setScalar(o.s*Math.sin(Math.min(1,(1-a)*7)*Math.PI*.5)*Math.pow(a,.55)*(.7+.3*Math.sin(t*23+o.s*9)))}};
+    const mot=motionOf(g),fx=worldFX(g,200),tmp=new THREE.Vector3(),PI_=papIn();let acc=0,last=-1,pi=0,ph=0,E=.3,run=0,b1=0,b2=0;
     const anP=t=>{PAPU.uT.value=t%1000;MAT.b_pap_h.opacity=.26+.08*Math.sin(t*1.9)};AN('bpap',anP);anP(0);
-    const up=t=>{powder(t);const fl=Math.pow(.5+.5*Math.sin(t*2.2),1.6)+.12*Math.max(0,Math.sin(t*9))*Math.max(0,Math.sin(t*.7));
-     F.forEach(([f,s_,SP])=>{f.rotation.y=-s_*(.1+.42*fl);SP.forEach((q,i)=>{const k=Math.max(0,Math.sin(t*3.1+i*1.9+s_));q.scale.setScalar(.25+3.4*k*k*k)})});
-     DU.forEach((q,i)=>{const p=(t*.12+i/16)%1,s_=i%2?1:-1;q.position.set(-8-12*p-3*Math.sin(i*2.7),12-28*p+1.5*Math.sin(t*1.7+i),s_*(6+((i*5.7)%19))+2*Math.sin(t*1.2+i*2.3));q.scale.setScalar(2*Math.sin(p*Math.PI))})};
+    const flap=p=>.5-.5*Math.cos(p+.38*Math.sin(p));   // descente rapide, remontee plus lente
+    const up=t=>{const mo=mot(t),dt=last<0?0:Math.min(.1,t-last);last=t;run+=(Math.min(1,mo.s/150)-run)*Math.min(1,dt*3);
+     // rafales : quelques battements puis un moment plane, ailes ouvertes ; en courant, battement continu, plus ample et plus rapide
+     E+=(Math.max(run,.24+.76*sstep(-.3,.3,Math.sin(t*1.1)))-E)*Math.min(1,dt*2.2);ph+=dt*TAU*(1.6+1.8*run);
+     const A=(.5+.12*run)*E,phi=.08+A*flap(ph);b1=.08+A*flap(ph-.65)-phi;b2=.08+A*flap(ph-1.05)-phi;wm.uniforms.uB1.value=em.uniforms.uB1.value=b1;wm.uniforms.uB2.value=em.uniforms.uB2.value=b2;
+     F.forEach(([f,s_,SP,W])=>{f.rotation.y=-s_*phi;f.rotation.x=s_*.11*E*Math.sin(ph+.7);W.position.y=5.6+.45*E*Math.sin(ph-.4);
+      SP.forEach((q,i)=>{const[u,v]=PAPS[i];papBent(u,v,s_,b1,b2,q.position);q.position.z+=(s_>0?1:-1)*.3;const k=Math.max(0,Math.sin(t*3.1+i*1.9+s_));q.scale.setScalar(.25+3.4*k*k*k)})});
+     DU.forEach((q,i)=>{const p=(t*.12+i/16)%1,s_=i%2?1:-1;q.position.set(-8-12*p-3*Math.sin(i*2.7),12-28*p+1.5*Math.sin(t*1.7+i),s_*(6+((i*5.7)%19))+2*Math.sin(t*1.2+i*2.3));q.scale.setScalar(2*Math.sin(p*Math.PI))});
+     // poudre lumineuse : quelques grains a l'arret, une traine quand on bouge ; posee dans le monde
+     if(fx.vis()&&dt>0){acc+=dt*(4+80*run);if(acc>=1)for(const w of F)w[0].updateWorldMatrix(true,false);
+      while(acc>=1){acc-=1;const w=F[pi++%2],[u,v]=PI_[(Math.random()*PI_.length)|0];papBent(u,v,w[1],b1,b2,tmp).applyMatrix4(w[0].matrixWorld);
+       fx.emit(tmp,-mo.vx*.15+(Math.random()-.5)*20,(Math.random()-.25)*11,-mo.vz*.15+(Math.random()-.5)*20,1.1+Math.random()*1.3,2.7+Math.random()*4.6,-5.5,1.9,Math.random()<.33?DUST[(Math.random()*5)|0]:PM[(Math.random()*6)|0])}}
+     fx.step(t,dt)};
     up(.4);return up}}});
  // ---------- flamme : enveloppe en forme de goutte (tour), deformee et coloree par un shader ----------
  const NOISE='float h3(vec3 p){p=fract(p*.3183099+.1);p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}'+
@@ -12686,11 +12713,11 @@ const seed=new THREE.Sprite(seedM);seed.scale.set(9,9,1);seed.position.y=2.4;fl.
  const inPoly=(x,y,P)=>{let c=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const a=P[i],b=P[j];if((a.y>y)!==(b.y>y)&&x<(b.x-a.x)*(y-a.y)/(b.y-a.y)+a.x)c=!c}return c};
  // pli : le lobe du haut part vers le haut et l'arriere, le lobe du bas vers le bas et l'arriere ; le bout de l'aile se recourbe un peu
  const papAt=(u,v,s_)=>{const ps=-.1+(v>0?.8:.92)*Math.tanh(v/3.2),bz=s_>0?1:-1;return new THREE.Vector3(u,v*Math.cos(ps),bz*(v*Math.sin(ps)+.006*u*u))};
- const papGeo=s_=>G('papW'+(s_>0?'p':'n'),()=>{const P=papPoly(),N=46,M_=82,pos=[],uv=[],idx=[],id=new Int32Array((N+1)*(M_+1)).fill(-1),ins=[];
+ const papGeo=s_=>G('papW'+(s_>0?'p':'n'),()=>{const P=papPoly(),N=46,M_=82,pos=[],uv=[],aw=[],idx=[],id=new Int32Array((N+1)*(M_+1)).fill(-1),ins=[];
    for(let j=0;j<=M_;j++)for(let i=0;i<=N;i++){const u=PB[0]+PB[2]*i/N,v=PB[1]+PB[3]*j/M_;ins.push(inPoly(u,v,P)||inPoly(u+.5,v,P)||inPoly(u-.5,v,P)||inPoly(u,v+.5,P)||inPoly(u,v-.5,P))}
-   const vid=(i,j)=>{const k=j*(N+1)+i;if(id[k]<0){id[k]=pos.length/3;const u=PB[0]+PB[2]*i/N,v=PB[1]+PB[3]*j/M_,q=papAt(u,v,s_);pos.push(q.x,q.y,q.z);uv.push(i/N,j/M_)}return id[k]};
+   const vid=(i,j)=>{const k=j*(N+1)+i;if(id[k]<0){id[k]=pos.length/3;const u=PB[0]+PB[2]*i/N,v=PB[1]+PB[3]*j/M_,q=papAt(u,v,s_);pos.push(q.x,q.y,q.z);uv.push(i/N,j/M_);aw.push(u,v,s_>0?1:-1)}return id[k]};
    for(let j=0;j<M_;j++)for(let i=0;i<N;i++){const a=j*(N+1)+i;if(!(ins[a]||ins[a+1]||ins[a+N+1]||ins[a+N+2]))continue;const p0=vid(i,j),p1=vid(i+1,j),p2=vid(i,j+1),p3=vid(i+1,j+1);idx.push(p0,p1,p2,p2,p1,p3)}
-   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g});
+   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setAttribute('aW',new THREE.Float32BufferAttribute(aw,3));g.setIndex(idx);g.computeVertexNormals();return g});
  // points scintillants (coordonnees de l'aile)
  const PAPS=[[7,9],[13,14.5],[19,18],[22.5,16],[16,8],[10,4],[16,-5],[12,-10],[18.5,-6.5],[12.2,-18],[5,-6]];
  // peinture de l'aile (512) : bleu profond a la racine, cyan, violet, rose vers le bord ; nervures ; bordure noire veloutee
@@ -12719,14 +12746,19 @@ const seed=new THREE.Sprite(seedM);seed.scale.set(9,9,1);seed.position.y=2.4;fl.
   x.restore()};
  const PAPU={uT:{value:0}};
  // matiere de l'aile : peinture + irisation selon l'angle de vue + reflet qui balaie + leger relief ; decoupe nette par la transparence de la peinture
- const papMat=()=>M('b_pap',()=>{const t=tex('b_papT',papTex,512);t.wrapS=t.wrapT=THREE.ClampToEdgeWrapping;t.anisotropy=4;
-   return new THREE.ShaderMaterial({uniforms:{uT:PAPU.uT,uTex:{value:t}},side:THREE.DoubleSide,precision:'highp',
-    vertexShader:'varying vec2 vU;varying vec3 vN,vV;void main(){vU=uv;vec4 mv=modelViewMatrix*vec4(position,1.);vN=normalize(normalMatrix*normal);vV=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}',
+ // flexion : rotation autour de l'axe de l'aile (vertical, a la racine), qui grandit vers le bout de l'aile ; le lobe du bas a son propre retard
+ const PAPBV='attribute vec3 aW;uniform float uB1,uB2;vec3 rY(vec3 p,float a){float c=cos(a),s=sin(a);return vec3(p.x*c+p.z*s,p.y,-p.x*s+p.z*c);}'+
+  'float bend(){float u=max(aW.x,0.);return -aW.z*(uB1*pow(u/26.,1.6)+(uB2-uB1)*smoothstep(1.,-10.,aW.y)*pow(u/22.,1.2));}';
+ const papBent=(u,v,s_,b1,b2,o)=>{const q=papAt(u,v,s_),uu=Math.max(u,0),a=-(s_>0?1:-1)*(b1*Math.pow(uu/26,1.6)+(b2-b1)*sstep(1,-10,v)*Math.pow(uu/22,1.2)),c=Math.cos(a),sn=Math.sin(a);return o.set(q.x*c+q.z*sn,q.y,-q.x*sn+q.z*c)};
+ const papTexS=()=>{const t=tex('b_papT',papTex,512);t.wrapS=t.wrapT=THREE.ClampToEdgeWrapping;t.anisotropy=4;return t};
+ const papMatI=()=>{
+   return new THREE.ShaderMaterial({uniforms:{uT:PAPU.uT,uTex:{value:papTexS()},uB1:{value:0},uB2:{value:0}},side:THREE.DoubleSide,precision:'highp',
+    vertexShader:PAPBV+'varying vec2 vU;varying vec3 vN,vV;void main(){vU=uv;float a=bend();vec3 p=rY(position,a),nn=rY(normal,a);vec4 mv=modelViewMatrix*vec4(p,1.);vN=normalize(normalMatrix*nn);vV=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}',
     fragmentShader:'uniform float uT;uniform sampler2D uTex;varying vec2 vU;varying vec3 vN,vV;'+
      'vec3 hsv(float h,float s,float v){vec3 k=clamp(abs(mod(h*6.+vec3(0.,4.,2.),6.)-3.)-1.,0.,1.);return v*mix(vec3(1.),k,s);}'+
      'void main(){vec4 c=texture2D(uTex,vU);if(c.a<.5)discard;vec3 n=normalize(vN);if(!gl_FrontFacing)n=-n;float d=abs(dot(n,normalize(vV)));'+
      'float l=dot(c.rgb,vec3(.3,.59,.11));vec3 ir=hsv(fract(.52+(1.-d)*.55+uT*.045+vU.x*.12),.75,1.);'+
-     'vec3 col=c.rgb*(.9+.28*d);col=mix(col,col*ir*1.75,.4)+ir*.12*l;'+
+     'vec3 col=c.rgb*(.8+.24*d);col=mix(col,col*ir*1.7,.36)+ir*.1*l;'+
      'float ph=fract(uT*.27)*2.4-.5,b=exp(-pow((vU.x*.85+vU.y*.5-ph)*6.,2.));col+=vec3(1.,.96,1.)*b*.7*l;'+
      'col+=vec3(.6,.9,1.)*pow(1.-d,3.)*.3*l;'+
      // reflet brillant (lumiere fixe en haut a droite de l'ecran) qui glisse sur l'aile quand elle bat
@@ -12734,17 +12766,17 @@ const seed=new THREE.Sprite(seedM);seed.scale.set(9,9,1);seed.position.y=2.4;fl.
      // paillettes : de petits points qui s'allument un instant, partout sur l'aile (bien visibles sur la bordure noire)
      'vec2 gg=vU*vec2(64.,112.),id=floor(gg),fp=fract(gg)-.5;float hh=fract(sin(dot(id,vec2(12.9898,78.233)))*43758.5453);'+
      'col+=vec3(1.,.97,1.)*pow(max(0.,sin(uT*(1.5+hh*3.)+hh*60.)),16.)*step(.5,hh)*smoothstep(.45,0.,length(fp))*1.7;'+
-     'gl_FragColor=vec4(col,1.);}'})});
+     'gl_FragColor=vec4(col,1.);}'})};
  // bord lumineux : ruban qui suit le contour de l'aile (pli compris), lumiere qui court le long du bord, couleurs qui changent
- const papEdge=s_=>G('papE'+(s_>0?'p':'n'),()=>{const P=papPoly(),n=P.length;let A=0;for(let i=0;i<n;i++){const a=P[i],b=P[(i+1)%n];A+=a.x*b.y-b.x*a.y}const sg=A>0?1:-1,pos=[],cc=[],sv=[],idx=[];
+ const papEdge=s_=>G('papE'+(s_>0?'p':'n'),()=>{const P=papPoly(),n=P.length;let A=0;for(let i=0;i<n;i++){const a=P[i],b=P[(i+1)%n];A+=a.x*b.y-b.x*a.y}const sg=A>0?1:-1,pos=[],cc=[],sv=[],aw=[],idx=[];
    for(let i=0;i<=n;i++){const a=P[(i-1+n)%n],c=P[(i+1)%n],p=P[i%n];let tx=c.x-a.x,ty=c.y-a.y;const l=Math.hypot(tx,ty)||1;tx/=l;ty/=l;const nx=ty*sg,ny=-tx*sg,fd=Math.min(1,Math.max(0,(Math.hypot(p.x,p.y)-3)/5));
-    for(const[o,k]of[[-.3,1],[1.7,0]]){const q=papAt(p.x+nx*o,p.y+ny*o,s_);pos.push(q.x,q.y,q.z);cc.push(k*fd);sv.push(i/n)}}
+    for(const[o,k]of[[-.3,1],[1.7,0]]){const u=p.x+nx*o,v=p.y+ny*o,q=papAt(u,v,s_);pos.push(q.x,q.y,q.z);cc.push(k*fd);sv.push(i/n);aw.push(u,v,s_>0?1:-1)}}
    for(let i=0;i<n;i++){const a=i*2;idx.push(a,a+1,a+2,a+2,a+1,a+3)}
-   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('aC',new THREE.Float32BufferAttribute(cc,1));g.setAttribute('aS',new THREE.Float32BufferAttribute(sv,1));g.setIndex(idx);return g});
- const papEdgeMat=()=>M('b_pap_e',()=>new THREE.ShaderMaterial({uniforms:{uT:PAPU.uT},transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3,precision:'highp',
-   vertexShader:'attribute float aC,aS;varying float vC,vS;void main(){vC=aC;vS=aS;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('aC',new THREE.Float32BufferAttribute(cc,1));g.setAttribute('aS',new THREE.Float32BufferAttribute(sv,1));g.setAttribute('aW',new THREE.Float32BufferAttribute(aw,3));g.setIndex(idx);return g});
+ const papEdgeMatI=()=>new THREE.ShaderMaterial({uniforms:{uT:PAPU.uT,uB1:{value:0},uB2:{value:0}},transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3,precision:'highp',
+   vertexShader:PAPBV+'attribute float aC,aS;varying float vC,vS;void main(){vC=aC;vS=aS;gl_Position=projectionMatrix*modelViewMatrix*vec4(rY(position,bend()),1.);}',
    fragmentShader:'uniform float uT;varying float vC,vS;vec3 hsv(float h,float s,float v){vec3 k=clamp(abs(mod(h*6.+vec3(0.,4.,2.),6.)-3.)-1.,0.,1.);return v*mix(vec3(1.),k,s);}'+
-    'void main(){float w=pow(vC,1.5),r=.5+.5*sin(vS*75.4-uT*4.6);gl_FragColor=vec4(hsv(fract(.5+vS*1.6+uT*.06),.6,1.)*w*(.55+.75*r*r),1.);}'}));
+    'void main(){float w=pow(vC,1.5),r=.5+.5*sin(vS*75.4-uT*4.6);gl_FragColor=vec4(hsv(fract(.5+vS*1.6+uT*.06),.6,1.)*w*(.55+.75*r*r),1.);}'});
  // points d'ou part la poudre lumineuse (interieur des ailes)
  let PAPI_=null;const papIn=()=>PAPI_||(PAPI_=(()=>{const P=papPoly(),o=[];for(let u=1;u<26;u+=1.2)for(let v=-22;v<22.5;v+=1.2)if(inPoly(u,v,P))o.push([u,v]);return o})());
  const CATS=[['o',['Tenue','Outfit'],OUT],['h',['Bonnet','Hat'],HAT],['g',['Arme','Weapon'],GUN],['b',['Sac','Bag'],BAG],['a',['Aura','Aura'],AUR]],DEF={o:OUT,h:HAT,g:GUN,b:BAG,a:AUR};
