@@ -218,6 +218,12 @@ const inCur = (eur, cur) => cur === 'usd' ? Math.round(eur * FX.usd) : eur;
 // Sans la variable, le mode n'existe pas et les profils testeurs redeviennent normaux. Un testeur porte la marque '*' dans sa liste « own ».
 const SKA_KEY = process.env.SKINS_ALL_KEY || '';
 const ownOf = P => SKA_KEY && P.ska ? (P.own || []).concat('*') : (P.own || []).slice();
+// mode test retire (variable absente) : les profils testeurs redeviennent normaux dans le fichier, leurs skins non achetes sont desequipes
+function purgeTesters() {
+  let n = 0;
+  for (const k in DB) { const P = DB[k]; if (!P || !P.ska) continue; delete P.ska; if (P.skn) P.skn = cleanSkins(P.skn, lvlOf(+P.xp || 0), ownOf(P)); n++; }
+  if (n) { save(); console.log('Mode test des skins desactive : ' + n + ' profil(s) testeur(s) redevenu(s) normal(aux)'); }
+}
 const priceOf = (c, id) => isPack(c, id) ? PACKS[id].p : SHOP[c] && Object.prototype.hasOwnProperty.call(SHOP[c], id) ? PRICE[SHOP[c][id][0]] : 0;
 const owns = (own, c, id) => isPack(c, id) ? PACKS[id].items.every(x => owns(own, x[0], x[1])) : Array.isArray(own) && own.includes(c + ':' + id);
 // retrait d'un achat (remboursement, litige, achat de test) : chaque skin est repris, sauf s'il reste paye par un autre achat
@@ -230,6 +236,7 @@ function takeBack(P, b, buy) {
   }
 }
 if (IS_PRIMARY && STORE_OK && LIVE) purgeTest();
+if (IS_PRIMARY && STORE_OK && !SKA_KEY) setTimeout(purgeTesters, 0);   // apres la definition de cleanSkins
 function cleanSkins(sel, lvl, own) {
   const o = {};
   const all = Array.isArray(own) && own.includes('*');   // testeur : tout skin connu est accepte
