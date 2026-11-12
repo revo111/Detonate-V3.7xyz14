@@ -14,6 +14,9 @@ kill_timeout = '300s'
   PORT = '8080'
   PROFILE_REGION = 'iad'
   REGIONS = 'cdg,lax,iad,sin'
+  # Mode test des skins : ?skin=all dans l'adresse du jeu debloque tous les skins pour le profil ouvert (?skin=off l'enleve).
+  # Pour couper le mode test, supprimer cette ligne : les profils testeurs redeviennent normaux au redemarrage.
+  SKINS_ALL_KEY = 'all'
   # Informations légales (mentions légales, CGV, politique de confidentialité) : à remplir, elles s'affichent dans le jeu
   # (pages /mentions-legales, /cgv, /confidentialite). Un champ vide s'affiche « [à compléter] » en orange.
   LEGAL_NOM = ''                 # prénom et nom de l'entrepreneur individuel (ex. 'Jean Dupont')
