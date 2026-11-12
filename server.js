@@ -56,6 +56,16 @@ const REGION_LETTER = { cdg: 'F', sjc: 'C', lax: 'L', iad: 'V', sin: 'S', fra: '
   sea: 'W', ewr: 'E', yyz: 'Y', gru: 'R', nrt: 'N', syd: 'Z', bom: 'M', jnb: 'J' };
 const isRegion = r => /^[a-z]{3}$/.test(r);
 const rooms = new Map(); // code -> salon
+// Informations legales : coordonnees de l'editeur lues dans les variables LEGAL_* (fly.toml) et placees dans la page du jeu
+// (mentions legales, CGV, confidentialite). Champ vide : la page affiche « [a completer] ».
+const LEGAL_JSON = (() => {
+  const g = k => String(process.env['LEGAL_' + k] || '').trim().slice(0, 300);
+  const o = { nom: g('NOM'), adresse: g('ADRESSE'), immat: g('IMMAT'), email: g('EMAIL'), tel: g('TEL'), tva: g('TVA'), directeur: g('DIRECTEUR'),
+    med: g('MEDIATEUR'), medSite: g('MEDIATEUR_SITE'), medAdr: g('MEDIATEUR_ADRESSE') };
+  for (const k in o) if (!o[k]) delete o[k];
+  return JSON.stringify(o).replace(/</g, '\\u003c').replace(/\*\//g, '*\\/');
+})();
+const LEGAL_PAGES = { '/mentions-legales': 'mentions-legales', '/cgv': 'cgv', '/confidentialite': 'confidentialite' };
 
 
 // ---------- serveur web : jeu + test de santé ----------
@@ -122,6 +132,8 @@ const server = http.createServer((req, res) => {
     return res.end('ok');
   }
 
+  // pages legales : adresses courtes (liens a donner a Stripe, aux joueurs...) -> le jeu s'ouvre sur la bonne page
+  if (LEGAL_PAGES[url]) { res.writeHead(302, { Location: '/#' + LEGAL_PAGES[url], 'Cache-Control': 'no-cache' }); return res.end(); }
   if (url === '/' || url === '/index.html') {
     fs.readFile(INDEX, (err, data) => {
       if (err) {
@@ -134,7 +146,7 @@ const server = http.createServer((req, res) => {
         'Cache-Control': 'no-cache'
       });
 
-      res.end(data);
+      res.end(LEGAL_JSON === '{}' ? data : data.toString('utf8').replace('/*LEGAL*/{}/*LEGAL*/', () => '/*LEGAL*/' + LEGAL_JSON + '/*LEGAL*/'));
     });
 
     return;
