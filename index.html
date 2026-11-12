@@ -508,7 +508,41 @@ body.inmenu #muteBtn svg,body.inmenu #fsBtn svg{width:20px;height:20px}
 #skinBox .skPkI .skI{width:98px;height:98px;aspect-ratio:1;border-radius:10px;border-bottom:0;object-fit:cover;background:radial-gradient(circle at 50% 55%,rgba(255,70,112,.5),rgba(255,70,112,0) 70%)}
 @media (max-width:700px),(max-height:500px) and (orientation:landscape){#skinBox .skPack{min-height:92px;gap:8px;padding:8px 8px 8px 12px}#skinBox .skPkT b{font-size:16px}#skinBox .skPkT small{font-size:10.5px}#skinBox .skPkC{font-size:9.5px;padding:2px 6px}#skinBox .skPkC b{font-size:11px}#skinBox .skPkI .skI{width:72px;height:72px}#skinBox .skPkP{font-size:12px;padding:5px 10px 4px}}
 @media (prefers-reduced-motion:reduce){#skinBox .skPack::before{animation:none}}
-</style></head><body>
+</style><style>#legalBox{--fd:'Chakra Petch','Bahnschrift','DIN Alternate',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;position:fixed;inset:0;z-index:95;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,7,13,.82);font:400 14px/1.55 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#dfe5ee}
+#legalBox.on{display:flex}
+#legalBox .lgPanel{display:flex;flex-direction:column;width:min(880px,100%);height:min(92vh,100%);background:#0f141f;border:1px solid rgba(255,255,255,.1);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.6);overflow:hidden}
+#legalBox .lgTop{flex:none;display:flex;align-items:center;gap:10px;padding:10px 12px 10px 14px;border-bottom:1px solid rgba(255,255,255,.08);background:#121a28}
+#legalBox .lgTabs{flex:1;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+#legalBox .lgTabs button{flex:none;height:34px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:none;color:#c7d0dd;font:700 13px/1 var(--fd);cursor:pointer}
+#legalBox .lgTabs button.on{background:#ffd76a;border-color:#ffd76a;color:#1b1406}
+#legalBox .lgX{flex:none;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.16);background:none;color:#eef2f8;font:700 15px/1 system-ui;cursor:pointer}
+#legalBox .lgBody{flex:1;overflow-y:auto;padding:22px 30px 34px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#legalBox h2{margin:0 0 4px;font:800 26px/1.15 var(--fd);color:#fff}
+#legalBox h3{margin:24px 0 8px;font:700 16px/1.3 var(--fd);color:#ffd76a}
+#legalBox p{margin:0 0 10px}
+#legalBox ul,#legalBox ol{margin:0 0 10px;padding-left:22px}
+#legalBox li{margin:0 0 4px}
+#legalBox a{color:#8fc4ff}
+#legalBox b{color:#fff}
+#legalBox .lgMaj{color:#8d99ad;font-size:12.5px;margin-bottom:14px}
+#legalBox .lgId{list-style:none;padding:12px 16px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}
+#legalBox .lgTodo{color:#ff9a3c;font-weight:700;background:rgba(255,154,60,.1);padding:0 4px;border-radius:4px}
+#legalBox .lgTab{width:100%;border-collapse:collapse;margin:4px 0 12px;font-size:13px}
+#legalBox .lgTab th,#legalBox .lgTab td{text-align:left;vertical-align:top;padding:8px 10px;border:1px solid rgba(255,255,255,.1)}
+#legalBox .lgTab th{background:rgba(255,215,106,.08);color:#ffd76a;font-family:var(--fd)}
+#legalBox .lgNote{color:#9aa6b9;font-size:12.5px}
+#legalBox .lgForm{padding:12px 16px;border:1px dashed rgba(255,255,255,.2);border-radius:10px;font-size:13px}
+#legalBox .lgEn{padding:10px 14px;border-radius:10px;background:rgba(143,196,255,.08);border:1px solid rgba(143,196,255,.25);font-size:13px}
+@media (max-width:640px),(max-height:500px){#legalBox{padding:0}#legalBox .lgPanel{width:100%;height:100%;border-radius:0}#legalBox .lgBody{padding:16px 16px 28px;font-size:13.5px}#legalBox h2{font-size:21px}#legalBox .lgTab{font-size:12px}#legalBox .lgTab th,#legalBox .lgTab td{padding:6px 7px}}
+#lgLinks{position:fixed;right:30px;top:134px;z-index:70;display:flex;gap:6px;font:600 10.5px/1 system-ui;color:#7d8899;text-shadow:0 1px 2px #000}
+#lgLinks a{color:#9aa6b9;text-decoration:none}#lgLinks a:hover{color:#ffd76a;text-decoration:underline}
+body.sbopen #lgLinks{display:none!important}
+/* case des CGV dans la barre d'achat (visible aussi sur mobile) */
+.skBuyC{display:flex;align-items:flex-start;gap:7px;margin-top:5px;font-size:11.5px;line-height:1.35;color:#c7d0dd;cursor:pointer}
+.skBuyC input{flex:none;width:17px;height:17px;margin:0;accent-color:#ffd76a;cursor:pointer}
+.skBuyC a{color:#ffd76a}
+.skBuyB:disabled{opacity:.45;filter:grayscale(.6);cursor:not-allowed}
+@media (max-width:700px),(max-height:500px){.skBuyC{font-size:10.5px;margin-top:3px}}</style></head><body>
 <div id="menu" data-v="mainMenu"><div id="mfade"></div><div class="panel">
 <header class="mtop"><h1 class="logo">DETONATE<span class="ver">V3.7</span></h1><div class="mtopR"><a id="founder" href="https://x.com/Revo_YHWH" target="_blank" rel="noopener noreferrer" aria-label="Revo sur X (@Revo_YHWH)"><span class="av"><img alt="Revo" width="40" height="40" src="data:image/webp;base64,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"></span><span class="who"><span class="role">Fondateur</span><span class="nm">Revo</span></span><span class="xl"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>Suivre</span></a><div id="langSel"><button data-lang="fr">FR</button><button data-lang="en">EN</button></div></div></header>
 <section class="rail">
@@ -3549,7 +3583,187 @@ function dropSock(){try{if(netSocket){netSocket.onclose=null;netSocket.close()}}
 // message discret en bas de l'ecran, sans recharger la page (ms : il disparait tout seul)
 function srvUpd(t){let d=$('srvupd');if(!d){d=document.createElement('div');d.id='srvupd';d.style.cssText='position:fixed;bottom:96px;left:50%;transform:translateX(-50%);max-width:min(520px,88vw);z-index:59;background:rgba(10,14,24,.88);border:1px solid rgba(255,215,106,.5);border-radius:12px;color:#ffe9a8;font:600 13px/1.35 system-ui;padding:9px 14px;text-align:center;pointer-events:none';document.body.appendChild(d)}d.textContent=t}
 function netToast(t,ms){srvUpd(t);const d=$('srvupd');clearTimeout(d._t);if(ms)d._t=setTimeout(()=>d.remove(),ms)}
-const BUILD='2026-11-12T04:03Z';   // version du jeu (date de construction, UTC)
+// ===================== INFORMATIONS LÉGALES : mentions légales, CGV, politique de confidentialité =====================
+// Les coordonnées de l'éditeur ne sont pas écrites ici : le serveur les place dans LEGALC à partir des variables LEGAL_*
+// de fly.toml (LEGAL_NOM, LEGAL_ADRESSE, LEGAL_IMMAT, LEGAL_EMAIL, LEGAL_TEL...). Tant qu'un champ est vide, la page affiche
+// « [à compléter : ...] » en orange. Pages ouvertes par les liens du menu, ou par adresse : /mentions-legales, /cgv, /confidentialite.
+const LEGALC=/*LEGAL*/{}/*LEGAL*/;
+const LEGAL=(()=>{
+ const V='2026-11-12',MAJ='12 novembre 2026',SITE=(typeof location!=='undefined'&&location.host)?location.protocol+'//'+location.host:'https://detonate-v3-7xyz14.fly.dev';
+ const E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+ const C=LEGALC||{},T=l=>'<span class="lgTodo">[à compléter : '+l+']</span>';
+ const f=(k,l)=>C[k]?E(C[k]):T(l);
+ const nom=()=>f('nom','prénom et nom'),mail=()=>C.email?'<a href="mailto:'+E(C.email)+'">'+E(C.email)+'</a>':T('adresse e-mail de contact');
+ const tva=()=>C.tva?E(C.tva):'TVA non applicable, article 293 B du Code général des impôts';
+ const L=(id,t)=>'<a href="#'+id+'" data-lg="'+id+'">'+t+'</a>';
+ const med=()=>C.med?E(C.med)+(C.medSite?' — <a href="'+E(/^https?:\/\//.test(C.medSite)?C.medSite:'https://'+C.medSite)+'" target="_blank" rel="noopener">'+E(C.medSite)+'</a>':'')+(C.medAdr?' — '+E(C.medAdr):''):T('nom, site internet et adresse du médiateur de la consommation choisi');
+ const ident=()=>'<ul class="lgId"><li><b>'+nom()+'</b>, entrepreneur individuel (EI)</li><li>Adresse : '+f('adresse','adresse postale')+'</li><li>Immatriculation : '+f('immat','RCS ou RNE et numéro SIREN')+'</li>'+
+  '<li>'+tva()+'</li><li>E-mail : '+mail()+'</li><li>Téléphone : '+f('tel','numéro de téléphone')+'</li></ul>';
+
+ // ---------------------------------------------------------------- MENTIONS LÉGALES
+ const ML=()=>`
+<h2>Mentions légales</h2><p class="lgMaj">Dernière mise à jour : ${MAJ}</p>
+<h3>1. Éditeur</h3>
+<p>Le jeu Detonate, accessible à l’adresse <a href="${SITE}">${E(SITE.replace(/^https?:\/\//,''))}</a> (ci-après « le Jeu »), est édité par :</p>${ident()}
+<p>Directeur de la publication : ${C.directeur?E(C.directeur):nom()}.</p>
+<h3>2. Hébergement</h3>
+<p>Le Jeu est hébergé par <b>Fly.io, Inc.</b>, 2261 Market Street #4990, San Francisco, CA 94114, États-Unis — <a href="https://fly.io" target="_blank" rel="noopener">fly.io</a> — contact : legal@fly.io (l’hébergeur ne communique pas de numéro de téléphone).</p>
+<p>Les serveurs de jeu fonctionnent dans plusieurs régions (Paris, Ashburn en Virginie, Los Angeles, Singapour) ; les profils des joueurs sont conservés aux États-Unis (Ashburn, Virginie).</p>
+<h3>3. Paiements</h3>
+<p>Les paiements de la boutique sont traités par <b>Stripe Payments Europe, Ltd.</b>, 1 Grand Canal Street Lower, Grand Canal Dock, Dublin, D02 H210, Irlande. L’éditeur n’a jamais accès aux données de carte bancaire.</p>
+<h3>4. Propriété intellectuelle</h3>
+<p>Le Jeu et tous ses éléments (code, graphismes, modèles 3D, skins, cartes, sons, textes, nom et logo « Detonate ») sont la propriété exclusive de l’éditeur et sont protégés par le Code de la propriété intellectuelle. Toute reproduction, représentation, extraction ou adaptation, totale ou partielle, sans autorisation écrite préalable est interdite.</p>
+<p>Éléments de tiers utilisés : moteur 3D three.js (licence MIT, © les auteurs de three.js) ; police Chakra Petch (SIL Open Font License, servie par Google Fonts).</p>
+<h3>5. Signaler un contenu, nous contacter</h3>
+<p>Pour signaler un contenu illicite ou inapproprié (pseudo, nom de salon…) ou pour toute question : ${mail()}. Indiquez la description du contenu, où il apparaît, et vos coordonnées. Les signalements sont traités dans les meilleurs délais.</p>
+<h3>6. Données personnelles et stockage local</h3>
+<p>Le traitement des données personnelles est décrit dans la ${L('confidentialite','politique de confidentialité')}.</p>
+<p>Le Jeu n’utilise <b>aucun cookie publicitaire ni outil de mesure d’audience</b>. Il enregistre seulement sur l’appareil (stockage local du navigateur) ce qui est nécessaire à son fonctionnement : la clé privée du profil, les réglages (langue, son, ambiance), les skins équipés et les salons récents. Ces informations, strictement nécessaires au service demandé, sont dispensées de consentement (article 82 de la loi Informatique et Libertés).</p>
+<h3>7. Conditions de vente</h3>
+<p>Les achats dans la boutique sont régis par les ${L('cgv','conditions générales de vente')}.</p>
+<h3>8. Crédits</h3>
+<p>Detonate — jeu conçu et développé par Revo.</p>`;
+
+ // ---------------------------------------------------------------- CGV
+ const CGV=()=>`
+<h2>Conditions générales de vente</h2><p class="lgMaj">Version du ${MAJ} — applicables à toute commande passée à partir de cette date</p>
+<h3>Article 1 — Objet et champ d’application</h3>
+<p>Les présentes conditions générales de vente (« CGV ») régissent la vente, dans la boutique du jeu Detonate (« le Jeu »), de contenus numériques cosmétiques appelés « skins » et de lots de skins appelés « packs », à des consommateurs (« le Joueur »). Elles s’appliquent à l’exclusion de toutes autres conditions.</p>
+<p>Le Joueur déclare avoir pris connaissance des CGV et les accepter, en cochant la case prévue à cet effet, avant toute commande. Les CGV sont accessibles à tout moment dans le menu du Jeu et à l’adresse <a href="${SITE}/cgv">${E(SITE.replace(/^https?:\/\//,''))}/cgv</a> ; elles peuvent être enregistrées ou imprimées.</p>
+<p>Le Jeu lui-même est gratuit : seuls les skins de la boutique sont payants.</p>
+<h3>Article 2 — Vendeur</h3>
+<p>Les skins sont vendus par :</p>${ident()}<p>(ci-après « l’Éditeur »).</p>
+<h3>Article 3 — Définitions</h3>
+<ul><li><b>Profil</b> : compte de jeu du Joueur (pseudo, niveau, XP, statistiques, skins). L’accès au Profil se fait par une <b>clé privée</b> (code commençant par « DTN2. ») et un <b>code PIN</b> à 4 chiffres choisis par le Joueur.</li>
+<li><b>Skin</b> : élément cosmétique (tenue, bonnet, arme, sac ou aura) qui modifie uniquement l’apparence du personnage du Joueur dans le Jeu.</li>
+<li><b>Pack</b> : lot de plusieurs skins vendus ensemble à prix fixe.</li>
+<li><b>Boutique</b> : espace du Jeu où les skins et packs sont proposés à la vente.</li></ul>
+<h3>Article 4 — Caractéristiques des skins</h3>
+<p>Chaque skin est présenté dans la Boutique avec son nom, sa catégorie, sa rareté (commun, rare, épique, légendaire), son prix et un aperçu en 3D sur le personnage du Joueur, qui permet de l’essayer avant l’achat.</p>
+<p>Les skins sont <b>purement cosmétiques</b> : ils ne donnent aucun avantage de jeu (ni force, ni vitesse, ni précision, ni XP).</p>
+<p><b>Fonctionnement et compatibilité</b> : le Jeu fonctionne dans un navigateur internet récent (ordinateur, téléphone ou tablette), avec une connexion à internet. Les skins ne sont utilisables que dans le Jeu, sur le Profil du Joueur ; ils sont visibles par les autres joueurs dans les parties en ligne. Aucune mesure technique de protection ne s’y applique.</p>
+<p>La Boutique propose une sélection de 8 skins (deux par rareté), renouvelée toutes les 8 heures (à 0 h, 8 h et 16 h, heure UTC). Les packs ne sont proposés que le week-end, du vendredi 0 h au lundi 0 h (heure de New York) ; un compte à rebours indique la fin de l’offre. Pendant cette période, les skins d’un pack ne sont pas vendus à l’unité. Certains skins s’obtiennent gratuitement en montant de niveau : ils ne sont pas vendus.</p>
+<p>L’achat d’un skin confère au Joueur un <b>droit d’utilisation personnel</b>, non exclusif et non cessible, du skin dans le Jeu, rattaché au Profil utilisé pour l’achat, pour toute la durée d’exploitation du Jeu. Le Joueur n’acquiert aucun droit de propriété sur le skin. Les skins n’ont aucune valeur monétaire : ils ne peuvent être ni revendus, ni échangés, ni transférés vers un autre Profil, ni convertis en argent.</p>
+<h3>Article 5 — Prix</h3>
+<p>Les prix sont indiqués en euros, toutes taxes comprises (${tva()}). Il n’y a aucun frais de livraison.</p>
+<table class="lgTab"><tr><th>Skin</th><th>Prix</th></tr><tr><td>Commun</td><td>0,99 €</td></tr><tr><td>Rare</td><td>1,49 €</td></tr><tr><td>Épique</td><td>1,99 €</td></tr><tr><td>Légendaire</td><td>2,99 €</td></tr><tr><td>Pack du week-end</td><td>prix indiqué sur le pack (4,99 € pour le Pack Rubis)</td></tr></table>
+<p>Le Joueur peut choisir d’afficher et de payer les prix en dollars américains. Le montant en dollars est calculé à partir du prix en euros au cours de référence publié par la Banque centrale européenne, arrondi au cent ; il est affiché avant le paiement et c’est ce montant qui est débité. Les frais de change ou de carte éventuellement facturés par la banque du Joueur restent à sa charge.</p>
+<p>Le prix applicable est celui affiché au moment de la commande. L’Éditeur peut modifier ses prix à tout moment, sans effet sur les commandes déjà passées.</p>
+<h3>Article 6 — Commande</h3>
+<p>Pour acheter, le Joueur doit disposer d’un Profil protégé par un code PIN. La commande se déroule ainsi :</p>
+<ol><li>le Joueur choisit un skin ou un pack dans la Boutique et l’essaie sur son personnage ;</li>
+<li>il clique sur « Acheter » : le nom et le prix sont rappelés ;</li>
+<li>il coche la case par laquelle il accepte les présentes CGV, demande la livraison immédiate du contenu et renonce à son droit de rétractation (article 9) ;</li>
+<li>il clique sur « Payer » : il est dirigé vers la page de paiement sécurisée de Stripe, qui récapitule l’article, le prix et la devise, et où il peut vérifier sa commande, corriger ses informations ou abandonner ;</li>
+<li>il valide le paiement.</li></ol>
+<p>Le contrat est conclu au moment où le paiement est confirmé par Stripe. La langue du contrat est le français. L’achat est enregistré dans le Profil du Joueur ; le reçu de paiement lui est adressé par e-mail par Stripe.</p>
+<p><b>Mineurs</b> : le Joueur mineur doit obtenir l’accord de son représentant légal avant tout achat ; l’achat est réalisé sous la responsabilité de ce dernier.</p>
+<h3>Article 7 — Paiement</h3>
+<p>Le paiement est exigible immédiatement à la commande. Il s’effectue par carte bancaire ou par les autres moyens proposés sur la page de paiement Stripe (par exemple Apple Pay ou Google Pay selon l’appareil). Le paiement est sécurisé par Stripe ; l’Éditeur n’a jamais accès aux données de carte. En cas de refus ou d’échec du paiement, la commande est annulée et aucun skin n’est livré. Une facture peut être obtenue sur simple demande (article 15).</p>
+<h3>Article 8 — Livraison</h3>
+<p>Le skin est livré <b>immédiatement</b> après la confirmation du paiement, sur le Profil utilisé pour l’achat : il apparaît dans le casier « Skins » et il est équipé automatiquement. Il est utilisable sur tout appareil où le Joueur ouvre son Profil.</p>
+<p>Si le skin n’apparaît pas dans les minutes qui suivent le paiement, le Joueur peut recharger le Jeu puis, si le problème persiste, contacter l’Éditeur (article 15) avec son reçu Stripe : le skin sera livré ou le paiement remboursé.</p>
+<h3>Article 9 — Droit de rétractation</h3>
+<p>En principe, le consommateur dispose d’un délai de 14 jours pour se rétracter d’un contrat conclu à distance (article L221-18 du Code de la consommation).</p>
+<p>Toutefois, conformément à l’article L221-28, 13° du Code de la consommation, <b>le droit de rétractation ne peut pas être exercé</b> pour la fourniture d’un contenu numérique non fourni sur un support matériel dont l’exécution a commencé après accord préalable exprès du consommateur et renoncement exprès à son droit de rétractation.</p>
+<p>Avant de payer, le Joueur coche une case par laquelle il accepte les CGV, <b>demande expressément la livraison immédiate</b> du skin et <b>reconnaît perdre ainsi son droit de rétractation</b> ; sans cette case cochée, le paiement est impossible. Cet accord est rappelé sur la page de paiement Stripe et confirmé sur un support durable dans le reçu de paiement envoyé par e-mail. Le skin étant livré dès la confirmation du paiement, le Joueur ne dispose donc pas de droit de rétractation.</p>
+<p>Si, par exception, cet accord ou sa confirmation faisaient défaut, le Joueur pourrait se rétracter dans les 14 jours suivant l’achat en adressant à l’Éditeur une déclaration dénuée d’ambiguïté (par exemple au moyen du formulaire figurant en annexe) à ${mail()}. L’Éditeur rembourserait alors l’achat dans les 14 jours, par le même moyen de paiement, et retirerait le skin du Profil.</p>
+<h3>Article 10 — Garantie légale de conformité</h3>
+<p>Le Joueur bénéficie de la garantie légale de conformité des contenus numériques (articles L224-25-12 et suivants du Code de la consommation). L’Éditeur répond des défauts de conformité du skin (skin non livré, ne s’affichant pas, ou ne correspondant pas à sa présentation dans la Boutique) pendant toute la durée de sa fourniture.</p>
+<p>Le Joueur a droit à la mise en conformité du skin, sans frais. Si elle est impossible, n’est pas réalisée dans un délai raisonnable ou si le défaut est grave, il a droit à une réduction du prix ou à la résolution du contrat avec remboursement. La garantie est mise en œuvre sur simple demande à ${mail()}.</p>
+<p>Aucune garantie commerciale n’est proposée en plus de la garantie légale.</p>
+<h3>Article 11 — Disponibilité et évolution du Jeu</h3>
+<p>L’Éditeur s’efforce de rendre le Jeu accessible en permanence mais peut l’interrompre temporairement pour maintenance, mise à jour ou raison technique ; les skins restent attachés au Profil.</p>
+<p>L’Éditeur peut faire évoluer le Jeu et l’apparence des skins (améliorations graphiques, corrections), sans frais pour le Joueur et sans en dégrader l’aspect essentiel. Si une modification avait sur un skin un impact négatif plus que mineur, le Joueur en serait informé à l’avance et pourrait demander, dans les 30 jours, la résolution du contrat et le remboursement, conformément au Code de la consommation.</p>
+<p>En cas d’arrêt définitif du Jeu, l’Éditeur en informe les joueurs au moins 30 jours à l’avance dans le Jeu. Les skins achetés dans les 30 jours précédant cette annonce sont remboursés sur demande adressée avant la date d’arrêt.</p>
+<h3>Article 12 — Profil, clé privée et sécurité</h3>
+<p>Le Joueur est responsable de la conservation et de la confidentialité de sa clé privée et de son code PIN : toute personne qui les détient peut utiliser son Profil et ses skins. Le Profil n’est actif que sur un appareil à la fois. L’Éditeur ne peut pas retrouver une clé privée perdue ; il pourra toutefois, sur demande accompagnée du reçu Stripe, rattacher les skins achetés à un nouveau Profil.</p>
+<p>Il est interdit de tricher, d’exploiter une faille, d’utiliser un pseudo injurieux, discriminatoire ou trompeur, ou de perturber le Jeu. En cas de manquement, l’Éditeur peut, après avertissement sauf urgence ou manquement grave, suspendre ou supprimer le Profil. La suppression pour un manquement grave et avéré (triche, fraude au paiement) n’ouvre pas droit au remboursement des skins, sauf disposition légale contraire.</p>
+<h3>Article 13 — Remboursement, opposition et fraude</h3>
+<p>Lorsqu’un paiement est remboursé ou fait l’objet d’une opposition ou d’une contestation auprès de la banque, le skin correspondant est retiré du Profil. Un paiement frauduleux entraîne le retrait des skins concernés.</p>
+<h3>Article 14 — Responsabilité</h3>
+<p>L’Éditeur n’est pas responsable des dommages résultant d’une faute du Joueur (notamment la divulgation de sa clé privée ou de son code PIN), du fait d’un tiers, d’une défaillance de l’équipement ou de la connexion internet du Joueur, ou d’un cas de force majeure. Rien dans les présentes CGV ne limite les droits que le Joueur tient de la loi.</p>
+<h3>Article 15 — Service client et réclamations</h3>
+<p>Pour toute question ou réclamation : ${mail()} ou par courrier à l’adresse indiquée à l’article 2. Merci d’indiquer votre pseudo, la date de l’achat et, si possible, le reçu Stripe. L’Éditeur répond dans les meilleurs délais, et au plus tard sous 7 jours.</p>
+<h3>Article 16 — Médiation de la consommation</h3>
+<p>En cas de litige, le Joueur adresse d’abord une réclamation écrite à l’Éditeur. À défaut de solution, il peut recourir gratuitement au médiateur de la consommation dont relève l’Éditeur : ${med()}. Le médiateur peut être saisi dans un délai d’un an à compter de la réclamation écrite.</p>
+<h3>Article 17 — Données personnelles</h3>
+<p>Les données nécessaires aux achats sont traitées conformément à la ${L('confidentialite','politique de confidentialité')}.</p>
+<h3>Article 18 — Droit applicable et litiges</h3>
+<p>Les présentes CGV sont soumises au droit français. Le Joueur qui réside dans un autre État de l’Union européenne conserve la protection des dispositions impératives de la loi de son pays de résidence.</p>
+<p>En cas de litige, le Joueur peut saisir, à son choix, outre l’une des juridictions territorialement compétentes en vertu du Code de procédure civile, la juridiction du lieu où il demeurait au moment de la conclusion du contrat ou de la survenance du fait dommageable (article R631-3 du Code de la consommation).</p>
+<h3>Article 19 — Modification des CGV</h3>
+<p>L’Éditeur peut modifier les présentes CGV. Les CGV applicables à une commande sont celles acceptées par le Joueur au moment de cette commande.</p>
+<h3>Annexe — Formulaire de rétractation</h3>
+<p class="lgNote">À n’utiliser que dans le cas prévu au dernier alinéa de l’article 9. Compléter et envoyer à ${mail()}.</p>
+<div class="lgForm"><p>À l’attention de ${nom()}, ${f('adresse','adresse postale')}, ${C.email?E(C.email):T('adresse e-mail')} :</p>
+<p>Je vous notifie par la présente ma rétractation du contrat portant sur la fourniture du contenu numérique ci-dessous :</p>
+<p>— Skin ou pack : ……………………………<br>— Commandé le : ……………………………<br>— Pseudo du Profil : ……………………………<br>— Nom du consommateur : ……………………………<br>— Adresse du consommateur : ……………………………<br>— Date : ……………………………<br>— Signature (uniquement en cas d’envoi sur papier) : ……………………………</p></div>`;
+
+ // ---------------------------------------------------------------- CONFIDENTIALITÉ
+ const PC=()=>`
+<h2>Politique de confidentialité</h2><p class="lgMaj">Dernière mise à jour : ${MAJ}</p>
+<p>Cette politique explique quelles données personnelles le jeu Detonate (« le Jeu ») traite, pourquoi, combien de temps, et quels sont vos droits, conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés.</p>
+<h3>1. Responsable du traitement</h3>
+<p>${nom()}, entrepreneur individuel — ${f('adresse','adresse postale')} — ${mail()}.</p>
+<h3>2. Données traitées, finalités et bases légales</h3>
+<table class="lgTab"><tr><th>Données</th><th>Pourquoi</th><th>Base légale</th></tr>
+<tr><td><b>Profil de jeu</b> : pseudo, identifiant du profil, empreinte chiffrée (non réversible) de la clé privée et du code PIN, identifiant aléatoire de l’appareil autorisé, XP, niveau, statistiques de jeu, skins possédés et équipés</td><td>Créer et faire fonctionner le profil, l’XP, les skins ; n’autoriser qu’un appareil à la fois</td><td>Exécution du contrat (utilisation du Jeu)</td></tr>
+<tr><td><b>Achats</b> : identifiants de la session et du paiement Stripe, skin acheté, montant, devise, date, statut, acceptation des CGV et renonciation au droit de rétractation</td><td>Livrer les skins, gérer remboursements et litiges, prouver l’acceptation des CGV, tenir la comptabilité</td><td>Exécution du contrat ; obligations légales (comptables)</td></tr>
+<tr><td><b>Paiement</b> : carte, e-mail, pays</td><td>Saisis directement sur la page de Stripe, qui les traite pour le paiement, l’envoi du reçu et la lutte contre la fraude. <b>L’éditeur ne les reçoit pas et ne les conserve pas.</b></td><td>Exécution du contrat ; obligations légales de Stripe</td></tr>
+<tr><td><b>Données techniques</b> : adresse IP, données de connexion</td><td>Acheminer le Jeu, choisir le serveur le plus proche, limiter les abus (création de profils en masse, essais de code PIN). L’adresse IP n’est gardée qu’en mémoire, le temps nécessaire, et n’est pas enregistrée dans les profils.</td><td>Intérêt légitime (sécurité et fonctionnement du service)</td></tr>
+<tr><td><b>Parties en ligne</b> : pseudo, équipe, positions et actions dans la partie, code du salon</td><td>Faire jouer les joueurs ensemble ; rien n’est conservé après la partie, à part l’XP et les statistiques du profil</td><td>Exécution du contrat</td></tr></table>
+<p>Le Jeu ne fait <b>aucune publicité, aucun profilage et aucune mesure d’audience</b>, et ne vend aucune donnée.</p>
+<h3>3. Stockage sur votre appareil</h3>
+<p>Le Jeu enregistre dans le stockage local de votre navigateur : la clé privée de votre profil, vos réglages (langue, son, ambiance), vos skins et vos salons récents. Ces informations sont strictement nécessaires au fonctionnement du Jeu et ne nécessitent pas de consentement ; vous pouvez les effacer en vidant les données du site dans votre navigateur (pensez à garder votre clé privée pour retrouver votre profil).</p>
+<h3>4. Destinataires</h3>
+<ul><li>l’éditeur ;</li>
+<li><b>Fly.io, Inc.</b> (États-Unis), hébergeur des serveurs, en qualité de sous-traitant ;</li>
+<li><b>Stripe</b> (Stripe Payments Europe, Ltd., Irlande), pour les paiements — voir sa <a href="https://stripe.com/fr/privacy" target="_blank" rel="noopener">politique de confidentialité</a> ;</li>
+<li>au chargement du Jeu, votre navigateur télécharge la police d’écriture depuis <b>Google Fonts</b> (Google) et le moteur 3D depuis <b>cdnjs</b> (Cloudflare) : ces prestataires reçoivent alors votre adresse IP.</li></ul>
+<h3>5. Transferts hors de l’Union européenne</h3>
+<p>Les profils sont hébergés aux États-Unis par Fly.io, qui adhère au cadre de protection des données UE–États-Unis (Data Privacy Framework) ; ce transfert repose sur la décision d’adéquation de la Commission européenne du 10 juillet 2023. Google et Cloudflare peuvent également traiter des données aux États-Unis dans le cadre de ce dispositif.</p>
+<h3>6. Durées de conservation</h3>
+<ul><li>Profil : tant qu’il est utilisé, jusqu’à sa suppression à votre demande ; un profil sans aucune connexion pendant 3 ans peut être supprimé. Une copie de sauvegarde quotidienne des profils est conservée 7 jours.</li>
+<li>Achats : 10 ans à compter de l’achat (obligations comptables, article L123-22 du Code de commerce).</li>
+<li>Données techniques : le temps de la connexion ; journaux de l’hébergeur pour une durée limitée.</li>
+<li>Données des parties en ligne : la durée de la partie.</li></ul>
+<h3>7. Sécurité</h3>
+<p>Les échanges avec le Jeu sont chiffrés (HTTPS). La clé privée et le code PIN ne sont jamais conservés en clair sur le serveur (seule une empreinte chiffrée l’est). Aucune donnée de carte bancaire n’est reçue par l’éditeur.</p>
+<h3>8. Vos droits</h3>
+<p>Vous disposez des droits d’accès, de rectification, d’effacement, de limitation, d’opposition et de portabilité de vos données, ainsi que du droit de définir des directives sur leur sort après votre décès. Pour les exercer, écrivez à ${mail()} en indiquant votre pseudo et l’identifiant de votre profil (les caractères qui suivent « DTN2. » jusqu’au point suivant — ne communiquez jamais votre clé privée entière). Réponse sous un mois.</p>
+<p>Vous pouvez introduire une réclamation auprès de la CNIL : <a href="https://www.cnil.fr" target="_blank" rel="noopener">www.cnil.fr</a> — 3 place de Fontenoy, TSA 80715, 75334 Paris Cedex 07.</p>
+<h3>9. Mineurs</h3>
+<p>Le Jeu est ouvert à tous. Si tu as moins de 15 ans, parle-en à un parent avant de créer un profil ; tout achat d’un mineur nécessite l’accord de son représentant légal.</p>
+<h3>10. Modifications</h3>
+<p>Cette politique peut être mise à jour ; la date de mise à jour figure en haut de la page.</p>`;
+
+ const TABS=[['mentions-legales','Mentions légales','Legal notice',ML],['cgv','CGV','Terms of sale',CGV],['confidentialite','Confidentialité','Privacy',PC]];
+ let box=null,cur='';
+ function build(){if(box)return box;box=document.createElement('div');box.id='legalBox';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');
+  box.innerHTML='<div class="lgPanel"><div class="lgTop"><div class="lgTabs" role="tablist">'+TABS.map(t=>'<button role="tab" data-t="'+t[0]+'">'+(typeof LANG!=='undefined'&&LANG==='en'?t[2]:t[1])+'</button>').join('')+'</div><button class="lgX" aria-label="Fermer">✕</button></div><div class="lgBody" tabindex="0"></div></div>';
+  document.body.appendChild(box);
+  box.addEventListener('click',e=>{if(e.target===box){close();return}const t=e.target.closest('[data-t]');if(t){show(t.dataset.t);return}if(e.target.closest('.lgX'))close()});
+  return box}
+ function show(id){const t=TABS.find(q=>q[0]===id)||TABS[0];cur=t[0];build();box.querySelectorAll('[data-t]').forEach(b=>{const on=b.dataset.t===cur;b.classList.toggle('on',on);b.setAttribute('aria-selected',on?'true':'false')});
+  const b=box.querySelector('.lgBody');b.innerHTML=(typeof LANG!=='undefined'&&LANG==='en'?'<p class="lgEn">These documents are written in French, under French law; the French version is the only binding one. Summary: Detonate is free to play; cosmetic skins are sold through Stripe and delivered instantly to your profile; by ticking the box before paying, you request immediate delivery and waive the 14-day withdrawal right. Contact: '+(C.email?E(C.email):'see below')+'.</p>':'')+t[3]();b.scrollTop=0;
+  try{const h='#'+cur;if(location.hash!==h)history.replaceState(null,'',location.pathname+location.search+h)}catch(e){}}
+ function open(id){build();box.classList.add('on');show(id);try{uiClick()}catch(e){}}
+ function close(){if(!box)return;box.classList.remove('on');cur='';try{if(TABS.some(t=>'#'+t[0]===location.hash))history.replaceState(null,'',location.pathname+location.search)}catch(e){}}
+ const isOpen=()=>!!(box&&box.classList.contains('on'));
+ function fromHash(){const h=(typeof location!=='undefined'?location.hash:'').slice(1);if(TABS.some(t=>t[0]===h))open(h)}
+ function init(){
+  // liens [data-lg] partout (menu, boutique, case des CGV) ; Echap ferme
+  document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('[data-lg]');if(!a||(box&&box.contains(a)&&!a.closest('.lgBody')))return;e.preventDefault();e.stopPropagation();open(a.dataset.lg)},true);
+  addEventListener('keydown',e=>{if(e.key==='Escape'&&isOpen()){close();e.stopPropagation()}},true);
+  addEventListener('hashchange',fromHash);
+  // liens en bas du menu
+  const d=document.createElement('div');d.id='lgLinks';d.innerHTML=TABS.map(t=>'<a href="#'+t[0]+'" data-lg="'+t[0]+'">'+(typeof LANG!=='undefined'&&LANG==='en'?t[2]:t[1])+'</a>').join('<span>·</span>');document.body.appendChild(d);
+  setInterval(()=>{const m=typeof menu!=='undefined'&&menu&&!menu.classList.contains('hidden');d.style.display=m?'':'none'},700);
+  fromHash()}
+ return{init,open,close,isOpen,v:V}})();
+setTimeout(()=>{if(typeof HEADLESS!=='undefined'&&HEADLESS)return;try{LEGAL.init()}catch(e){console.error(e)}},0);
+const BUILD='2026-11-12T09:59Z';   // version du jeu (date de construction, UTC)
 setTimeout(()=>{if(HEADLESS)return;const d=document.createElement('div');d.id='buildTag';d.style.cssText='position:fixed;right:30px;top:116px;z-index:70;font:600 10.5px/1 system-ui;color:#7d8899;pointer-events:none;letter-spacing:.02em;text-shadow:0 1px 2px #000';
  d.textContent=LG('Version du ','Version ')+new Date(BUILD).toLocaleString(LANG==='en'?'en-US':'fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});document.body.appendChild(d);
  setInterval(()=>{d.style.display=menu.classList.contains('hidden')?'none':''},700)},0);   // apres le chargement complet du script (LG, LANG)
@@ -11405,7 +11619,7 @@ const PROF=(()=>{
  // boutique : prix (sans profil), achat (le serveur ouvre la page de paiement Stripe), retour de paiement (le serveur verifie)
  let SHOPJ=null;   // boutique du moment ; « end » : heure locale du prochain changement
  function shopInfo(force){if(SHOPJ&&!force&&Date.now()<SHOPJ.end)return Promise.resolve(SHOPJ);return api('shop',{}).then(j=>{if(j&&Array.isArray(j.items)){const d0=Date.now()-(j.now||0);j.end=Date.now()+Math.max(1000,(j.next||0)-(j.now||0));j.pkEndL=j.packEnd?j.packEnd+d0:0;if(j.pkNext)j.end=Math.min(j.end,Math.max(Date.now()+1000,j.pkNext+d0));/* pkEndL : fin du pack du week-end, a l'heure de cet appareil */SHOPJ=j;return j}return{on:0,items:[],end:0}}).catch(()=>({on:0,items:[],end:0}))}
- function buy(c,it,cur){if(!isOn())return Promise.resolve({err:I?'session':'guest'});return api('buy',idb({c,it,cur,ret:location.origin+location.pathname})).catch(()=>({err:'net'}))}
+ function buy(c,it,cur,cgv){if(!isOn())return Promise.resolve({err:I?'session':'guest'});return api('buy',idb({c,it,cur,cgv,ret:location.origin+location.pathname})).catch(()=>({err:'net'}))}
  function test(key){if(!isOn())return Promise.resolve({err:I?'session':'guest'});return api('test',idb({key})).then(j=>{if(j.prof)keep(j.prof);return j}).catch(()=>({err:'net'}))}
  function claim(cs){if(!isOn())return Promise.resolve({err:'session'});return api('claim',idb({cs})).then(j=>{if(j.prof)keep(j.prof);if(j._st===409)setSt('busy');return j}).catch(()=>({err:'net'}))}
  return{init,award,drawXP,ui,open,prog,need,TOT,LMAX,get:()=>P,code,report,hexBadge,lvlOfSlot,onXP,KD,state:()=>ST,saveSkins,isOn,lvlOf,shopInfo,buy,claim,test}})();
@@ -12352,7 +12566,7 @@ const SKIN=(()=>{
  const left=()=>{const s=Math.max(0,Math.round(((SHOPI&&SHOPI.end||0)-Date.now())/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+' h '+String(m).padStart(2,'0')+' min':m?m+' min '+String(s%60).padStart(2,'0')+' s':s+' s'};
  // boutique : 8 skins, deux par rarete, tires au hasard toutes les 8 heures (par le serveur)
  function listShop(){const L=SHOPI&&SHOPI.items||[],cur=Object.assign({},worn(),TRY),on_=SHOPI&&SHOPI.on;
-  $('skTabs').innerHTML='<div class="shHead"><b>'+LG('Nouveaux skins dans ','New skins in ')+'<span id="shLeft">'+(SHOPI&&SHOPI.end?left():'…')+'</span></b><small>'+(!SHOPI?'':on_?(CUR==='usd'&&SHOPI.fx?LG('Prix convertis au cours du jour : 1 € = ','Prices converted at today’s rate: €1 = ')+new Intl.NumberFormat(LANG==='en'?'en-US':'fr-FR',{minimumFractionDigits:4,maximumFractionDigits:4}).format(SHOPI.fx.usd)+' $':LG('8 skins, deux par rareté · paiement sécurisé par Stripe','8 skins, two per rarity · secure payment by Stripe')):LG('boutique bientôt disponible','shop coming soon'))+'</small></div>'+
+  $('skTabs').innerHTML='<div class="shHead"><b>'+LG('Nouveaux skins dans ','New skins in ')+'<span id="shLeft">'+(SHOPI&&SHOPI.end?left():'…')+'</span></b><small>'+(!SHOPI?'':on_?(CUR==='usd'&&SHOPI.fx?LG('Prix convertis au cours du jour : 1 € = ','Prices converted at today’s rate: €1 = ')+new Intl.NumberFormat(LANG==='en'?'en-US':'fr-FR',{minimumFractionDigits:4,maximumFractionDigits:4}).format(SHOPI.fx.usd)+' $':LG('8 skins, deux par rareté · paiement sécurisé par Stripe · ','8 skins, two per rarity · secure payment by Stripe · ')+'<a href="#cgv" data-lg="cgv" style="color:inherit">'+LG('CGV','Terms')+'</a>'):LG('boutique bientôt disponible','shop coming soon'))+'</small></div>'+
    '<div class="shCur" role="group" aria-label="'+LG('Devise','Currency')+'"><button data-cur="eur" class="'+(CUR==='eur'?'on':'')+'">€ EUR</button><button data-cur="usd" class="'+(CUR==='usd'?'on':'')+'">$ USD</button></div>';
   const PK=(SHOPI&&SHOPI.packs||[]).filter(p=>packOf(p.id)).map(p=>{const own=packOwned(p),on=p.items.every(q=>cur[q.c]===q.id);
     return'<button class="skPack pk_'+p.id+(on?' on':'')+'" data-pack="'+p.id+'"><span class="skPkT"><i>'+LG('Pack du week-end','Weekend pack')+'</i><b>'+esc(LGn(p.n))+'</b><small>'+p.items.map(q=>esc((q.c==='g'?LGn(CATN.g)+' ':'')+LGn(DEF[q.c][q.id].n))).join(' + ')+'</small>'+(SHOPI&&SHOPI.pkEndL?'<span class="skPkC">'+LG('Fin de l’offre dans ','Offer ends in ')+'<b class="pkLeft">'+pkLeft()+'</b></span>':'')+(own?'<span class="skPkO">✓ '+LG('Possédé','Owned')+'</span>':'<span class="skPkP">'+(on_?money(CUR==='usd'&&p.pu?p.pu:p.p):'…')+'</span>')+'</span>'+
@@ -12376,19 +12590,22 @@ const SKIN=(()=>{
   if(!SHOPI||!SHOPI.on||!pr)h='<span class="skBuyT">'+nm+LG(' : essai. Boutique bientôt disponible.',': preview. Shop coming soon.')+'</span>';
   else if(gs)h='<span class="skBuyT">'+nm+' · <b>'+money(pr)+'</b><small>'+(pk?LG('Crée ton profil pour acheter : le pack y sera enregistré.','Create your profile to buy: the pack is saved to it.'):LG('Crée ton profil pour acheter : le skin y sera enregistré.','Create your profile to buy: the skin is saved to it.'))+'</small></span><button class="skBuyB" data-a="prof">'+LG('Créer mon profil','Create my profile')+'</button>';
   else if(BUY.step===0)h='<span class="skBuyT">'+nm+' · <b>'+money(pr)+'</b><small>'+LG('Essai sur ton personnage.','Previewing on your character.')+'</small></span><button class="skBuyB" data-a="go">'+LG('Acheter','Buy')+'</button>';
-  else if(BUY.step===1)h='<span class="skBuyT"><b>'+nm+' · '+money(pr)+'</b><small>'+LG('Paiement sécurisé par Stripe. Livraison immédiate dans le jeu : en continuant, tu renonces au droit de rétractation de 14 jours.','Secure payment by Stripe. Delivered instantly in the game: by continuing, you waive the 14-day withdrawal right.')+'</small></span><span class="skBuyR"><button class="skBuyX" data-a="no">'+LG('Annuler','Cancel')+'</button><button class="skBuyB" data-a="pay">'+LG('Payer','Pay')+'</button></span>';
+  else if(BUY.step===1)h='<span class="skBuyT"><b>'+nm+' · '+money(pr)+'</b><small>'+LG('Paiement sécurisé par Stripe.','Secure payment by Stripe.')+'</small>'+
+   '<label class="skBuyC"><input type="checkbox" id="skCgv"><span>'+(pk?LG('J’accepte les <a href="#cgv" data-lg="cgv">CGV</a> et je demande la livraison immédiate du pack : je renonce ainsi à mon droit de rétractation de 14 jours.','I accept the <a href="#cgv" data-lg="cgv">terms of sale</a> and request immediate delivery of the pack: I thereby waive my 14-day right of withdrawal.'):LG('J’accepte les <a href="#cgv" data-lg="cgv">CGV</a> et je demande la livraison immédiate du skin : je renonce ainsi à mon droit de rétractation de 14 jours.','I accept the <a href="#cgv" data-lg="cgv">terms of sale</a> and request immediate delivery of the skin: I thereby waive my 14-day right of withdrawal.'))+'</span></label></span>'+
+   '<span class="skBuyR"><button class="skBuyX" data-a="no">'+LG('Annuler','Cancel')+'</button><button class="skBuyB" data-a="pay" disabled>'+LG('Payer','Pay')+'</button></span>';
   else h='<span class="skBuyT">'+LG('Ouverture de la page de paiement…','Opening the payment page…')+'</span>';
-  b.innerHTML=h;b.className='skBuy on'}
+  b.innerHTML=h;b.className='skBuy on';const cb=$('skCgv'),pb=b.querySelector('[data-a=pay]');if(cb&&pb)cb.addEventListener('change',()=>{pb.disabled=!cb.checked})}
  async function buyAct(a){if(!BUY)return;const{c,id}=BUY;try{uiClick()}catch(e){}
   if(a==='prof'){close();try{PROF.open()}catch(e){}return}
   if(a==='go')return buyBar(c,id,1);
   if(a==='no')return buyBar(c,id,0);
   if(a!=='pay')return;
   if(!PROF.isOn()){say(LG('Ton profil n’est pas connecté sur cet appareil : réessaie dans un instant.','Your profile is not connected on this device: try again in a moment.'),0);return}
-  buyBar(c,id,2);const j=await PROF.buy(c,id,CUR);
+  const cg=$('skCgv');if(!cg||!cg.checked){say(LG('Coche la case pour accepter les CGV et la livraison immédiate.','Tick the box to accept the terms of sale and immediate delivery.'),0);return}
+  buyBar(c,id,2);const j=await PROF.buy(c,id,CUR,typeof LEGAL!=='undefined'?LEGAL.v:'');
   if(j&&typeof j.url==='string'&&/^(https:\/\/|http:\/\/localhost[:/])/.test(j.url)){location.href=j.url;return}
   if(j&&j.err==='rotation'){hideBuy();TRY={};say(LG('La boutique vient de changer : voici les nouveaux skins.','The shop just changed: here are the new skins.'),0);shopLoad(1);return}
-  buyBar(c,id,0);say(j&&j.err==='owned'?(c==='p'?LG('Tu possèdes déjà ce pack.','You already own this pack.'):LG('Tu possèdes déjà ce skin.','You already own this skin.')):j&&j.err==='shop'?LG('La boutique n’est pas encore ouverte sur ce serveur.','The shop is not open on this server yet.'):LG('Paiement impossible pour le moment. Réessaie plus tard.','Payment unavailable right now. Try again later.'),0)}
+  buyBar(c,id,0);say(j&&j.err==='owned'?(c==='p'?LG('Tu possèdes déjà ce pack.','You already own this pack.'):LG('Tu possèdes déjà ce skin.','You already own this skin.')):j&&j.err==='shop'?LG('La boutique n’est pas encore ouverte sur ce serveur.','The shop is not open on this server yet.'):j&&j.err==='cgv'?LG('Les CGV ont changé : recharge le jeu, puis réessaie.','The terms of sale have changed: reload the game, then try again.'):LG('Paiement impossible pour le moment. Réessaie plus tard.','Payment unavailable right now. Try again later.'),0)}
  function open(){const b=$('skinBox');if(!b)return;TRY={};hideBuy();if(MODE==='shop')shopLoad();b.classList.toggle('shop',MODE==='shop');b.querySelector('.skTitle').textContent=MODE==='shop'?LG('Boutique','Shop'):LG('Skins','Skins');b.classList.add('on');pvInit();PV.zm=PV.zmT=1;PV.cur=null;list();say(MODE==='shop'||lvlNow()?'':LG('Crée ton profil pour débloquer des skins en montant de niveau.','Create your profile to unlock skins as you level up.'),0);cancelAnimationFrame(RAF);pvLoop();
   // boutique : compte a rebours ; a zero, la nouvelle selection est chargee
   clearInterval(SHT);if(MODE==='shop')SHT=setInterval(()=>{const e=$('shLeft');if(e&&SHOPI&&SHOPI.end){e.textContent=left();if(Date.now()>=SHOPI.end+1500)shopLoad(1)}for(const q of document.querySelectorAll('#skinBox .pkLeft'))q.textContent=pkLeft()},1000);try{uiClick()}catch(e){}}
