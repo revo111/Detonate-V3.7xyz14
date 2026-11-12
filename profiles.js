@@ -129,7 +129,7 @@ const SHOP = {
 // prix en centimes selon la rarete (commun, rare, epique, legendaire)
 // prix fixes en euros : 0,99 / 1,49 / 1,99 / 2,99 ; au choix du joueur, prix en dollars americains convertis au cours du jour (voir FX)
 const PRICE = [99, 149, 199, 299], SHOP_CUR = 'eur', SHOP_CURS = ['eur', 'usd'];
-// Packs : plusieurs skins vendus ensemble a prix fixe, en boutique seulement le week-end (vendredi, samedi, dimanche, heure UTC), hors selection tournante.
+// Packs : plusieurs skins vendus ensemble a prix fixe, en boutique seulement le week-end (du vendredi 0 h au lundi 0 h, heure de New York), hors selection tournante.
 // En semaine, leurs skins sont vendus a l'unite dans la selection tournante ; le week-end, ils en sont retires (seul le pack les vend).
 // Un achat de pack est note { c: 'p', id: <pack> } dans le profil ; il donne tous les skins du pack.
 const PACKS = {
@@ -149,10 +149,17 @@ const SHOP_ALL = []; for (const c in SHOP) for (const id in SHOP[c]) SHOP_ALL.pu
 // Le tirage ne depend que du creneau horaire : toutes les regions et tous les joueurs voient la meme boutique.
 // Une meme paire ne sort jamais deux creneaux de suite pour une rarete.
 const ROT_MS = 8 * 3600 * 1000, ROT_N = 2;
-// week-end : creneau d'un vendredi, samedi ou dimanche (UTC). Les creneaux commencent a 0 h, 8 h, 16 h UTC : chacun tient dans une seule journee.
-const weekend = slot => [5, 6, 0].includes(new Date(slot * ROT_MS).getUTCDay());
-// fin du week-end en cours (lundi 0 h UTC)
-const weekendEnd = slot => { const d = new Date(slot * ROT_MS); d.setUTCHours(0, 0, 0, 0); d.setUTCDate(d.getUTCDate() + ((8 - d.getUTCDay()) % 7 || 7)); return d.getTime(); };
+// week-end du pack : du vendredi 0 h au lundi 0 h, heure de New York (heure d'hiver et d'ete comprises).
+const NYF = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hourCycle: 'h23', weekday: 'short', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
+const ny = t => { const o = {}; for (const p of NYF.formatToParts(new Date(t))) o[p.type] = p.value; return { wd: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(o.weekday), y: +o.year, m: +o.month, d: +o.day, h: +o.hour % 24, mi: +o.minute }; };
+// minuit a New York pour une date (jour du mois qui peut deborder : Date.UTC le corrige) : 4 h ou 5 h UTC selon l'heure d'ete
+const nyMidnight = (y, m, d) => { for (const off of [4, 5]) { const t = Date.UTC(y, m - 1, d, off), q = ny(t); if (q.h === 0 && q.mi === 0) return t; } return Date.UTC(y, m - 1, d, 5); };
+const weekendAt = t => [5, 6, 0].includes(ny(t).wd);
+// fin du week-end en cours (lundi 0 h a New York), debut du prochain (vendredi 0 h a New York)
+const weekendEnd = t => { const q = ny(t); return nyMidnight(q.y, q.m, q.d + ((8 - q.wd) % 7 || 7)); };
+const weekendNext = t => { const q = ny(t); return nyMidnight(q.y, q.m, q.d + ((12 - q.wd) % 7 || 7)); };
+// creneau de la selection qui touche le week-end (meme quelques heures) : les skins du pack n'y sont pas vendus a l'unite
+const weekend = slot => weekendAt(slot * ROT_MS) || weekendAt((slot + 1) * ROT_MS - 1);
 const BY_R = [[], [], [], []]; for (const c in SHOP) for (const id in SHOP[c]) BY_R[SHOP[c][id][0]].push({ c, id });
 const rnd32 = s => () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
 function rotation(slot) {
@@ -168,7 +175,8 @@ function rotation(slot) {
   });
   return res;
 }
-const slotNow = () => Math.floor(Date.now() / ROT_MS) + (+tenv('SHOP_SLOT_ADD') || 0);   // SHOP_SLOT_ADD : tests sur ordinateur
+const nowT = () => Date.now() + (+tenv('SHOP_SLOT_ADD') || 0) * ROT_MS;   // SHOP_SLOT_ADD : tests sur ordinateur (avance de N creneaux de 8 h)
+const slotNow = () => Math.floor(nowT() / ROT_MS);
 const inRotation = (c, id) => tenv('SHOP_ANY') === '1' || rotation(slotNow()).some(x => x.c === c && x.id === id);   // SHOP_ANY=1 : tests
 // ---------- cours du dollar : cours de reference de la Banque centrale europeenne (1 euro = FX.usd dollars) ----------
 // Relu au demarrage puis toutes les 6 heures (la BCE le publie chaque jour ouvre vers 16 h, heure de Paris). Le dernier cours
@@ -422,8 +430,8 @@ async function http(req, res, url) {
   }
   // boutique du moment : les 4 skins proposes, leurs prix et l'heure du prochain changement (sans profil : les invites la voient aussi)
   if (op === 'shop') {
-    const sl = slotNow();
-    return out(res, 200, { on: STRIPE_KEY ? 1 : 0, cur: SHOP_CUR, curs: SHOP_CURS, fx: { usd: FX.usd, day: FX.day }, items: rotation(sl).map(x => Object.assign(x, { pu: inCur(x.p, 'usd') })), packEnd: weekend(sl) ? weekendEnd(sl) : 0, packs: (weekend(sl) ? Object.keys(PACKS) : []).map(k => ({ id: k, n: PACKS[k].n, r: PACKS[k].r, p: PACKS[k].p, pu: inCur(PACKS[k].p, 'usd'), items: PACKS[k].items.map(x => ({ c: x[0], id: x[1] })) })), now: Date.now(), next: (Math.floor(Date.now() / ROT_MS) + 1) * ROT_MS });
+    const t = nowT(), sl = slotNow(), we = weekendAt(t);
+    return out(res, 200, { on: STRIPE_KEY ? 1 : 0, cur: SHOP_CUR, curs: SHOP_CURS, fx: { usd: FX.usd, day: FX.day }, items: rotation(sl).map(x => Object.assign(x, { pu: inCur(x.p, 'usd') })), packEnd: we ? weekendEnd(t) : 0, pkNext: we ? weekendEnd(t) : weekendNext(t), packs: (we ? Object.keys(PACKS) : []).map(k => ({ id: k, n: PACKS[k].n, r: PACKS[k].r, p: PACKS[k].p, pu: inCur(PACKS[k].p, 'usd'), items: PACKS[k].items.map(x => ({ c: x[0], id: x[1] })) })), now: t, next: (sl + 1) * ROT_MS });
   }
   const P = auth(m.id, m.s);
   if (!P) return out(res, 404, { err: 'profile' });
@@ -479,7 +487,7 @@ async function http(req, res, url) {
     const c = String(m.c || ''), id = String(m.it || ''), pr = priceOf(c, id);
     if (!pr) return out(res, 400, { err: 'item' });
     if (owns(P.own, c, id)) return out(res, 409, { err: 'owned' });
-    if (isPack(c, id) ? !weekend(slotNow()) : !inRotation(c, id)) return out(res, 409, { err: 'rotation' });   // la boutique a change : le jeu recharge la liste
+    if (isPack(c, id) ? !weekendAt(nowT()) : !inRotation(c, id)) return out(res, 409, { err: 'rotation' });   // la boutique a change : le jeu recharge la liste
     if (!STRIPE_KEY) return out(res, 503, { err: 'shop' });
     const ret = retUrl(m.ret);
     if (!ret) return out(res, 400, { err: 'ret' });
