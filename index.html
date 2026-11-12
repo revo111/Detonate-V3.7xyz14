@@ -498,11 +498,14 @@ body.inmenu #muteBtn svg,body.inmenu #fsBtn svg{width:20px;height:20px}
 #skinBox .skPkT i{font:800 9.5px/1 var(--fd);letter-spacing:.12em;text-transform:uppercase;font-style:normal;color:#ffae2b}
 #skinBox .skPkT b{font:800 19px/1.1 var(--fd);color:#fff;text-shadow:0 0 14px rgba(255,60,104,.8)}
 #skinBox .skPkT small{font-size:11.5px;line-height:1.3;color:#f0b9c5}
+#skinBox .skPack{height:max-content}
+#skinBox .skPkC{display:inline-flex;align-items:center;gap:5px;margin-top:2px;padding:3px 8px;border-radius:999px;background:rgba(10,6,14,.55);border:1px solid rgba(255,174,43,.45);font:700 10.5px/1.2 var(--fd);color:#ffd9a0}
+#skinBox .skPkC b{font:800 12px/1 var(--fd);color:#fff;font-variant-numeric:tabular-nums;letter-spacing:.02em}
 #skinBox .skPkP{margin-top:5px;padding:6px 12px 5px;border-radius:999px;background:linear-gradient(180deg,#ffd76a,#f2b33a);color:#1b1406;font:800 13px/1 var(--fd);box-shadow:0 2px 8px rgba(0,0,0,.35)}
 #skinBox .skPkO{margin-top:5px;padding:6px 10px 5px;border-radius:999px;background:rgba(9,12,20,.72);color:#7fe8a2;font:700 11px/1 var(--fd)}
 #skinBox .skPkI{position:relative;flex:none;display:flex;gap:6px}
 #skinBox .skPkI .skI{width:98px;height:98px;aspect-ratio:1;border-radius:10px;border-bottom:0;object-fit:cover;background:radial-gradient(circle at 50% 55%,rgba(255,70,112,.5),rgba(255,70,112,0) 70%)}
-@media (max-width:700px),(max-height:500px) and (orientation:landscape){#skinBox .skPack{min-height:92px;gap:8px;padding:8px 8px 8px 12px}#skinBox .skPkT b{font-size:16px}#skinBox .skPkT small{font-size:10.5px}#skinBox .skPkI .skI{width:72px;height:72px}#skinBox .skPkP{font-size:12px;padding:5px 10px 4px}}
+@media (max-width:700px),(max-height:500px) and (orientation:landscape){#skinBox .skPack{min-height:92px;gap:8px;padding:8px 8px 8px 12px}#skinBox .skPkT b{font-size:16px}#skinBox .skPkT small{font-size:10.5px}#skinBox .skPkC{font-size:9.5px;padding:2px 6px}#skinBox .skPkC b{font-size:11px}#skinBox .skPkI .skI{width:72px;height:72px}#skinBox .skPkP{font-size:12px;padding:5px 10px 4px}}
 @media (prefers-reduced-motion:reduce){#skinBox .skPack::before{animation:none}}
 </style></head><body>
 <div id="menu" data-v="mainMenu"><div id="mfade"></div><div class="panel">
@@ -3540,7 +3543,7 @@ function dropSock(){try{if(netSocket){netSocket.onclose=null;netSocket.close()}}
 // message discret en bas de l'ecran, sans recharger la page (ms : il disparait tout seul)
 function srvUpd(t){let d=$('srvupd');if(!d){d=document.createElement('div');d.id='srvupd';d.style.cssText='position:fixed;bottom:96px;left:50%;transform:translateX(-50%);max-width:min(520px,88vw);z-index:59;background:rgba(10,14,24,.88);border:1px solid rgba(255,215,106,.5);border-radius:12px;color:#ffe9a8;font:600 13px/1.35 system-ui;padding:9px 14px;text-align:center;pointer-events:none';document.body.appendChild(d)}d.textContent=t}
 function netToast(t,ms){srvUpd(t);const d=$('srvupd');clearTimeout(d._t);if(ms)d._t=setTimeout(()=>d.remove(),ms)}
-const BUILD='2026-11-11T23:51Z';   // version du jeu (date de construction, UTC)
+const BUILD='2026-11-12T00:32Z';   // version du jeu (date de construction, UTC)
 setTimeout(()=>{if(HEADLESS)return;const d=document.createElement('div');d.id='buildTag';d.style.cssText='position:fixed;right:30px;top:116px;z-index:70;font:600 10.5px/1 system-ui;color:#7d8899;pointer-events:none;letter-spacing:.02em;text-shadow:0 1px 2px #000';
  d.textContent=LG('Version du ','Version ')+new Date(BUILD).toLocaleString(LANG==='en'?'en-US':'fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});document.body.appendChild(d);
  setInterval(()=>{d.style.display=menu.classList.contains('hidden')?'none':''},700)},0);   // apres le chargement complet du script (LG, LANG)
@@ -11355,7 +11358,7 @@ const PROF=(()=>{
   if(!isOn())return Promise.resolve(false);return api('skins',idb({sk:sel})).then(j=>{if(j.prof){keep(j.prof);return true}if(j._st===409)setSt('busy');return false}).catch(()=>false)}
  // boutique : prix (sans profil), achat (le serveur ouvre la page de paiement Stripe), retour de paiement (le serveur verifie)
  let SHOPJ=null;   // boutique du moment ; « end » : heure locale du prochain changement
- function shopInfo(force){if(SHOPJ&&!force&&Date.now()<SHOPJ.end)return Promise.resolve(SHOPJ);return api('shop',{}).then(j=>{if(j&&Array.isArray(j.items)){j.end=Date.now()+Math.max(1000,(j.next||0)-(j.now||0));SHOPJ=j;return j}return{on:0,items:[],end:0}}).catch(()=>({on:0,items:[],end:0}))}
+ function shopInfo(force){if(SHOPJ&&!force&&Date.now()<SHOPJ.end)return Promise.resolve(SHOPJ);return api('shop',{}).then(j=>{if(j&&Array.isArray(j.items)){const d0=Date.now()-(j.now||0);j.end=Date.now()+Math.max(1000,(j.next||0)-(j.now||0));j.pkEndL=j.packEnd?j.packEnd+d0:0;if(j.pkNext)j.end=Math.min(j.end,Math.max(Date.now()+1000,j.pkNext+d0));/* pkEndL : fin du pack du week-end, a l'heure de cet appareil */SHOPJ=j;return j}return{on:0,items:[],end:0}}).catch(()=>({on:0,items:[],end:0}))}
  function buy(c,it,cur){if(!isOn())return Promise.resolve({err:I?'session':'guest'});return api('buy',idb({c,it,cur,ret:location.origin+location.pathname})).catch(()=>({err:'net'}))}
  function test(key){if(!isOn())return Promise.resolve({err:I?'session':'guest'});return api('test',idb({key})).then(j=>{if(j.prof)keep(j.prof);return j}).catch(()=>({err:'net'}))}
  function claim(cs){if(!isOn())return Promise.resolve({err:'session'});return api('claim',idb({cs})).then(j=>{if(j.prof)keep(j.prof);if(j._st===409)setSt('busy');return j}).catch(()=>({err:'net'}))}
@@ -12298,13 +12301,15 @@ const SKIN=(()=>{
  let SHOPI=null,BUY=null,MODE='lock',SHT=0;   // SHOPI : boutique du moment (serveur) ; BUY : { c, id, step 0 prix | 1 confirmation | 2 ouverture } ; MODE : 'lock' casier, 'shop' boutique
  const packOf=id=>SHOPI&&SHOPI.packs&&SHOPI.packs.find(x=>x.id===id&&x.items.every(q=>DEF[q.c]&&DEF[q.c][q.id]))||null,packOwned=p=>p.items.every(q=>owned(q.c,q.id)),nameOf=(c,id)=>c==='p'?(packOf(id)?LGn(packOf(id).n):''):LGn(DEF[c][id].n);   // pack : plusieurs skins vendus ensemble (c = 'p')
  const priceOf=(c,id)=>{const it=c==='p'?packOf(id):SHOPI&&SHOPI.items&&SHOPI.items.find(x=>x.c===c&&x.id===id);return it?(CUR==='usd'&&it.pu?it.pu:it.p):0};   // dollars : prix converti par le serveur au cours du jour
+ // compte a rebours de l'offre du week-end (fin : lundi 0 h, heure de New York)
+ const pkLeft=()=>{const s=Math.max(0,Math.floor(((SHOPI&&SHOPI.pkEndL||0)-Date.now())/1000)),d=Math.floor(s/86400),P2=n=>String(n).padStart(2,'0');return(d?d+LG(' j ','d '):'')+P2(Math.floor(s%86400/3600))+':'+P2(Math.floor(s%3600/60))+':'+P2(s%60)};
  const left=()=>{const s=Math.max(0,Math.round(((SHOPI&&SHOPI.end||0)-Date.now())/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+' h '+String(m).padStart(2,'0')+' min':m?m+' min '+String(s%60).padStart(2,'0')+' s':s+' s'};
  // boutique : 8 skins, deux par rarete, tires au hasard toutes les 8 heures (par le serveur)
  function listShop(){const L=SHOPI&&SHOPI.items||[],cur=Object.assign({},worn(),TRY),on_=SHOPI&&SHOPI.on;
   $('skTabs').innerHTML='<div class="shHead"><b>'+LG('Nouveaux skins dans ','New skins in ')+'<span id="shLeft">'+(SHOPI&&SHOPI.end?left():'…')+'</span></b><small>'+(!SHOPI?'':on_?(CUR==='usd'&&SHOPI.fx?LG('Prix convertis au cours du jour : 1 € = ','Prices converted at today’s rate: €1 = ')+new Intl.NumberFormat(LANG==='en'?'en-US':'fr-FR',{minimumFractionDigits:4,maximumFractionDigits:4}).format(SHOPI.fx.usd)+' $':LG('8 skins, deux par rareté · paiement sécurisé par Stripe','8 skins, two per rarity · secure payment by Stripe')):LG('boutique bientôt disponible','shop coming soon'))+'</small></div>'+
    '<div class="shCur" role="group" aria-label="'+LG('Devise','Currency')+'"><button data-cur="eur" class="'+(CUR==='eur'?'on':'')+'">€ EUR</button><button data-cur="usd" class="'+(CUR==='usd'?'on':'')+'">$ USD</button></div>';
   const PK=(SHOPI&&SHOPI.packs||[]).filter(p=>packOf(p.id)).map(p=>{const own=packOwned(p),on=p.items.every(q=>cur[q.c]===q.id);
-    return'<button class="skPack pk_'+p.id+(on?' on':'')+'" data-pack="'+p.id+'"><span class="skPkT"><i>'+LG('Pack du week-end','Weekend pack')+(SHOPI&&SHOPI.packEnd?' · '+LG('jusqu’à dimanche','until Sunday'):'')+'</i><b>'+esc(LGn(p.n))+'</b><small>'+p.items.map(q=>esc((q.c==='g'?LGn(CATN.g)+' ':'')+LGn(DEF[q.c][q.id].n))).join(' + ')+'</small>'+(own?'<span class="skPkO">✓ '+LG('Possédé','Owned')+'</span>':'<span class="skPkP">'+(on_?money(CUR==='usd'&&p.pu?p.pu:p.p):'…')+'</span>')+'</span>'+
+    return'<button class="skPack pk_'+p.id+(on?' on':'')+'" data-pack="'+p.id+'"><span class="skPkT"><i>'+LG('Pack du week-end','Weekend pack')+'</i><b>'+esc(LGn(p.n))+'</b><small>'+p.items.map(q=>esc((q.c==='g'?LGn(CATN.g)+' ':'')+LGn(DEF[q.c][q.id].n))).join(' + ')+'</small>'+(SHOPI&&SHOPI.pkEndL?'<span class="skPkC">'+LG('Fin de l’offre dans ','Offer ends in ')+'<b class="pkLeft">'+pkLeft()+'</b></span>':'')+(own?'<span class="skPkO">✓ '+LG('Possédé','Owned')+'</span>':'<span class="skPkP">'+(on_?money(CUR==='usd'&&p.pu?p.pu:p.p):'…')+'</span>')+'</span>'+
      '<span class="skPkI">'+p.items.map(q=>{const k=q.c+q.id+132;return TH[k]?'<img class="skI" alt="" src="'+TH[k]+'">':(TQ.push({c:q.c,id:q.id}),'<img class="skI ld" alt="" data-k="'+q.c+q.id+'" src="'+PX+'">')}).join('')+'</span></button>'}).join('');
   $('skGrid').innerHTML=PK+(L.length?L.filter(q=>DEF[q.c]&&DEF[q.c][q.id]).map(q=>{const it=DEF[q.c][q.id],r=rarOf(it),own=owned(q.c,q.id),on=cur[q.c]===q.id,k=q.c+q.id+132;
     return'<button class="skC r'+r+(on?' on':'')+'" data-c="'+q.c+'" data-id="'+q.id+'" style="'+RSTY(r)+'">'+(own?'<span class="skOwn">'+LG('Possédé','Owned')+'</span>':'<span class="skPr">'+(on_?money(CUR==='usd'&&q.pu?q.pu:q.p):'…')+'</span>')+
@@ -12340,7 +12345,7 @@ const SKIN=(()=>{
   buyBar(c,id,0);say(j&&j.err==='owned'?(c==='p'?LG('Tu possèdes déjà ce pack.','You already own this pack.'):LG('Tu possèdes déjà ce skin.','You already own this skin.')):j&&j.err==='shop'?LG('La boutique n’est pas encore ouverte sur ce serveur.','The shop is not open on this server yet.'):LG('Paiement impossible pour le moment. Réessaie plus tard.','Payment unavailable right now. Try again later.'),0)}
  function open(){const b=$('skinBox');if(!b)return;TRY={};hideBuy();if(MODE==='shop')shopLoad();b.classList.toggle('shop',MODE==='shop');b.querySelector('.skTitle').textContent=MODE==='shop'?LG('Boutique','Shop'):LG('Skins','Skins');b.classList.add('on');pvInit();PV.zm=PV.zmT=1;PV.cur=null;list();say(MODE==='shop'||lvlNow()?'':LG('Crée ton profil pour débloquer des skins en montant de niveau.','Create your profile to unlock skins as you level up.'),0);cancelAnimationFrame(RAF);pvLoop();
   // boutique : compte a rebours ; a zero, la nouvelle selection est chargee
-  clearInterval(SHT);if(MODE==='shop')SHT=setInterval(()=>{const e=$('shLeft');if(e&&SHOPI&&SHOPI.end){e.textContent=left();if(Date.now()>=SHOPI.end+1500)shopLoad(1)}},1000);try{uiClick()}catch(e){}}
+  clearInterval(SHT);if(MODE==='shop')SHT=setInterval(()=>{const e=$('shLeft');if(e&&SHOPI&&SHOPI.end){e.textContent=left();if(Date.now()>=SHOPI.end+1500)shopLoad(1)}for(const q of document.querySelectorAll('#skinBox .pkLeft'))q.textContent=pkLeft()},1000);try{uiClick()}catch(e){}}
  function close(){const b=$('skinBox');b.classList.remove('on');cancelAnimationFrame(RAF);clearInterval(SHT);MODE='lock';TRY={};TQ=[];hideBuy();if(PV){apply(PV.man,null);PV.key='x';PV.lt=0}}
  function init(){const b=document.createElement('div');b.id='skinBox';b.innerHTML='<div class="skPanel" role="dialog" aria-modal="true"><div class="skTop"><span class="skTitle">'+LG('Skins','Skins')+'</span><button class="skX" aria-label="'+LG('Fermer','Close')+'">✕</button></div>'+
    '<div class="skBody"><div class="skView"><canvas id="skCv"></canvas><button class="skVw" id="skVw">'+LG('Vue de jeu','Game view')+'</button></div>'+
