@@ -3802,7 +3802,7 @@ ${LITE?'':`<h3>7. Conditions de vente</h3>
   fromHash()}
  return{init,open,close,isOpen,v:V}})();
 setTimeout(()=>{if(typeof HEADLESS!=='undefined'&&HEADLESS)return;try{LEGAL.init()}catch(e){console.error(e)}},0);
-const BUILD='2026-11-12T17:56Z';   // version du jeu (date de construction, UTC)
+const BUILD='2026-11-12T18:14Z';   // version du jeu (date de construction, UTC)
 setTimeout(()=>{if(HEADLESS)return;const d=document.createElement('div');d.id='buildTag';d.style.cssText='position:fixed;right:30px;top:116px;z-index:70;font:600 10.5px/1 system-ui;color:#7d8899;pointer-events:none;letter-spacing:.02em;text-shadow:0 1px 2px #000';
  d.textContent=LG('Version du ','Version ')+new Date(BUILD).toLocaleString(LANG==='en'?'en-US':'fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});document.body.appendChild(d);
  setInterval(()=>{d.style.display=menu.classList.contains('hidden')?'none':''},700)},0);   // apres le chargement complet du script (LG, LANG)
@@ -4552,7 +4552,7 @@ const HUI=(()=>{
   if(rh<19&&nT>1&&W>=700){const half=Math.ceil(nT/2),n0=groups.filter((q,i)=>i%2===0).reduce((s,q)=>s+q.rows.length,0),n1=nR-n0;rh=rowsH(Math.max(n0,n1),half);cols=2}
   const LV0=groups.some(G=>G.rows.some(R=>R.lvl>0));rh=Math.max(LV0?18:14,Math.min(mob?(LV0?26:22):(LV0?32:27),rh));/* insignes de niveau affiches : lignes un peu plus hautes */const gap=12,tw_=Math.min(W-16,cols===2?1000:640),cwid=cols===2?(tw_-gap)/2:tw_,X0=W/2-tw_/2;
   const nc=heads.length,cw=Math.max(34,Math.min(68,(cwid-150)/nc)),fz=Math.max(10,Math.min(13.5,rh*.52)),hz=Math.max(9,Math.min(10.5,rh*.42));
-  let yb=y;const yc=[y,y],LV=LV0,lr=Math.max(8.5,Math.min(14.5,rh*.47)),LWX=LV&&typeof BDG!=='undefined'?Math.max(1,...groups.flatMap(G=>G.rows.map(R=>R.lvl>0?BDG.EXT(BDG.tier(R.lvl)).w:1))):1;   // insignes de niveau (vrais insignes, ornements compris) ; LWX : place des ornements
+  let yb=y;const yc=[y,y],LV=LV0,lr=Math.max(8,Math.min(12,rh*.4)),LWX=LV&&typeof BDG!=='undefined'?Math.max(1,...groups.flatMap(G=>G.rows.map(R=>R.lvl>0?BDG.EXT(BDG.tier(R.lvl)).w:1))):1;   // insignes de niveau (vrais insignes, ornements compris) ; LWX : place des ornements
   groups.forEach((G,i)=>{const c=cols===2?i%2:0,x=X0+c*(cwid+gap);let yy=yc[c];
    if(yy===y){heads.forEach((l,j)=>{const L=String(l).toUpperCase();let z=hz;while(z>7.5&&tw(L,z,600,1,.6)>cw-6)z-=.5;T(L,x+cwid-cw*(nc-j)+cw/2,yy+7,z,MUTE,'center',600,1,.6)});yy+=16}
    const hh=rh+2;box(x,yy,cwid,hh,{r:7,bar:G.col,bw:4,bg:A(G.col,G.mine?.26:.16),line:G.mine?'rgba(255,255,255,.55)':A(G.col,.35)});
@@ -4560,7 +4560,7 @@ const HUI=(()=>{
    (G.tot||[]).forEach((v,j)=>{if(v!==''&&v!=null)T(v,x+cwid-cw*(nc-j)+cw/2,yy+hh/2+.5,fz,INK,'center',700,1)});yy+=hh+2;
    for(const R of G.rows){rr(x,yy,cwid,rh,6);g.fillStyle=R.me?'rgba(255,255,255,.1)':'rgba(255,255,255,.035)';g.fill();
     const nc_=R.dim?'rgba(238,242,248,.42)':(R.star?GOLD:(R.me?INK:SOFT));let px=x+14;if(R.star){T('★',px,yy+rh/2+.5,fz,GOLD,'left',700);px+=fz+4}
-    if(LV){if(R.lvl>0){const e=typeof BDG!=='undefined'?BDG.EXT(BDG.tier(R.lvl)):{t:1,b:1},r_=Math.min(lr,(rh/2+6.5)/Math.max(e.t,e.b));PROF.hexBadge(px+lr*LWX,yy+rh/2,r_,R.lvl,R.dim,false)}px+=lr*LWX*2+6}
+    if(LV){if(R.lvl>0){const e=typeof BDG!=='undefined'?BDG.EXT(BDG.tier(R.lvl)):{t:1,b:1},r_=Math.min(lr,(rh/2+1)/Math.max(e.t,e.b));PROF.hexBadge(px+lr*LWX,yy+rh/2,r_,R.lvl,R.dim,false)}px+=lr*LWX*2+8}
     T(R.name,px,yy+rh/2+.5,fz,nc_,'left',R.me||R.star?700:500);if(R.tag){const tx=px+tw(R.name,fz,R.me||R.star?700:500)+8;chip(R.tag,tx,yy+rh/2-8,R.star?GOLD:null,9.5,16)}
     R.cells.forEach((v,j)=>T(v,x+cwid-cw*(nc-j)+cw/2,yy+rh/2+.5,fz,R.dim?'rgba(238,242,248,.45)':INK,'center',600,1));yy+=rh+1.5}
    yy+=10;yc[c]=yy;yb=Math.max(yb,yy)});
