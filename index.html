@@ -353,6 +353,22 @@ body.inmenu #muteBtn svg,body.inmenu #fsBtn svg{width:20px;height:20px}
 /* telephone a la verticale : Partie privee et Boutique cote a cote, pour que les trois boutons tiennent a l'ecran */
 @media (max-width:700px) and (min-height:561px),(max-width:599px){#mainMenu{display:grid;grid-template-columns:1fr 1fr;gap:8px}#mainMenu #aiBtn,#mainMenu #onlineRow,#mainMenu #resumeRow{grid-column:1/-1}#mainMenu #privateBtn small,#mainMenu #shopBtn small{display:none}}
 
+/* insignes de niveau (badges.js) : l'insigne est dessine dans un canevas qui deborde de la case (ornements) */
+#profChip .pbg.hasBdg,#profBox .ppBadge.hasBdg,.ppBdgC.hasBdg{clip-path:none;background:none;overflow:visible;position:relative}
+.hasBdg>b{display:none}canvas.bdgC{display:block;position:relative!important;inset:auto!important;left:auto!important;top:auto!important;z-index:1;flex:none;max-width:none;pointer-events:none;touch-action:auto}
+#profChip.guest .pbg.hasBdg{background:none}
+#profBox .ppBdg{margin-top:14px}
+#profBox .ppBdgH{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+#profBox .ppBdgH b{font:700 13px/1 var(--fd);color:#eef2f8;letter-spacing:.04em;text-transform:uppercase}
+#profBox .ppBdgH small{font-size:11px;color:var(--mute,#8d99ad)}
+#profBox .ppBdgL{display:flex;gap:4px;overflow-x:auto;padding:22px 4px 8px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+#profBox .ppBdgI{flex:none;width:62px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 0 6px;border-radius:10px}
+#profBox .ppBdgI .ppBdgC{width:40px;height:40px;display:grid;place-items:center;margin-bottom:12px}
+#profBox .ppBdgI b{font:700 11px/1 var(--fd);color:#eef2f8}
+#profBox .ppBdgI small{font-size:9.5px;line-height:1.1;color:#9aa6b9;text-align:center}
+#profBox .ppBdgI.lock b,#profBox .ppBdgI.lock small{opacity:.55}
+#profBox .ppBdgI.cur{background:rgba(255,215,106,.1);box-shadow:inset 0 0 0 1px rgba(255,215,106,.45)}
+
 /* ===== V3.7 : casier des skins (apercu 3D a gauche, categories et skins a droite) ===== */
 #skinBox{--fd:'Chakra Petch','Bahnschrift','DIN Alternate',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;position:fixed;inset:0;z-index:81;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,7,13,.78);font:400 14px/1.4 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#eef2f8}
 #skinBox.on{display:flex}
@@ -2967,11 +2983,11 @@ const hp=new THREE.Mesh(new THREE.PlaneGeometry(34,4),new THREE.MeshBasicMateria
 grp.scale.setScalar(1.25);sc.add(grp);return{grp,b,l1,l2,fl,hp,rg,pk,pl,gn,rc:RING[team],sk:{b,to:[_to],ar:[_a1,_a2],lg:[l1,l2],hat:[hl],hy:35,bag:[],bx:-6.5,by:22,gun:[gn],gall:TET_,gtop:TET_?null:[13,27.9,1,18]}}}
 const CH6=[0,0,0,1,1,1].map(t=>mkChar(t,'nuit')),CH8=[0,0,0,0,1,1,1,1].map(t=>mkChar(t,'desert')),CHN=[0,0,0,0,1,1,1,1].map(t=>mkCharNeon(t)),CHS=[0,0,0,0,0,0,1,1,1,1,1,1].map(t=>mkChar(t,'neige'));let CH=CH6;var CHZ=[],CHW=[],CHT=[];const ALLCH=()=>CH6.concat(CH8,CHN,CHS,CHZ,CHW,CHT);const tChars=()=>CHT.length?CHT:(CHT=[0,0,0,1,1,1,2,2,2,3,3,3].map(t=>mkChar(t,'tetris')));const wChars=()=>CHW.length?CHW:(CHW=[0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,1].map(t=>mkChar(t,'guerre')));   // Front : 20 soldats, 10 contre 10 (crees au premier chargement)   // CHZ : survivants du mode Zombie (crees au premier chargement de la Foret)
 // noms au-dessus des tetes
-const LBL=Array.from({length:20},()=>{const c=document.createElement('canvas');c.width=256;c.height=64;const t=new THREE.CanvasTexture(c);
+const LBL=Array.from({length:20},()=>{const c=document.createElement('canvas');c.width=512;c.height=128;const t=new THREE.CanvasTexture(c);
  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthTest:false,depthWrite:false}));s.renderOrder=6;s.visible=false;s.userData={c,t,key:''};sc.add(s);return s});
-function setLabel(s,name,ally,boost,col){const k=name+'|'+(ally?1:0)+'|'+(boost?1:0)+'|'+col;if(s.userData.key===k)return;s.userData.key=k;const c=s.userData.c,x=c.getContext('2d');x.clearRect(0,0,256,64);
+function setLabel(s,name,ally,boost,col){const k=name+'|'+(ally?1:0)+'|'+(boost?1:0)+'|'+col;if(s.userData.key===k)return;s.userData.key=k;const c=s.userData.c,x=c.getContext('2d');x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,c.width,c.height);x.setTransform(2,0,0,2,0,0);
  x.font='700 30px system-ui,Arial,sans-serif';const w=Math.min(248,x.measureText(name).width+30+(boost?34:0));x.fillStyle='rgba(8,12,22,.6)';x.beginPath();if(x.roundRect)x.roundRect(128-w/2,12,w,40,20);else x.rect(128-w/2,12,w,40);x.fill();
- x.fillStyle=col||(ally?'#bcd4ff':'#ffb4b4');x.textAlign='center';x.textBaseline='middle';x.fillText(name,128-(boost?16:0),33);
+ x.fillStyle=col||(ally?'#bcd4ff':'#ffb4b4');x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';x.lineWidth=4;x.strokeStyle='rgba(0,0,0,.55)';x.strokeText(name,128-(boost?16:0),33);x.fillText(name,128-(boost?16:0),33);
  if(boost){const fx=128+w/2-30;x.strokeStyle='#f0f0ec';x.lineWidth=3;x.beginPath();x.moveTo(fx,20);x.lineTo(fx,46);x.stroke();x.fillStyle='#e0402f';x.beginPath();x.moveTo(fx+2,20);x.lineTo(fx+20,26);x.lineTo(fx+2,33);x.closePath();x.fill()}
  s.userData.t.needsUpdate=true}
 // ---------- explosion de la bombe ----------
@@ -3589,7 +3605,8 @@ function netToast(t,ms){srvUpd(t);const d=$('srvupd');clearTimeout(d._t);if(ms)d
 // « [à compléter : ...] » en orange. Pages ouvertes par les liens du menu, ou par adresse : /mentions-legales, /cgv, /confidentialite.
 const LEGALC=/*LEGAL*/{}/*LEGAL*/;
 const LEGAL=(()=>{
- const V='2026-11-12',MAJ='12 novembre 2026',SITE=(typeof location!=='undefined'&&location.host)?location.protocol+'//'+location.host:'https://detonate-v3-7xyz14.fly.dev';
+ const LITE=typeof LEGAL_LITE!=='undefined'&&!!LEGAL_LITE;   // V3.6 publique : pas de profils, d'XP, de skins ni de boutique
+ const V='2026-11-12b',MAJ='12 novembre 2026',SITE=(typeof location!=='undefined'&&location.host)?location.protocol+'//'+location.host:'https://detonate-v3-7xyz14.fly.dev';
  const E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
  const C=LEGALC||{},T=l=>'<span class="lgTodo">[à compléter : '+l+']</span>';
  const f=(k,l)=>C[k]?E(C[k]):T(l);
@@ -3608,20 +3625,20 @@ const LEGAL=(()=>{
 <p>Directeur de la publication : ${C.directeur?E(C.directeur):nom()}.</p>
 <h3>2. Hébergement</h3>
 <p>Le Jeu est hébergé par <b>Fly.io, Inc.</b>, 2261 Market Street #4990, San Francisco, CA 94114, États-Unis — <a href="https://fly.io" target="_blank" rel="noopener">fly.io</a> — contact : legal@fly.io (l’hébergeur ne communique pas de numéro de téléphone).</p>
-<p>Les serveurs de jeu fonctionnent dans plusieurs régions (Paris, Ashburn en Virginie, Los Angeles, Singapour) ; les profils des joueurs sont conservés aux États-Unis (Ashburn, Virginie).</p>
-<h3>3. Paiements</h3>
-<p>Les paiements de la boutique sont traités par <b>Stripe Payments Europe, Ltd.</b>, 1 Grand Canal Street Lower, Grand Canal Dock, Dublin, D02 H210, Irlande. L’éditeur n’a jamais accès aux données de carte bancaire.</p>
-<h3>4. Propriété intellectuelle</h3>
+<p>Les serveurs de jeu fonctionnent dans plusieurs régions (Paris, Ashburn en Virginie, Los Angeles, Singapour)${LITE?'':' ; les profils des joueurs sont conservés aux États-Unis (Ashburn, Virginie)'}.</p>
+${LITE?'':`<h3>3. Paiements</h3>
+<p>Les paiements de la boutique sont traités par <b>Stripe Payments Europe, Ltd.</b>, 1 Grand Canal Street Lower, Grand Canal Dock, Dublin, D02 H210, Irlande. L’éditeur n’a jamais accès aux données de carte bancaire.</p>`}
+<h3>${LITE?3:4}. Propriété intellectuelle</h3>
 <p>Le Jeu et tous ses éléments (code, graphismes, modèles 3D, skins, cartes, sons, textes, nom et logo « Detonate ») sont la propriété exclusive de l’éditeur et sont protégés par le Code de la propriété intellectuelle. Toute reproduction, représentation, extraction ou adaptation, totale ou partielle, sans autorisation écrite préalable est interdite.</p>
 <p>Éléments de tiers utilisés : moteur 3D three.js (licence MIT, © les auteurs de three.js) ; police Chakra Petch (SIL Open Font License, servie par Google Fonts).</p>
-<h3>5. Signaler un contenu, nous contacter</h3>
+<h3>${LITE?4:5}. Signaler un contenu, nous contacter</h3>
 <p>Pour signaler un contenu illicite ou inapproprié (pseudo, nom de salon…) ou pour toute question : ${mail()}. Indiquez la description du contenu, où il apparaît, et vos coordonnées. Les signalements sont traités dans les meilleurs délais.</p>
-<h3>6. Données personnelles et stockage local</h3>
+<h3>${LITE?5:6}. Données personnelles et stockage local</h3>
 <p>Le traitement des données personnelles est décrit dans la ${L('confidentialite','politique de confidentialité')}.</p>
-<p>Le Jeu n’utilise <b>aucun cookie publicitaire ni outil de mesure d’audience</b>. Il enregistre seulement sur l’appareil (stockage local du navigateur) ce qui est nécessaire à son fonctionnement : la clé privée du profil, les réglages (langue, son, ambiance), les skins équipés et les salons récents. Ces informations, strictement nécessaires au service demandé, sont dispensées de consentement (article 82 de la loi Informatique et Libertés).</p>
-<h3>7. Conditions de vente</h3>
-<p>Les achats dans la boutique sont régis par les ${L('cgv','conditions générales de vente')}.</p>
-<h3>8. Crédits</h3>
+<p>Le Jeu n’utilise <b>aucun cookie publicitaire ni outil de mesure d’audience</b>. Il enregistre seulement sur l’appareil (stockage local du navigateur) ce qui est nécessaire à son fonctionnement : ${LITE?'les réglages (langue, son, ambiance, affichage) et les salons récents':'la clé privée du profil, les réglages (langue, son, ambiance), les skins équipés et les salons récents'}. Ces informations, strictement nécessaires au service demandé, sont dispensées de consentement (article 82 de la loi Informatique et Libertés).</p>
+${LITE?'':`<h3>7. Conditions de vente</h3>
+<p>Les achats dans la boutique sont régis par les ${L('cgv','conditions générales de vente')}.</p>`}
+<h3>${LITE?6:8}. Crédits</h3>
 <p>Detonate — jeu conçu et développé par Revo.</p>`;
 
  // ---------------------------------------------------------------- CGV
@@ -3642,7 +3659,7 @@ const LEGAL=(()=>{
 <p>Chaque skin est présenté dans la Boutique avec son nom, sa catégorie, sa rareté (commun, rare, épique, légendaire), son prix et un aperçu en 3D sur le personnage du Joueur, qui permet de l’essayer avant l’achat.</p>
 <p>Les skins sont <b>purement cosmétiques</b> : ils ne donnent aucun avantage de jeu (ni force, ni vitesse, ni précision, ni XP).</p>
 <p><b>Fonctionnement et compatibilité</b> : le Jeu fonctionne dans un navigateur internet récent (ordinateur, téléphone ou tablette), avec une connexion à internet. Les skins ne sont utilisables que dans le Jeu, sur le Profil du Joueur ; ils sont visibles par les autres joueurs dans les parties en ligne. Aucune mesure technique de protection ne s’y applique.</p>
-<p>La Boutique propose une sélection de 8 skins (deux par rareté), renouvelée toutes les 8 heures (à 0 h, 8 h et 16 h, heure UTC). Les packs ne sont proposés que le week-end, du vendredi 0 h au lundi 0 h (heure de New York) ; un compte à rebours indique la fin de l’offre. Pendant cette période, les skins d’un pack ne sont pas vendus à l’unité. Certains skins s’obtiennent gratuitement en montant de niveau : ils ne sont pas vendus.</p>
+<p>La Boutique propose une sélection de 8 skins (deux par rareté), renouvelée toutes les 4 heures (à 0 h, 4 h, 8 h, 12 h, 16 h et 20 h, heure UTC). Les packs ne sont proposés que le week-end, du vendredi 0 h au lundi 0 h (heure de New York) ; un compte à rebours indique la fin de l’offre. Pendant cette période, les skins d’un pack ne sont pas vendus à l’unité. Certains skins s’obtiennent gratuitement en montant de niveau : ils ne sont pas vendus.</p>
 <p>L’achat d’un skin confère au Joueur un <b>droit d’utilisation personnel</b>, non exclusif et non cessible, du skin dans le Jeu, rattaché au Profil utilisé pour l’achat, pour toute la durée d’exploitation du Jeu. Le Joueur n’acquiert aucun droit de propriété sur le skin. Les skins n’ont aucune valeur monétaire : ils ne peuvent être ni revendus, ni échangés, ni transférés vers un autre Profil, ni convertis en argent.</p>
 <h3>Article 5 — Prix</h3>
 <p>Les prix sont indiqués en euros, toutes taxes comprises (${tva()}). Il n’y a aucun frais de livraison.</p>
@@ -3738,7 +3755,29 @@ const LEGAL=(()=>{
 <h3>10. Modifications</h3>
 <p>Cette politique peut être mise à jour ; la date de mise à jour figure en haut de la page.</p>`;
 
- const TABS=[['mentions-legales','Mentions légales','Legal notice',ML],['cgv','CGV','Terms of sale',CGV],['confidentialite','Confidentialité','Privacy',PC]];
+ const PCL=()=>`
+<h2>Politique de confidentialité</h2><p class="lgMaj">Dernière mise à jour : ${MAJ}</p>
+<p>Cette politique explique quelles données personnelles le jeu Detonate (« le Jeu ») traite, pourquoi, combien de temps, et quels sont vos droits, conformément au Règlement général sur la protection des données (RGPD) et à la loi Informatique et Libertés.</p>
+<h3>1. Responsable du traitement</h3>
+<p>${nom()}, entrepreneur individuel — ${f('adresse','adresse postale')} — ${mail()}.</p>
+<h3>2. Données traitées</h3>
+<p>Le Jeu se joue <b>sans compte</b> : aucun profil, aucune adresse e-mail, aucun paiement.</p>
+<table class="lgTab"><tr><th>Données</th><th>Pourquoi</th><th>Base légale</th></tr>
+<tr><td><b>Données techniques</b> : adresse IP, données de connexion</td><td>Acheminer le Jeu, choisir le serveur le plus proche, limiter les abus. L’adresse IP n’est gardée qu’en mémoire, le temps nécessaire.</td><td>Intérêt légitime (sécurité et fonctionnement du service)</td></tr>
+<tr><td><b>Parties en ligne</b> : pseudo choisi, équipe, positions et actions dans la partie, code du salon</td><td>Faire jouer les joueurs ensemble ; rien n’est conservé après la partie</td><td>Exécution du service demandé</td></tr></table>
+<p>Le Jeu ne fait <b>aucune publicité, aucun profilage et aucune mesure d’audience</b>, et ne vend aucune donnée.</p>
+<h3>3. Stockage sur votre appareil</h3>
+<p>Le Jeu enregistre dans le stockage local de votre navigateur vos réglages (langue, son, ambiance, affichage), votre pseudo et vos salons récents. Ces informations sont strictement nécessaires au fonctionnement du Jeu et ne nécessitent pas de consentement ; vous pouvez les effacer en vidant les données du site dans votre navigateur.</p>
+<h3>4. Destinataires et transferts</h3>
+<ul><li><b>Fly.io, Inc.</b> (États-Unis), hébergeur des serveurs, en qualité de sous-traitant ; il adhère au cadre de protection des données UE–États-Unis (Data Privacy Framework, décision d’adéquation du 10 juillet 2023) ;</li>
+<li>au chargement du Jeu, votre navigateur télécharge la police d’écriture depuis <b>Google Fonts</b> (Google) et le moteur 3D depuis <b>cdnjs</b> (Cloudflare) : ces prestataires reçoivent alors votre adresse IP.</li></ul>
+<h3>5. Durées de conservation</h3>
+<p>Données techniques : le temps de la connexion ; journaux de l’hébergeur pour une durée limitée. Données des parties : la durée de la partie.</p>
+<h3>6. Vos droits</h3>
+<p>Vous disposez des droits d’accès, de rectification, d’effacement, de limitation et d’opposition. Pour les exercer : ${mail()}. Vous pouvez introduire une réclamation auprès de la CNIL : <a href="https://www.cnil.fr" target="_blank" rel="noopener">www.cnil.fr</a> — 3 place de Fontenoy, TSA 80715, 75334 Paris Cedex 07.</p>
+<h3>7. Modifications</h3>
+<p>Cette politique peut être mise à jour ; la date de mise à jour figure en haut de la page.</p>`;
+ const TABS=LITE?[['mentions-legales','Mentions légales','Legal notice',()=>ML()],['confidentialite','Confidentialité','Privacy',PCL]]:[['mentions-legales','Mentions légales','Legal notice',ML],['cgv','CGV','Terms of sale',CGV],['confidentialite','Confidentialité','Privacy',PC]];
  let box=null,cur='';
  function build(){if(box)return box;box=document.createElement('div');box.id='legalBox';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');
   box.innerHTML='<div class="lgPanel"><div class="lgTop"><div class="lgTabs" role="tablist">'+TABS.map(t=>'<button role="tab" data-t="'+t[0]+'">'+(typeof LANG!=='undefined'&&LANG==='en'?t[2]:t[1])+'</button>').join('')+'</div><button class="lgX" aria-label="Fermer">✕</button></div><div class="lgBody" tabindex="0"></div></div>';
@@ -3746,7 +3785,7 @@ const LEGAL=(()=>{
   box.addEventListener('click',e=>{if(e.target===box){close();return}const t=e.target.closest('[data-t]');if(t){show(t.dataset.t);return}if(e.target.closest('.lgX'))close()});
   return box}
  function show(id){const t=TABS.find(q=>q[0]===id)||TABS[0];cur=t[0];build();box.querySelectorAll('[data-t]').forEach(b=>{const on=b.dataset.t===cur;b.classList.toggle('on',on);b.setAttribute('aria-selected',on?'true':'false')});
-  const b=box.querySelector('.lgBody');b.innerHTML=(typeof LANG!=='undefined'&&LANG==='en'?'<p class="lgEn">These documents are written in French, under French law; the French version is the only binding one. Summary: Detonate is free to play; cosmetic skins are sold through Stripe and delivered instantly to your profile; by ticking the box before paying, you request immediate delivery and waive the 14-day withdrawal right. Contact: '+(C.email?E(C.email):'see below')+'.</p>':'')+t[3]();b.scrollTop=0;
+  const b=box.querySelector('.lgBody');b.innerHTML=(typeof LANG!=='undefined'&&LANG==='en'?'<p class="lgEn">These documents are written in French, under French law; the French version is the only binding one. Summary: '+(LITE?'Detonate is free to play, without account or purchases.':'Detonate is free to play; cosmetic skins are sold through Stripe and delivered instantly to your profile; by ticking the box before paying, you request immediate delivery and waive the 14-day withdrawal right.')+' Contact: '+(C.email?E(C.email):'see below')+'.</p>':'')+t[3]();b.scrollTop=0;
   try{const h='#'+cur;if(location.hash!==h)history.replaceState(null,'',location.pathname+location.search+h)}catch(e){}}
  function open(id){build();box.classList.add('on');show(id);try{uiClick()}catch(e){}}
  function close(){if(!box)return;box.classList.remove('on');cur='';try{if(TABS.some(t=>'#'+t[0]===location.hash))history.replaceState(null,'',location.pathname+location.search)}catch(e){}}
@@ -3763,7 +3802,7 @@ const LEGAL=(()=>{
   fromHash()}
  return{init,open,close,isOpen,v:V}})();
 setTimeout(()=>{if(typeof HEADLESS!=='undefined'&&HEADLESS)return;try{LEGAL.init()}catch(e){console.error(e)}},0);
-const BUILD='2026-11-12T09:59Z';   // version du jeu (date de construction, UTC)
+const BUILD='2026-11-12T17:56Z';   // version du jeu (date de construction, UTC)
 setTimeout(()=>{if(HEADLESS)return;const d=document.createElement('div');d.id='buildTag';d.style.cssText='position:fixed;right:30px;top:116px;z-index:70;font:600 10.5px/1 system-ui;color:#7d8899;pointer-events:none;letter-spacing:.02em;text-shadow:0 1px 2px #000';
  d.textContent=LG('Version du ','Version ')+new Date(BUILD).toLocaleString(LANG==='en'?'en-US':'fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});document.body.appendChild(d);
  setInterval(()=>{d.style.display=menu.classList.contains('hidden')?'none':''},700)},0);   // apres le chargement complet du script (LG, LANG)
@@ -4012,9 +4051,9 @@ if(typeof document!=='undefined'&&document.addEventListener)document.addEventLis
 const P={},keys={},mouse={down:0};let AIMT=null,KNB=0,KNP=0,KNT=null;   // KNB : bouton poignard enfonce (mobile), KNP : moment de l'appui, KNT : cible a portee du poignard
 
 // ATH de vie + mini-carte : un clic / une touche breve sur l'un des deux les masque tous les deux ; une petite pastille permet de les remettre
-var HUDTOPR=[0,0,0,0],HUDH=(function(){try{return localStorage.getItem('detonate_hudh')==='1'}catch(e){return false}})(),HUDR=[];
-function hudToggle(){HUDH=!HUDH;try{localStorage.setItem('detonate_hudh',HUDH?'1':'0')}catch(x){}try{uiClick()}catch(x){}}
-function hudHit(x,y){for(const r of HUDR)if(x>=r[0]&&x<=r[0]+r[2]&&y>=r[1]&&y<=r[1]+r[3])return 1;return 0}   // AIMT : ennemi vise automatiquement (tactile)
+var HUDTOPR=[0,0,0,0],HUDH=0,HUDM=(function(){try{const v=localStorage.getItem('detonate_hudm');return v!==null?v==='1':localStorage.getItem('detonate_hudh')==='1'}catch(e){return false}})(),HUDA=(function(){try{const v=localStorage.getItem('detonate_huda');return v!==null?v==='1':localStorage.getItem('detonate_hudh')==='1'}catch(e){return false}})(),HUDR=[];
+function hudToggle(k){if(k==='a'){HUDA=!HUDA;try{localStorage.setItem('detonate_huda',HUDA?'1':'0')}catch(x){}}else{HUDM=!HUDM;try{localStorage.setItem('detonate_hudm',HUDM?'1':'0')}catch(x){}}try{uiClick()}catch(x){}}
+function hudHit(x,y){for(const r of HUDR)if(x>=r[0]&&x<=r[0]+r[2]&&y>=r[1]&&y<=r[1]+r[3])return r[4]||'m';return 0}   // 'm' mini-carte, 'a' barre de vie   // AIMT : ennemi vise automatiquement (tactile)
 addEventListener('keydown',e=>{if(e.code==='Tab'){e.preventDefault();SBK=1}});addEventListener('keyup',e=>{if(e.code==='Tab')SBK=0});addEventListener('blur',()=>{SBK=0});
 addEventListener('pointerdown',e=>{if(e.target.tagName==='BUTTON'||(e.target.closest&&e.target.closest('a,button')))return;if(zElimClick(e)||zSlotDown(e)||(WARM()&&WVIS.msClick(e)))return;   // un lien (ex. X du fondateur) doit garder son clic
 if(isSpectating()){const hitR=r=>e.clientX>=r[0]&&e.clientX<=r[0]+r[2]&&e.clientY>=r[1]&&e.clientY<=r[1]+r[3];
@@ -4026,11 +4065,11 @@ if(isSpectating()){const hitR=r=>e.clientX>=r[0]&&e.clientX<=r[0]+r[2]&&e.client
 {const inG=menu.classList.contains('hidden')&&st.s!=='end';if(inG&&SBO){SBO=false;return}
  if(inG&&SBR.length&&e.clientX>=SBR[0]&&e.clientX<=SBR[0]+SBR[2]&&e.clientY>=SBR[1]&&e.clientY<=SBR[1]+SBR[3]){SBO=true;uiClick();for(const k in keys)keys[k]=0;mouse.down=0;return}}
 const onHud=menu.classList.contains('hidden')&&st.s!=='end'&&hudHit(e.clientX,e.clientY);
-if(e.pointerType==='mouse'){if(onHud){hudToggle();return}mouseMode=1;mouse.down=1;mouseXY.x=e.clientX;mouseXY.y=e.clientY;aimAng=Math.atan2(e.clientY-H/2,e.clientX-W/2)+(FLIP?Math.PI:0);return}
+if(e.pointerType==='mouse'){if(onHud){hudToggle(onHud);return}mouseMode=1;mouse.down=1;mouseXY.x=e.clientX;mouseXY.y=e.clientY;aimAng=Math.atan2(e.clientY-H/2,e.clientX-W/2)+(FLIP?Math.PI:0);return}
 // tactile : sur l'ATH ou la mini-carte, le doigt reste en attente ; touche breve = masquer / afficher, s'il glisse c'est un joystick normal
-P[e.pointerId]={l:e.clientX<W/2,x0:e.clientX,y0:e.clientY,x:e.clientX,y:e.clientY,pend:onHud?1:0,t0:performance.now()}});
+P[e.pointerId]={l:e.clientX<W/2,x0:e.clientX,y0:e.clientY,x:e.clientX,y:e.clientY,pend:onHud?1:0,hk:onHud,t0:performance.now()}});
 addEventListener('pointermove',e=>{if(e.pointerType==='mouse'){mouseMode=1;mouseXY.x=e.clientX;mouseXY.y=e.clientY;aimAng=Math.atan2(e.clientY-H/2,e.clientX-W/2)+(FLIP?Math.PI:0)}else if(P[e.pointerId]){const p=P[e.pointerId];p.x=e.clientX;p.y=e.clientY;if(p.pend&&Math.hypot(p.x-p.x0,p.y-p.y0)>14)p.pend=0}});
-['pointerup','pointercancel'].forEach(t=>addEventListener(t,e=>{if(e.pointerType==='mouse')mouse.down=0;const p=P[e.pointerId];if(t==='pointerup'&&p&&p.pend&&performance.now()-p.t0<450)hudToggle();delete P[e.pointerId]}));
+['pointerup','pointercancel'].forEach(t=>addEventListener(t,e=>{if(e.pointerType==='mouse')mouse.down=0;const p=P[e.pointerId];if(t==='pointerup'&&p&&p.pend&&performance.now()-p.t0<450)hudToggle(p.hk);delete P[e.pointerId]}));
 ab.addEventListener('pointerdown',e=>{e.preventDefault();actHeld=1});
 ['pointerup','pointercancel','pointerleave'].forEach(t=>ab.addEventListener(t,()=>actHeld=0));
 addEventListener('keyup',e=>{if(e.code==='KeyQ'&&!ZMB()){if(WLQ.k){WLQ.k=0;return}requestGren()}});
@@ -4249,9 +4288,9 @@ function buildMini(){MMW=mmTarget();MMH=Math.round(MMW*WH/WW);miniMap=document.c
  mg.globalAlpha=.85;mg.strokeStyle='#8899aa';mg.lineWidth=1;mg.strokeRect(0,0,MMW,MMH);mg.globalAlpha=1;
 }
 // ATH et mini-carte masques : deux petites pastilles discretes (en haut a gauche et en bas au centre) pour les remettre
-function drawHudGhost(){const a=.55;g.save();g.globalAlpha=a;pill(10,10,38,38,10,'rgba(8,12,22,.8)');g.strokeStyle='#fff';g.lineWidth=1.6;g.beginPath();g.moveTo(19,20);g.lineTo(26,17);g.lineTo(32,20);g.lineTo(39,17);g.lineTo(39,36);g.lineTo(32,39);g.lineTo(26,36);g.lineTo(19,39);g.closePath();g.moveTo(26,17);g.lineTo(26,36);g.moveTo(32,20);g.lineTo(32,39);g.stroke();
- const bw=74,bx=W/2-bw/2,by=H-34;pill(bx,by,bw,26,13,'rgba(8,12,22,.8)');g.restore();g.save();g.globalAlpha=a+.15;txt('✚',bx+18,by+13.5,13,'#ffd23a',null,900);txt(LG('ATH','HUD')+' ▴',bx+46,by+13.5,11,'#fff',null,800);g.restore();
- HUDR.push([4,4,50,50],[bx-8,by-8,bw+16,H-by+8])}
+function drawHudGhost(gm,ga){if(gm===undefined){gm=1;ga=1}const a=.55;if(gm){g.save();g.globalAlpha=a;pill(10,10,38,38,10,'rgba(8,12,22,.8)');g.strokeStyle='#fff';g.lineWidth=1.6;g.beginPath();g.moveTo(19,20);g.lineTo(26,17);g.lineTo(32,20);g.lineTo(39,17);g.lineTo(39,36);g.lineTo(32,39);g.lineTo(26,36);g.lineTo(19,39);g.closePath();g.moveTo(26,17);g.lineTo(26,36);g.moveTo(32,20);g.lineTo(32,39);g.stroke();g.restore();HUDR.push([4,4,50,50,'m'])}if(!ga)return;
+ const bw=74,bx=W/2-bw/2,by=H-34;g.save();g.globalAlpha=a;pill(bx,by,bw,26,13,'rgba(8,12,22,.8)');g.restore();g.save();g.globalAlpha=a+.15;txt('✚',bx+18,by+13.5,13,'#ffd23a',null,900);txt(LG('ATH','HUD')+' ▴',bx+46,by+13.5,11,'#fff',null,800);g.restore();
+ HUDR.push([bx-8,by-8,bw+16,H-by+8,'a'])}
 function drawMiniDynamic(){
  const ox=10,oy=10;g.save();
  if(FLIP){g.translate(ox+MMW/2,oy+MMH/2);g.rotate(Math.PI);g.translate(-(ox+MMW/2),-(oy+MMH/2))}
@@ -4511,9 +4550,9 @@ const HUI=(()=>{
  function teams(y,groups,heads,o){o=o||{};const mob=H<500,nT=groups.length,nR=groups.reduce((s,q)=>s+q.rows.length,0),bottom=H-(o.reserve??96);
   const rowsH=(n,t)=>(bottom-y-16-t*10)/(n+t*1.1)-1.5;let cols=1,rh=rowsH(nR,nT);
   if(rh<19&&nT>1&&W>=700){const half=Math.ceil(nT/2),n0=groups.filter((q,i)=>i%2===0).reduce((s,q)=>s+q.rows.length,0),n1=nR-n0;rh=rowsH(Math.max(n0,n1),half);cols=2}
-  rh=Math.max(14,Math.min(mob?22:27,rh));const gap=12,tw_=Math.min(W-16,cols===2?1000:640),cwid=cols===2?(tw_-gap)/2:tw_,X0=W/2-tw_/2;
+  const LV0=groups.some(G=>G.rows.some(R=>R.lvl>0));rh=Math.max(LV0?18:14,Math.min(mob?(LV0?26:22):(LV0?32:27),rh));/* insignes de niveau affiches : lignes un peu plus hautes */const gap=12,tw_=Math.min(W-16,cols===2?1000:640),cwid=cols===2?(tw_-gap)/2:tw_,X0=W/2-tw_/2;
   const nc=heads.length,cw=Math.max(34,Math.min(68,(cwid-150)/nc)),fz=Math.max(10,Math.min(13.5,rh*.52)),hz=Math.max(9,Math.min(10.5,rh*.42));
-  let yb=y;const yc=[y,y],LV=groups.some(G=>G.rows.some(R=>R.lvl>0)),lr=Math.max(6.5,Math.min(9.5,rh*.36));   // niveau des joueurs (parties privees)
+  let yb=y;const yc=[y,y],LV=LV0,lr=Math.max(8.5,Math.min(14.5,rh*.47)),LWX=LV&&typeof BDG!=='undefined'?Math.max(1,...groups.flatMap(G=>G.rows.map(R=>R.lvl>0?BDG.EXT(BDG.tier(R.lvl)).w:1))):1;   // insignes de niveau (vrais insignes, ornements compris) ; LWX : place des ornements
   groups.forEach((G,i)=>{const c=cols===2?i%2:0,x=X0+c*(cwid+gap);let yy=yc[c];
    if(yy===y){heads.forEach((l,j)=>{const L=String(l).toUpperCase();let z=hz;while(z>7.5&&tw(L,z,600,1,.6)>cw-6)z-=.5;T(L,x+cwid-cw*(nc-j)+cw/2,yy+7,z,MUTE,'center',600,1,.6)});yy+=16}
    const hh=rh+2;box(x,yy,cwid,hh,{r:7,bar:G.col,bw:4,bg:A(G.col,G.mine?.26:.16),line:G.mine?'rgba(255,255,255,.55)':A(G.col,.35)});
@@ -4521,7 +4560,7 @@ const HUI=(()=>{
    (G.tot||[]).forEach((v,j)=>{if(v!==''&&v!=null)T(v,x+cwid-cw*(nc-j)+cw/2,yy+hh/2+.5,fz,INK,'center',700,1)});yy+=hh+2;
    for(const R of G.rows){rr(x,yy,cwid,rh,6);g.fillStyle=R.me?'rgba(255,255,255,.1)':'rgba(255,255,255,.035)';g.fill();
     const nc_=R.dim?'rgba(238,242,248,.42)':(R.star?GOLD:(R.me?INK:SOFT));let px=x+14;if(R.star){T('★',px,yy+rh/2+.5,fz,GOLD,'left',700);px+=fz+4}
-    if(LV){if(R.lvl>0)PROF.hexBadge(px+lr,yy+rh/2,lr,R.lvl,R.dim);px+=lr*2+7}
+    if(LV){if(R.lvl>0){const e=typeof BDG!=='undefined'?BDG.EXT(BDG.tier(R.lvl)):{t:1,b:1},r_=Math.min(lr,(rh/2+6.5)/Math.max(e.t,e.b));PROF.hexBadge(px+lr*LWX,yy+rh/2,r_,R.lvl,R.dim,false)}px+=lr*LWX*2+6}
     T(R.name,px,yy+rh/2+.5,fz,nc_,'left',R.me||R.star?700:500);if(R.tag){const tx=px+tw(R.name,fz,R.me||R.star?700:500)+8;chip(R.tag,tx,yy+rh/2-8,R.star?GOLD:null,9.5,16)}
     R.cells.forEach((v,j)=>T(v,x+cwid-cw*(nc-j)+cw/2,yy+rh/2+.5,fz,R.dim?'rgba(238,242,248,.45)':INK,'center',600,1));yy+=rh+1.5}
    yy+=10;yc[c]=yy;yb=Math.max(yb,yy)});
@@ -5696,7 +5735,7 @@ function drawHackWorld(hm,mt){if(!HACKM()||st.s==='end')return;const A=CUR.ANT||
  // retour visuel quand un bidon est verse
  if(SCV)SC.forEach((s,i)=>{const V=SCV[i];if(!V||!V.rfT||s.st===2)return;const a=performance.now()/1000-V.rfT;if(a>1.4)return;const fp=fillPt(s),[x,y]=wscr(fp.x,fp.y,30);if(isFinite(x))txt('+'+VAN_CAN+' s ⛽',x,y-14-a*26,15,'rgba(255,214,90,'+(1-a/1.4).toFixed(2)+')',null,900)});
  // inventaire : bidons d'essence
- if(hm&&hm.alive&&CUR.theme==='neige'&&!HUDH&&!document.body.classList.contains('sbopen')){const n=hm.fu||0,aT_=athTop||H-80,ax_=athW?athX:W/2-170,fit=ax_-64>=8,up=!fit&&(hm.sco||scoNear(hm))?58:0,x=fit?ax_-64:ax_,y=fit?H-62:aT_-46-up;pill(x,y,56,40,12,'rgba(8,12,22,.8)');icoCan(x+18,y+20,9,n?'#e8452e':'rgba(255,255,255,.25)');txt('×'+n,x+40,y+21,14,n?'#fff':'rgba(255,255,255,.45)',null,800);if(n&&IS_PC&&!hm.sco)txt(LG('T : poser','T: drop'),x+28,y-9,10,'rgba(255,255,255,.7)',null,700)}}
+ if(hm&&hm.alive&&CUR.theme==='neige'&&!HUDA&&!document.body.classList.contains('sbopen')){const n=hm.fu||0,aT_=athTop||H-80,ax_=athW?athX:W/2-170,fit=ax_-64>=8,up=!fit&&(hm.sco||scoNear(hm))?58:0,x=fit?ax_-64:ax_,y=fit?H-62:aT_-46-up;pill(x,y,56,40,12,'rgba(8,12,22,.8)');icoCan(x+18,y+20,9,n?'#e8452e':'rgba(255,255,255,.25)');txt('×'+n,x+40,y+21,14,n?'#fff':'rgba(255,255,255,.45)',null,800);if(n&&IS_PC&&!hm.sco)txt(LG('T : poser','T: drop'),x+28,y-9,10,'rgba(255,255,255,.7)',null,700)}}
 function icoCan(x,y,r,c){g.save();g.fillStyle=c;pill(x-r*.8,y-r*.9,r*1.6,r*1.9,r*.25,c);g.fillRect(x-r*.25,y-r*1.25,r*.7,r*.4);g.strokeStyle='rgba(0,0,0,.35)';g.lineWidth=1.2;g.beginPath();g.moveTo(x-r*.6,y-r*.6);g.lineTo(x+r*.6,y+r*.7);g.moveTo(x+r*.6,y-r*.6);g.lineTo(x-r*.6,y+r*.7);g.stroke();g.restore()}
 function drawHackMini(){if(!HACKM())return;const A=CUR.ANT||[];
  A.forEach((an,i)=>{const s=HK.a[i],c=s.d?'255,74,58':(s.p>0?'255,178,62':'235,242,250');g.fillStyle='rgba('+c+','+(s.d?.22:.16)+')';g.beginPath();g.arc(an.x,an.y,HR,0,7);g.fill();
@@ -7860,8 +7899,8 @@ function zHud(){const mt=MT,now=performance.now(),me=E.find(e=>e.id===localSlot)
  if(netMode&&netStarted&&!isHost&&NETD.arr.length&&performance.now()/1000-NETD.arr[NETD.arr.length-1]>.6&&st.s!=='end'){pill(W/2-90,H*.3-14,180,28,14,'rgba(140,30,20,.85)');txt('Connexion instable…',W/2,H*.3,12,'#fff',null,700)}
  if(netMode&&netStarted&&!isHost){const nw=performance.now(),old=NETQ.sent.filter(x=>nw-x>1500),lost=old.filter(x=>!NETQ.ok.has(x)).length,loss=old.length?Math.round(lost/old.length*100):0,jit=Math.round(NETQ.jit),bad=netPing>150||jit>30||loss>2;
   g.save();g.font='600 10px system-ui';g.textAlign='left';const t1='Ping '+netPing+' ms   Jitter '+jit+' ms   Pertes '+loss+' %',tw=g.measureText(t1).width;g.fillStyle='rgba(6,10,18,.45)';g.fillRect(5,H-19,tw+10,15);g.fillStyle=bad?'rgba(255,160,120,.95)':'rgba(255,255,255,.62)';g.fillText(t1,10,H-8);g.restore()}
- HUDR.length=0;if(!HUDH){zMini();HUDR.push([10,10,MMW,MMH])}else drawHudGhost();
- if(st.s!=='end')zMateCard(mt,HUDH?56:18+MMH);else ZCARDB=0;
+ HUDR.length=0;if(!HUDM){zMini();HUDR.push([10,10,MMW,MMH,'m'])}else drawHudGhost(1,0);
+ if(st.s!=='end')zMateCard(mt,HUDM?56:18+MMH);else ZCARDB=0;
  const narrow=W<640||W/2-130<MMW+22,SH=SBH&&st.s!=='end';
  // ---- panneau du haut : vague, minuteur, zombies, equipes ; dessous : rang de mon equipe, progression et bonus
  let HB=10,px=0,pw=0;
@@ -7893,7 +7932,7 @@ function zHud(){const mt=MT,now=performance.now(),me=E.find(e=>e.id===localSlot)
  {const endV=st.s==='end'?'hidden':'visible';if(rb&&rb.style)stySet(rb,'visibility',IS_PC?'hidden':endV);if(gb_&&gb_.style)stySet(gb_,'visibility',IS_PC?'hidden':endV)}
  {const sbv=st.s!=='end'&&(SBO||SBK)&&menu.classList.contains('hidden'),bc=document.body.classList,zc=!!ZCM&&st.s!=='end';if(bc.contains('zcm')!==zc)bc.toggle('zcm',zc);if(bc.contains('sbopen')!==sbv)bc.toggle('sbopen',sbv);}
  if(hm&&st.s!=='end'&&hm.alive&&hm.down)zDownHud(hm,now);
- if(hm&&st.s!=='end'&&hm.alive&&!HUDH&&!document.body.classList.contains('sbopen')){zATH(hm,narrow);HUDR.push([athX,athTop-4,athW,H-athTop-6])}
+ if(hm&&st.s!=='end'&&hm.alive&&!HUDA&&!document.body.classList.contains('sbopen')){zATH(hm,narrow);HUDR.push([athX,athTop-4,athW,H-athTop-6,'a'])}else if(HUDA&&hm&&st.s!=='end'&&hm.alive&&!document.body.classList.contains('sbopen'))drawHudGhost(0,1)
  if(!document.body.classList.contains('sbopen')&&st.s!=='end'){zInv(hm,narrow);zSackPanel(hm);zCraftMenu(hm)}else{ZBR.length=0;ZCR.length=0;ZCP=null;ZSKR.length=0;ZSKP=null}drawGrenAim(hm);
  if(st.s!=='end'&&!document.body.classList.contains('sbopen'))zElim();else ZELR.length=0;
  // ---- tactile : visee et joysticks
@@ -11183,7 +11222,7 @@ if(LP.length&&CUR.theme==='nuit'){const want=LPW.slice(0,PLT.length),keep=LPW;
   l.intensity=u.lamp>=0?u.i:0}}else if(NIGHT.on())NIGHT.plt();else if(ZMB())zLights();else PLT.forEach(l=>l.intensity=0);
 BM.forEach((m,i)=>m.opacity=E.some(e=>e.team==0&&e.alive&&e.bush==i)?.4:1);
 for(const e of E){const m=e.m,v=ZMB()||e.team==mt||(e.body&&!e.alive)||(CRM()?crSee(e,mt):T-e.vt<.7)||!anyB||st.s==='over';m.grp.visible=v;e._vis=v;const lb=LBL[e.id];lb.visible=false;if(!v)continue;
- {let px=e.x,py=e.y;if(e.sco===1){const s=SC[e.scI];if(s){px=s.x+Math.cos(s.a)*40;py=s.y+Math.sin(s.a)*40}}let zh=0;if(e.zl)zh=zipY(e);else{const zt=e.zyv||0;e.zyS=zt>0||e.zyS>.5?(e.zyS||0)+(zt-(e.zyS||0))*Math.min(1,(gdt||.016)*18):0;zh=e.zyS>.5?e.zyS:0}m.grp.position.set(px,(zh||(e.wv>=0?wSeatY(e):(e.sco===2?24:(e.sco?12:0))))-(WARM()?wTrDy(e):0),py)}if(e.alive&&e.id!==localSlot&&st.s!=='end'&&(!ZMB()||e.team===mt)){const k=CH_/750;setLabel(lb,NM[e.id]||'',e.team==mt,e.boost&&e.team==mt,CUR.theme!=='nuit'?TD(e.team).css:null);lb.visible=true;lb.position.set(e.x,72,e.y);lb.scale.set(80*k,20*k,1)}m.b.visible=!((e.moto||e.sco===1||(e.wv>=0&&e.ws===0))&&e.alive);m.b.rotation.y=-e.ang;m.b.rotation.z=e.alive?0:1.5;m.b.position.y=e.alive?0:8;
+ {let px=e.x,py=e.y;if(e.sco===1){const s=SC[e.scI];if(s){px=s.x+Math.cos(s.a)*40;py=s.y+Math.sin(s.a)*40}}let zh=0;if(e.zl)zh=zipY(e);else{const zt=e.zyv||0;e.zyS=zt>0||e.zyS>.5?(e.zyS||0)+(zt-(e.zyS||0))*Math.min(1,(gdt||.016)*18):0;zh=e.zyS>.5?e.zyS:0}m.grp.position.set(px,(zh||(e.wv>=0?wSeatY(e):(e.sco===2?24:(e.sco?12:0))))-(WARM()?wTrDy(e):0),py)}if(e.alive&&e.id!==localSlot&&st.s!=='end'&&(!ZMB()||e.team===mt)){const k=CH_/750;setLabel(lb,NM[e.id]||'',e.team==mt,e.boost&&e.team==mt,CUR.theme!=='nuit'?TD(e.team).css:null);lb.visible=true;lb.position.set(e.x,66,e.y);const ks=AV_MOB||innerWidth<900?2.1:1.45;lb.center.set(.5,0);lb.scale.set(80*ks*k,20*ks*k,1)}m.b.visible=!((e.moto||e.sco===1||(e.wv>=0&&e.ws===0))&&e.alive);m.b.rotation.y=-e.ang;m.b.rotation.z=e.alive?0:1.5;m.b.position.y=e.alive?0:8;
  const sw=e.alive?Math.sin(e.ph)*.7*Math.min(1,e.mvn||0):0;m.l1.rotation.z=sw;m.l2.rotation.z=-sw;
  m.fl.visible=e.fT>0;if(m.gn){const iv=WARM()&&(e.wv>=0||e.wl>=0);m.gn.visible=!iv;if(iv)m.fl.visible=false}m.pk.visible=!!(e.alive&&e.id===bomb.car&&e.team==mt&&!bomb.planted);m.pl.visible=true;m.hp.visible=m.rg.visible=!!e.alive&&e.sco!==1;{const car=!!(e.alive&&((e.id===bomb.car&&e.team==mt&&!bomb.planted)||(HACKM()&&HK.bc.st===2&&HK.bc.car===e.id))),on=car?(CUR.theme==='desert'?0xff2a2a:0xffc83c):0;if(on!==m.rgOn){m.rgOn=on;m.rg.material.color.setHex(on||m.rc)}}m.hp.scale.x=Math.max(.01,e.hp/(e.maxhp||BASE_HP))}
 motoDraw(Math.min(.05,gdt||.016),mt);
@@ -11209,7 +11248,7 @@ if(netMode&&netStarted&&!isHost){const nw=performance.now(),old=NETQ.sent.filter
  const jit=Math.round(NETQ.jit),bad=netPing>150||jit>30||loss>2||(NETQ.sl||0)>40;g.save();g.font='600 10px system-ui';g.textAlign='left';g.textBaseline='alphabetic';
  const t1='Ping '+netPing+' ms   Jitter '+jit+' ms   Pertes '+loss+' %'+(NETQ.sl!==undefined?'   Serveur '+NETQ.sl+' ms':''),tw=g.measureText(t1).width,x=10+(typeof env==='undefined'?0:0),y=H-8;
  g.fillStyle='rgba(6,10,18,.45)';g.fillRect(x-5,y-11,tw+10,15);g.fillStyle=bad?'rgba(255,160,120,.95)':'rgba(255,255,255,.62)';g.fillText(t1,x,y);g.restore()}
-HUDR.length=0;if(!HUDH){drawMiniDynamic();HUDR.push([10,10,MMW,MMH])}else drawHudGhost();
+HUDR.length=0;if(!HUDM){drawMiniDynamic();HUDR.push([10,10,MMW,MMH,'m'])}else drawHudGhost(1,0);
 const hm=E.find(e=>e.id===localSlot)||E[0],cl=Math.max(0,Math.ceil(st.clock)),narrow=W<640||W/2-118<MMW+22;
 const pw=narrow?Math.max(150,W-MMW-34):236,ph=38,px=narrow?MMW+22:W/2-pw/2,py=10,pcx=px+pw/2,live=bomb.planted&&!bomb.defused;
 const SH=SBH&&st.s!=='end',sy=SH&&narrow?52:py;   // tableau masque par le joueur : petite pastille score / temps seulement
@@ -11245,7 +11284,7 @@ else if(st.s==='live'){const MY0=Math.max(H*.2,HB2+30,narrow?10+MMH+12+2*(MMW>15
 if(st.s==='over')(WARM()?WVIS.result:drawRoundResult)(mt,Math.max(H*.12,HB2+12,CMPB));
 if(CUR.ZIP&&st.s==='live'&&!(hm&&(hm.can>=3||hm.sco)))drawZipHint(hm);drawHackWorld(hm,mt);if(WARM())WVIS.hud(hm,mt);if((RSPM()||NEO())&&st.s!=='end')drawZoneHud(hm,mt,Math.max(H*.2,HB2+30,narrow?10+MMH+12+2*(MMW>150?34:30)+30:0));
 if(MB.length&&st.s!=='end')drawMotoHud(E[localSlot],mt);
-drawGrenAim(hm);if(!HUDH)drawCompass(hm,side?px-6-TS*(cw+3):px);drawBoostNotif(hm);drawHitFx(hm);drawSpectate();if(CRM())crOverlay(hm,mt,now,HB2);
+drawGrenAim(hm);if(!HUDM)drawCompass(hm,side?px-6-TS*(cw+3):px);drawBoostNotif(hm);drawHitFx(hm);drawSpectate();if(CRM())crOverlay(hm,mt,now,HB2);
 if(IS_PC&&st.s!=='end'){
  // affichage automatique : une seule fois, au debut de la toute premiere manche ; ensuite seulement en maintenant C
  // (temps de jeu ecoule mesure directement : l'ancien calcul supposait une manche de 130 s, faux en Code Rouge -> le panneau restait affiche)
@@ -11258,7 +11297,7 @@ if(IS_PC&&st.s!=='end'){
 {const sbv=st.s!=='end'&&(SBO||SBK)&&menu.classList.contains('hidden'),bc=document.body.classList;if(bc.contains('sbopen')!==sbv)bc.toggle('sbopen',sbv);
 }
 
-if(hm&&st.s!=='end'&&hm.alive&&!HUDH&&!document.body.classList.contains('sbopen')){drawATH(hm,narrow);HUDR.push([athX,athTop-4,athW,H-athTop-6])}
+if(hm&&st.s!=='end'&&hm.alive&&!HUDA&&!document.body.classList.contains('sbopen')){drawATH(hm,narrow);HUDR.push([athX,athTop-4,athW,H-athTop-6,'a'])}else if(HUDA&&hm&&st.s!=='end'&&hm.alive&&!document.body.classList.contains('sbopen'))drawHudGhost(0,1)
 if(gb_&&gb_.classList)gb_.classList.toggle('vide',!(hm&&hm.gren>0));
 {const dv=!!(hm&&hm.alive&&(hm.sco===1||(hm.wv>=0&&WARM()))&&st.s!=='end'),bc_=document.body.classList;if(bc_.contains('drv')!==dv)bc_.toggle('drv',dv)}{const hb=document.getElementById('hornBtn');if(hb&&hb.style&&hm){const v=!IS_PC&&CUR.theme==='neige'&&hm.alive&&hm.sco===1&&st.s==='live'?'block':'none';if(hb.style.display!==v)hb.style.display=v}}{const pb=document.getElementById('pullBtn');if(pb&&pb.style&&hm){let v='none';if(!IS_PC&&WARM()&&hm.alive&&hm.wv<0&&st.s==='live'){const pl=wPullV(hm),ej=pl?null:wEjectV(hm,false);if(pl||(ej&&!wCanEnter(hm,ej)))v='block'}if(pb.style.display!==v){pb.style.display=v;if(v==='none'){EJH=0;pb.classList.remove('dn')}}}}{const cb=document.getElementById('canBtn');if(cb&&cb.style&&hm){const sv=hm.sco?scoOf(hm):null,v=!IS_PC&&CUR.theme==='neige'&&hm.alive&&(hm.fu||0)>0&&(!hm.sco||(sv&&sv.fuel<=VAN_FMAX-VAN_CAN))&&st.s==='live'?'block':'none';if(cb.style.display!==v)cb.style.display=v}}if(gb_&&gb_.style&&hm){const k=NEO()?TD(hm.team).css:(TETM()?'T'+TD(hm.team).css:'');if(gb_.dataset.k!==k){gb_.dataset.k=k;const tq=k[0]==='T',kc=tq?k.slice(1):k;gb_.style.background=tq?TARM.greBg(kc):kc?'#000a radial-gradient(circle at 50% 50%,#22262e 0 9px,'+kc+' 10px 12.5px,#0000 13.5px)':'';gb_.style.borderColor=kc||'';if(gb_.classList)gb_.classList.toggle('tet',tq)}}
 if(bomb.prog>0&&(bomb.planted?mt!==atk:mt===atk)){const w=120;pill(W/2-w/2,H*.62,w,5,3,'rgba(255,255,255,.18)');pill(W/2-w/2,H*.62,w*bomb.prog,5,3,'#ffc83c');txt(bomb.planted?'Désamorçage':'Pose',W/2,H*.62-12,11,'rgba(255,255,255,.75)',null,500)}
@@ -11371,6 +11410,85 @@ const MENU=(()=>{
 // - parties en ligne : le serveur calcule l'XP a partir de sa simulation et l'envoie a chaque joueur (message « xp »)
 // - parties solo contre l'IA : le jeu annonce le debut de la partie (le serveur mesure sa duree), puis envoie son resume ; pas de limite par jour
 // Niveau maximum : 30 (montee de plus en plus longue). PROF.report sert aussi au serveur (meme code, dans la simulation).
+// ===================== INSIGNES DE NIVEAU : un nouvel insigne tous les 10 niveaux (1, 10, 20 ... 100) =====================
+// Hexagone taille comme une pierre (facettes, reflet), numero du niveau au centre. A chaque palier : nouvelle pierre et nouveaux
+// ornements, qui s'ajoutent : cadre dore (10), lames (20), etoile (30), 2e lame (40), laurier (50), couronne (60), halo et eclats (70),
+// flammes (80), rayons et pierre prismatique (90), insigne legendaire anime (100). Petite taille (tableau des scores) : pierre et
+// cadre seulement. BDG.draw dessine sur un canevas 2D ; BDG.dom place l'insigne dans un element HTML (menu, profil).
+const BDG=(()=>{
+ const P=[ // a/b : degrade de la pierre, rim : metal du cadre, tx : couleur du numero, gl : lueur
+  {n:['Recrue','Recruit'],a:'#ffe08a',b:'#d9a316',tx:'#1a1206'},
+  {n:['Émeraude','Emerald'],a:'#8dffc0',b:'#0f8a52',tx:'#06261a',rim:'g'},
+  {n:['Saphir','Sapphire'],a:'#9ad6ff',b:'#1b56c9',tx:'#07173d',rim:'g'},
+  {n:['Améthyste','Amethyst'],a:'#e6b4ff',b:'#7426c9',tx:'#22093d',rim:'g'},
+  {n:['Rubis','Ruby'],a:'#ffa3b0',b:'#c0102c',tx:'#3a0410',rim:'g'},
+  {n:['Onyx','Onyx'],a:'#5a606e',b:'#121419',tx:'#ffd76a',rim:'g'},
+  {n:['Platine','Platinum'],a:'#ffffff',b:'#a9b8cc',tx:'#16223a',rim:'s',gl:'#cfe6ff'},
+  {n:['Diamant','Diamond'],a:'#effcff',b:'#4fc8f5',tx:'#062a3d',rim:'s',gl:'#9fe8ff'},
+  {n:['Brasier','Blaze'],a:'#ffd36a',b:'#e2330a',tx:'#2e0700',rim:'d',gl:'#ff7a2a'},
+  {n:['Prisme','Prism'],a:'#fff',b:'#fff',tx:'#1a1030',rim:'s',gl:'#d6b8ff',rb:1},
+  {n:['Légende','Legend'],a:'#fff6c8',b:'#e0a114',tx:'#2a1600',rim:'g',gl:'#ffd76a'}];
+ const tier=n=>{n=+n;return isFinite(n)&&n>0?Math.min(10,Math.floor(n/10)):0};
+ // ornements par palier : r cadre, bl nombre de lames, st etoile, cr couronne, lr laurier, ha halo, sp eclats, fl flammes, ry rayons
+ const O=t=>({r:t>=1,bl:t>=7?3:t>=4?2:t>=2?1:0,st:t>=3&&t<6,cr:t>=6,lr:t>=5,ha:t>=6,sp:t>=7,fl:t===8||t===10,ry:t>=9});
+ // place prise autour du coeur (en rayons R) : largeur, haut, bas
+ const EXT=t=>{const o=O(t);return{w:o.bl?1.52+.13*(o.bl-1):o.r?1.2:1,t:o.cr?1.68:o.st?1.66:o.r?1.2:1,b:o.lr?1.48:o.r?1.2:1}};
+ const METAL={g:['#fff4b8','#e2a91e','#8a5a06','#ffe08a'],s:['#ffffff','#c8d4e4','#6f7f96','#eef4ff'],d:['#ffcf8a','#a8460e','#3a1404','#ff9a4a']};
+ const GREY={a:'#7b8291',b:'#3d434f',tx:'#e6eaf0'};
+ function hex(c,x,y,R){c.beginPath();for(let i=0;i<6;i++){const a=Math.PI/6+i*Math.PI/3,px=x+Math.cos(a)*R,py=y+Math.sin(a)*R;i?c.lineTo(px,py):c.moveTo(px,py)}c.closePath()}
+ function metal(c,x,y,R,m,dim){const M=dim?['#9aa1ad','#666d7a','#3b404a','#8e95a1']:METAL[m||'g'],g=c.createLinearGradient(x,y-R,x,y+R);g.addColorStop(0,M[0]);g.addColorStop(.45,M[1]);g.addColorStop(.75,M[2]);g.addColorStop(1,M[3]);return g}
+ function star(c,x,y,ro,ri,p){c.beginPath();for(let i=0;i<p*2;i++){const a=-Math.PI/2+i*Math.PI/p,r=i%2?ri:ro;i?c.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r):c.moveTo(x+Math.cos(a)*r,y+Math.sin(a)*r)}c.closePath()}
+ function draw(c,x,y,R,n,dim,t,mini){t=t||0;const T=tier(n),o=O(T),p=P[T],pa=dim?GREY:p,lw=Math.max(1,R*.07);c.save();c.lineJoin='round';
+  if(!mini){
+   // halo, rayons, flammes (derriere)
+   if(o.ha&&!dim){const pu=.75+.25*Math.sin(t*2.2),g=c.createRadialGradient(x,y,R*.4,x,y,R*2.3);g.addColorStop(0,hexA(p.gl,.55*pu));g.addColorStop(1,hexA(p.gl,0));c.fillStyle=g;c.beginPath();c.arc(x,y,R*2.3,0,7);c.fill()}
+   if(o.ry&&!dim){c.save();c.translate(x,y);c.rotate(t*.35);for(let i=0;i<12;i++){c.rotate(Math.PI/6);c.beginPath();c.moveTo(-R*.08,-R*.6);c.lineTo(R*.08,-R*.6);c.lineTo(0,-R*(i%2?1.85:2.25));c.closePath();c.fillStyle=T===10?'rgba(255,226,140,.35)':'hsla('+((i*30+t*40)%360)+',100%,80%,.3)';c.fill()}c.restore()}
+   if(o.fl&&!dim){for(let i=0;i<7;i++){const u=(i-3)/3,fx=x+u*R*.95,h=R*(.95+.35*Math.sin(t*7+i*1.7))*(1-Math.abs(u)*.35),by=y-R*.55;c.beginPath();c.moveTo(fx-R*.24,by);c.quadraticCurveTo(fx-R*.18+Math.sin(t*5+i)*R*.08,by-h*.6,fx+Math.sin(t*6+i*2)*R*.12,by-h);c.quadraticCurveTo(fx+R*.2,by-h*.55,fx+R*.24,by);c.closePath();
+     const g=c.createLinearGradient(0,by,0,by-h);g.addColorStop(0,T===10?'#fff2b0':'#ffd04a');g.addColorStop(.55,T===10?'#ffc23a':'#ff6a14');g.addColorStop(1,'rgba(255,60,0,0)');c.fillStyle=g;c.fill()}}
+   // lames de chaque cote (metal du cadre)
+   for(let j=o.bl-1;j>=0;j--)for(const s of[-1,1]){c.beginPath();c.moveTo(x+s*R*.82,y-R*(.42-.3*j));c.lineTo(x+s*R*(1.5+.13*j),y-R*(.72-.42*j));c.lineTo(x+s*R*(1.3+.1*j),y-R*(.38-.4*j));c.lineTo(x+s*R*.86,y+R*(.12+.24*j));c.closePath();
+    c.fillStyle=metal(c,x,y,R*1.4,p.rim,dim);c.fill();c.lineWidth=lw;c.strokeStyle='rgba(20,14,4,.65)';c.stroke()}
+   // laurier sous l'insigne
+   if(o.lr){for(const s of[-1,1])for(let i=0;i<6;i++){const a=Math.PI/2+s*(.35+i*.22),lx=x+Math.cos(a)*R*1.2,ly=y+Math.sin(a)*R*1.2;c.save();c.translate(lx,ly);c.rotate(a+s*Math.PI/2+s*.5);c.beginPath();c.ellipse(0,0,R*.22,R*.09,0,0,7);
+     c.fillStyle=dim?'#7b8291':(T===5?'#ffd76a':i%2?'#ffe9a0':'#e0b13a');c.fill();c.lineWidth=lw*.6;c.strokeStyle='rgba(40,24,0,.55)';c.stroke();c.restore()}}
+  }
+  // cadre
+  if(o.r){hex(c,x,y,R*1.2);c.fillStyle=metal(c,x,y,R*1.2,p.rim,dim);c.fill();c.lineWidth=lw;c.strokeStyle='rgba(15,10,2,.7)';c.stroke()}
+  // pierre : degrade, facettes, reflet
+  hex(c,x,y,R);let g;
+  if(p.rb&&!dim){g=c.createLinearGradient(x-R,y-R,x+R,y+R);for(let i=0;i<=6;i++)g.addColorStop(i/6,'hsl('+((i*60+t*60)%360)+',95%,72%)')}
+  else{g=c.createLinearGradient(x,y-R,x,y+R);g.addColorStop(0,pa.a);g.addColorStop(1,pa.b)}
+  c.fillStyle=g;c.fill();
+  if(T>=1&&!mini){c.save();hex(c,x,y,R);c.clip();const ri=R*.58;c.lineWidth=Math.max(.6,R*.035);c.strokeStyle='rgba(255,255,255,.35)';hex(c,x,y,ri);c.stroke();
+   for(let i=0;i<6;i++){const a=Math.PI/6+i*Math.PI/3;c.beginPath();c.moveTo(x+Math.cos(a)*ri,y+Math.sin(a)*ri);c.lineTo(x+Math.cos(a)*R,y+Math.sin(a)*R);c.stroke();
+    if(i%2===0){c.beginPath();c.moveTo(x+Math.cos(a)*ri,y+Math.sin(a)*ri);c.lineTo(x+Math.cos(a)*R,y+Math.sin(a)*R);const a2=a+Math.PI/3;c.lineTo(x+Math.cos(a2)*R,y+Math.sin(a2)*R);c.lineTo(x+Math.cos(a2)*ri,y+Math.sin(a2)*ri);c.closePath();c.fillStyle='rgba(0,0,0,.12)';c.fill()}}
+   const hl=c.createLinearGradient(x,y-R,x,y);hl.addColorStop(0,'rgba(255,255,255,.55)');hl.addColorStop(1,'rgba(255,255,255,0)');c.fillStyle=hl;c.fillRect(x-R,y-R,R*2,R*.95);c.restore()}
+  hex(c,x,y,R);c.lineWidth=lw;c.strokeStyle=T?'rgba(255,255,255,.55)':'rgba(255,255,255,.35)';c.stroke();
+  if(!mini){
+   // etoile ou couronne au-dessus
+   if(o.st){star(c,x,y-R*1.34,R*.34,R*.15,5);c.fillStyle=metal(c,x,y-R*1.34,R*.34,p.rim,dim);c.fill();c.lineWidth=lw;c.strokeStyle='rgba(20,14,4,.7)';c.stroke()}
+   if(o.cr){const w=R*(T===10?1.15:.95),b=y-R*1.08,h=R*(T===10?.62:.52);c.beginPath();c.moveTo(x-w/2,b);c.lineTo(x-w/2,b-h*.55);c.lineTo(x-w*.27,b-h*.25);c.lineTo(x,b-h);c.lineTo(x+w*.27,b-h*.25);c.lineTo(x+w/2,b-h*.55);c.lineTo(x+w/2,b);c.closePath();
+    c.fillStyle=metal(c,x,b-h/2,h,T===6||T===7||T===9?'s':'g',dim);c.fill();c.lineWidth=lw;c.strokeStyle='rgba(20,14,4,.7)';c.stroke();
+    for(const[gx,gy]of[[x,b-h],[x-w/2,b-h*.55],[x+w/2,b-h*.55]]){c.beginPath();c.arc(gx,gy,R*.08,0,7);c.fillStyle=dim?'#c8ccd4':(p.rb?'hsl('+((t*90)%360)+',100%,70%)':p.b);c.fill()}}
+   // eclats qui scintillent
+   if(o.sp&&!dim)for(let i=0;i<4;i++){const a=i*Math.PI/2+.6+t*.4,f=Math.max(0,Math.sin(t*3+i*1.9)),sx=x+Math.cos(a)*R*1.45,sy=y+Math.sin(a)*R*1.3;if(f<.05)continue;star(c,sx,sy,R*.26*f,R*.05*f,4);c.fillStyle='rgba(255,255,255,'+(.9*f)+')';c.fill()}
+  }
+  // numero
+  const s=String(n),fz=Math.max(7,R*(s.length>=3?.72:.95));c.font='700 '+fz+'px "Chakra Petch","Bahnschrift",system-ui,sans-serif';c.textAlign='center';c.textBaseline='middle';
+  if(T>=5&&!dim){c.lineWidth=Math.max(1.5,fz*.14);c.strokeStyle='rgba(0,0,0,.45)';c.strokeText(s,x,y+R*.04)}
+  c.fillStyle=pa.tx;c.fillText(s,x,y+R*.04);c.restore()}
+ function hexA(h,a){const v=parseInt(h.slice(1),16);return'rgba('+(v>>16&255)+','+(v>>8&255)+','+(v&255)+','+a+')'}
+ // insigne dans un element HTML : canevas plus grand que la case (les ornements debordent), redessine si le niveau change
+ const LIVE=new Set();
+ function dom(el,n,dim,box){if(!el)return;let cv=el.querySelector('canvas.bdgC');const B=box||el.clientWidth||36,S=Math.round(B*1.9),T=tier(n),pr=Math.min(3,window.devicePixelRatio||1);
+  if(!cv){cv=document.createElement('canvas');cv.className='bdgC';el.appendChild(cv);el.classList.add('hasBdg')}
+  if(cv.width!==S*pr){cv.width=cv.height=S*pr;cv.style.width=cv.style.height=S+'px';cv.style.margin=(-(S-B)/2)+'px'}
+  cv._b={n,dim,B,S,pr};paint(cv,performance.now()/1000);if(T>=6&&!dim)LIVE.add(cv);else LIVE.delete(cv);loop()}
+ function paint(cv,t){const q=cv._b,c=cv.getContext('2d');c.setTransform(q.pr,0,0,q.pr,0,0);c.clearRect(0,0,q.S,q.S);draw(c,q.S/2,q.S/2,q.B/2*.92,q.n,q.dim,t,false)}
+ // insignes animes (palier 60 et plus) : redessines 24 fois par seconde tant qu'ils sont affiches
+ let RAF=0,LT=0;function loop(){if(RAF||!LIVE.size)return;const f=now=>{RAF=0;let any=false;for(const cv of LIVE){if(!cv.isConnected){LIVE.delete(cv);continue}if(cv.offsetParent===null)continue;any=true;if(now-LT>40)paint(cv,now/1000)}if(now-LT>40)LT=now;if(LIVE.size)RAF=requestAnimationFrame(f)};RAF=requestAnimationFrame(f)}
+ const name=n=>P[tier(n)].n;
+ return{draw,dom,tier,name,EXT,N:P.length}})();
 const PROF=(()=>{
  const LMAX=30,need=n=>Math.round(300+200*(n-1)+6*(n-1)*(n-1));   // 136 184 XP pour le niveau 30 (meme courbe que le serveur, profiles.js)
  const TOT=[0,0];for(let n=1;n<LMAX;n++)TOT[n+1]=TOT[n]+need(n);
@@ -11452,23 +11570,23 @@ const PROF=(()=>{
  // ratio K/D : eliminations / morts (avec 0 mort : le nombre d'eliminations), 2 decimales
  const KD=(k,d)=>(k/Math.max(1,d)).toLocaleString(LANG==='en'?'en':'fr',{minimumFractionDigits:2,maximumFractionDigits:2});
  const ease=u=>1-Math.pow(1-Math.max(0,Math.min(1,u)),3);
- function hexBadge(cx,cy,r,n,dim){g.save();g.beginPath();for(let i=0;i<6;i++){const a=Math.PI/6+i*Math.PI/3;i?g.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r):g.moveTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r)}g.closePath();
+ function hexBadge(cx,cy,r,n,dim,mini){if(typeof BDG!=='undefined'){BDG.draw(g,cx,cy,r,n,dim,performance.now()/1000,mini===undefined?r<13:mini);return}g.save();g.beginPath();for(let i=0;i<6;i++){const a=Math.PI/6+i*Math.PI/3;i?g.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r):g.moveTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r)}g.closePath();
   const gr=g.createLinearGradient(cx,cy-r,cx,cy+r);gr.addColorStop(0,dim?'#5a6170':'#ffe08a');gr.addColorStop(1,dim?'#3a404c':'#d9a316');g.fillStyle=gr;g.fill();g.lineWidth=Math.max(1,r*.08);g.strokeStyle='rgba(255,255,255,.35)';g.stroke();g.restore();
   HUI.T(String(n),cx,cy+.5,Math.max(7,Math.round(r*.95)),'#1a1206','center',700,1)}
  const NOTE={short:()=>LG('partie trop courte (90 s minimum)','game too short (90 s minimum)'),nostart:()=>LG('début de partie non reçu par le serveur','game start not received by the server'),rate:()=>LG('XP plafonnée : 60 XP par minute en solo','XP capped: 60 XP per minute in solo')};
  const ERR={offline:()=>LG('XP non comptée : serveur du jeu injoignable','XP not counted: game server unreachable'),remote:()=>LG('XP non reçue du serveur','XP not received from the server'),late:()=>LG('XP non comptée : arrivé moins d’une minute avant la fin','XP not counted: joined less than a minute before the end'),
   session:()=>LG('XP non comptée : ton profil est ouvert ailleurs','XP not counted: your profile is open elsewhere'),left:()=>LG('XP non comptée : partie quittée','XP not counted: you left the game')};
  ERR.profile=()=>LG('Partie en invité : XP non sauvegardée · crée ton profil dans le menu','Guest game: XP not saved · create your profile in the menu');
- function drawXP(y,R){if(!R)return y;const mob=H<500,now=performance.now(),w=Math.min(W-16,640),x=W/2-w/2,h=mob?48:56,r=mob?15:19,bx=x+14+r,tx=bx+r+14,tw_=x+w-16-tx,ty=y+(mob?15:19),by=y+(mob?31:37),bh=mob?6:8;
+ function drawXP(y,R){if(!R)return y;const mob=H<500,now=performance.now(),w=Math.min(W-16,640),x=W/2-w/2,h=mob?48:56,r=mob?15:19,bx=x+12+r*1.55,tx=bx+r*1.55+12,rB=n=>{if(typeof BDG==='undefined')return r;const e=BDG.EXT(BDG.tier(n));return Math.min(r,(h/2+3)/Math.max(e.t,e.b),(r*1.55+10)/e.w)},tw_=x+w-16-tx,ty=y+(mob?15:19),by=y+(mob?31:37),bh=mob?6:8;
   const gst=R.err==='profile';HUI.box(x,y,w,h,{r:12,bar:R.err&&!gst?'#ff8a7a':'#ffcf5a'});
   const bar=f=>{g.save();g.fillStyle='rgba(255,255,255,.1)';g.beginPath();g.roundRect?g.roundRect(tx,by,tw_,bh,bh/2):g.rect(tx,by,tw_,bh);g.fill();if(f>0){const gr=g.createLinearGradient(tx,0,tx+tw_,0);gr.addColorStop(0,'#ffb83a');gr.addColorStop(1,'#ffe08a');g.fillStyle=gr;g.beginPath();g.roundRect?g.roundRect(tx,by,Math.max(bh,tw_*f),bh,bh/2):g.rect(tx,by,tw_*f,bh);g.fill()}g.restore()};
-  if(R.wait||R.err){const[lv,cur,nd]=prog(P.xp);hexBadge(bx,y+h/2,r,I?lv:'?',!!R.err);
+  if(R.wait||R.err){const[lv,cur,nd]=prog(P.xp);hexBadge(bx,y+h/2,rB(I?lv:1),I?lv:'?',!!R.err);
    const t_=R.err?(ERR[R.err]||ERR.remote)():LG('Calcul de l’XP','Counting XP')+'.'.repeat(1+Math.floor(now/400)%3);let z=mob?13:15;while(z>9.5&&HUI.tw(t_,z,600,R.err?0:1)>tw_)z-=.5;
    HUI.T(t_,tx,ty,z,gst?'#ffcf5a':R.err?HUI.LOSE:HUI.SOFT,'left',600,R.err?0:1);bar(I&&nd?cur/nd:0);return y+h+10}
   const k=ease((now-R.t0-350)/1700),xs=R.x0+(R.x1-R.x0)*k,[lv,cur,nd]=prog(xs),up=lvlOf(xs)>R.l0;
   if(up&&!R.snd){R.snd=1;try{boostSnd()}catch(e){}}
   if(R.l1>R.l0&&!R.ann&&now-R.t0>2300){R.ann=1;try{SKIN.announce(R.l0,R.l1)}catch(e){}}   // skins debloques par les niveaux gagnes
-  hexBadge(bx,y+h/2,r,lv);
+  hexBadge(bx,y+h/2,rB(lv),lv);
   const xt='+'+Math.round(R.tot*Math.min(1,k*1.1))+' XP',xz=mob?15:18;HUI.T(xt,tx,ty,xz,'#ffcf5a','left',700,1);
   const rt=R.note&&NOTE[R.note]?NOTE[R.note]():(lv>=LMAX?LG('Niveau maximum','Max level'):(up?LG('Niveau '+lv+' atteint !','Level '+lv+' reached!'):LG('Niveau ','Level ')+lv+' · '+Math.floor(cur)+' / '+nd+' XP'));
   const rw=tw_-HUI.tw('+'+R.tot+' XP',xz,700,1)-12;let rz=mob?11.5:13;while(rz>8.5&&HUI.tw(rt,rz,up?700:600,up?1:0)>rw)rz-=.5;
@@ -11476,21 +11594,26 @@ const PROF=(()=>{
  // ---------- menu : pastille du profil et fenetre du profil ----------
  const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
  const nm=()=>P.n||LG('Joueur','Player'),fr=v=>Number(v).toLocaleString(LANG==='en'?'en':'fr'),kd=()=>KD(P.k,P.d);
+ // collection des insignes : 1, 10, 20 ... 100 ; ceux pas encore obtenus sont grises ; au-dela du niveau maximum actuel : « bientôt »
+ function bdgList(b,lv){const L=b.querySelector('.ppBdgL');if(!L||L.dataset.lv===String(lv))return;L.dataset.lv=lv;
+  const LGn=a=>LG(a[0],a[1]),lvs=[1,10,20,30,40,50,60,70,80,90,100],cur=BDG.tier(lv);
+  L.innerHTML=lvs.map((n,i)=>'<div class="ppBdgI'+(BDG.tier(n)===cur?' cur':'')+(n>lv?' lock':'')+'" title="'+LGn(BDG.name(n))+'"><span class="ppBdgC"></span><b>'+LG('Niv. ','Lv. ')+n+'</b><small>'+(n>LMAX?LG('bientôt','soon'):LGn(BDG.name(n)))+'</small></div>').join('');
+  L.querySelectorAll('.ppBdgC').forEach((e,i)=>BDG.dom(e,lvs[i],lvs[i]>lv,40));const c=L.querySelector('.cur');if(c)try{L.scrollLeft=Math.max(0,c.offsetLeft-L.clientWidth/2+c.clientWidth/2)}catch(e){}}
  function ui(){if(HEADLESS)return;const c=$('profChip');if(!c)return;const[lv,cur,nd]=prog(P.xp),gs=!I;c.classList.toggle('guest',gs);c.classList.toggle('busy',ST==='busy');
   const nw=typeof SKIN!=='undefined'&&SKIN.unseen?SKIN.unseen():0;c.classList.toggle('new',nw>0);{const sb=$('profSkinB');if(sb)sb.innerHTML=LG('Skins','Skins')+(nw?' <i>'+nw+'</i>':'')}
-  c.querySelector('.pbg b').textContent=gs?'+':lv;c.querySelector('.pn').textContent=gs?LG('Invité','Guest'):nm();
+  c.querySelector('.pbg b').textContent=gs?'+':lv;if(typeof BDG!=='undefined')BDG.dom(c.querySelector('.pbg'),gs?'+':lv,gs);c.querySelector('.pn').textContent=gs?LG('Invité','Guest'):nm();
   c.querySelector('.pl').textContent=gs?LG('Créer un profil','Create a profile'):ST==='busy'?LG('Ouvert dans un autre onglet','Open in another tab'):lv>=LMAX?LG('Niveau max','Max level'):LG('Niv. ','Lv. ')+lv+' · '+cur+' / '+nd;
   c.querySelector('.pbar i').style.width=(gs?0:nd?Math.round(cur/nd*1000)/10:100)+'%';
   if($('profBox')&&$('profBox').classList.contains('on'))fill()}
  // bareme affiche par le bouton « Calcul de l'XP » (le serveur compte avec le meme, profiles.js)
  const XPT=()=>[
   [LG('Fin de partie (terminée · victoire)','End of game (finished · victory)'),[[LG('Bombe','Bomb'),'+30 · +60'],[LG('Match à mort','Deathmatch'),'+15 · +30'],['Zones','+15 · +30'],[LG('Cristal','Crystal'),'+10 · +40'],[LG('Code Rouge','Code Red'),'+100 · +200'],['Zombie','+40 · +120'],[LG('Escorte','Escort'),'+50 · +100']]],
-  [LG('Pendant la partie','During the game'),[[LG('Élimination','Elimination'),'+10'],[LG('MVP (sauf Zombie)','MVP (except Zombie)'),'+25'],[LG('1re victoire du jour','First win of the day'),'+150']]],
+  [LG('Pendant la partie','During the game'),[[LG('Élimination','Elimination'),'+7'],[LG('MVP (sauf Zombie)','MVP (except Zombie)'),'+25'],[LG('1re victoire du jour','First win of the day'),'+150']]],
   [LG('Objectifs du mode','Mode objectives'),[[LG('Bombe : posée · désamorcée · drapeau','Bomb: planted · defused · flag'),LG('+12,5 · +15 · +10','+12.5 · +15 · +10')],[LG('Code Rouge : antenne · missile · retour','Code Red: antenna · missile · return'),LG('+12,5 · +20 · +10','+12.5 · +20 · +10')],[LG('Escorte : C4 · obus au but','Escort: C4 · shell hit'),LG('+10 · +7,5','+10 · +7.5')],[LG('Zones : seconde dans la zone','Zones: second in the zone'),LG('+0,25 (75 max)','+0.25 (75 max)')],[LG('Cristal : cristal déposé','Crystal: crystal delivered'),'+10'],[LG('Zombie : zombie · vague survécue','Zombie: zombie · wave survived'),'+1 · +5'],[LG('Match à mort : drapeau','Deathmatch: flag'),'+10']]],
   [LG('Règles','Rules'),[[LG('Partie quittée ou non terminée','Game left or not finished'),'0 XP'],[LG('Profil','Profile'),LG('1 appareil à la fois','1 device at a time')],[LG('Niveau maximum','Max level'),LG('30 (136 184 XP)','30 (136,184 XP)')]]]];
  function fill(){const[lv,cur,nd]=prog(P.xp),b=$('profBox'),st=!I?'guest':ST==='busy'?'busy':ST==='off'?'off':'on';b.dataset.st=st;
   b.querySelector('.ppTitle').textContent=b.dataset.v==='info'?LG('Calcul de l’XP','How XP is counted'):st==='guest'?LG('Mode invité','Guest mode'):LG('Mon profil','My profile');
-  b.querySelector('.ppBadge b').textContent=lv;const ni=$('profName');if(document.activeElement!==ni)ni.value=P.n;
+  b.querySelector('.ppBadge b').textContent=lv;if(typeof BDG!=='undefined'){BDG.dom(b.querySelector('.ppBadge'),lv,false);bdgList(b,lv)}const ni=$('profName');if(document.activeElement!==ni)ni.value=P.n;
   b.querySelector('.ppLv').textContent=LG('Niveau ','Level ')+lv+' / '+LMAX;b.querySelector('.ppBar i').style.width=(nd?cur/nd*100:100)+'%';
   {const nx=b.querySelector('.ppNext'),r=typeof SKIN!=='undefined'&&SKIN.nextReward?SKIN.nextReward(lv):null;
    nx.className='ppNext'+(r?' r'+r.r:'');nx.style.cssText=r?r.sty:'';
@@ -11551,7 +11674,7 @@ const PROF=(()=>{
      '<p class="ppPinH">'+LG('Le code PIN protège ton profil : il sera demandé pour voir ta clé privée et pour ouvrir ton profil sur un autre appareil. Retiens-le bien.','The PIN protects your profile: it is asked to show your private key and to open your profile on another device. Remember it.')+'</p><p class="ppMig"></p></div>'+
     '<div class="ppBusyBox"><p>'+LG('Ton profil est ouvert dans un autre onglet ou une autre fenêtre de cet appareil.','Your profile is open in another tab or window on this device.')+'</p><button class="ppB ppWide" id="profTake">'+LG('Jouer ici avec mon profil','Play here with my profile')+'</button></div>'+
     '<div class="ppMain"><div class="ppHead"><span class="ppBadge"><b>1</b></span><div class="ppId"><label for="profName">'+LG('Pseudo','Name')+'</label><input id="profName" maxlength="14" autocomplete="off" placeholder="'+LG('Joueur','Player')+'"><span class="ppLv"></span></div></div>'+
-     '<div class="ppBar"><i></i></div><div class="ppXp"></div><div class="ppNext"></div><div class="ppStats"></div>'+
+     '<div class="ppBar"><i></i></div><div class="ppXp"></div><div class="ppNext"></div><div class="ppBdg"><div class="ppBdgH"><b>'+LG('Insignes','Badges')+'</b><small>'+LG('Un nouvel insigne tous les 10 niveaux','A new badge every 10 levels')+'</small></div><div class="ppBdgL"></div></div><div class="ppStats"></div>'+
      '<div class="ppCodeBox"><div class="ppT">'+LG('Clé privée','Private key')+'</div><div class="ppRow"><input id="profCode" readonly autocomplete="off" spellcheck="false"><button class="ppB ppB2" id="profShow">'+LG('Voir','Show')+'</button><button class="ppB" id="profCopy">'+LG('Copier','Copy')+'</button></div>'+
       '<div class="ppPin" id="profPin"><p class="ppPinT"></p><div class="ppRow"><input id="profPinI" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="• • • •"><button class="ppB" id="profPinOk">OK</button><button class="ppB ppB2" id="profPinNo">'+LG('Annuler','Cancel')+'</button></div><button class="ppPinF" id="profPinF">'+LG('PIN oublié ?','Forgot PIN?')+'</button></div>'+
       '<div class="ppKeep"><b>'+LG('Garde cette clé secrète et en lieu sûr.','Keep this key secret and safe.')+'</b>'+
@@ -11612,7 +11735,7 @@ const PROF=(()=>{
   setInterval(()=>{if(isOn())api('ping',idb()).then(j=>{if(j.ok)keep(j.prof);else if(j._st===409)setSt('busy');else if(j._st===404)lost()}).catch(()=>{});else if(I&&(ST==='busy'||ST==='off'))sync()},20000);
   ui();sync()}
  // niveau d'un joueur pour les tableaux des parties privees (en ligne) : celui envoye par le serveur (0 : bot ou inconnu)
- const lvlOfSlot=slot=>{if(netMode){const p=(netPlayers||[]).find(q=>q.slot===slot);return p&&p.lvl||0}return 0};
+ const lvlOfSlot=slot=>{if(netMode){const p=(netPlayers||[]).find(q=>q.slot===slot);return p&&p.lvl||0}return slot===localSlot&&I&&P?lvlOf(P.xp||0):0};   // solo : son propre niveau
  // skins equipes : enregistres dans le profil sur le serveur ; dans un salon en ligne, montres tout de suite aux autres joueurs
  function saveSkins(sel){try{if(netMode&&netSocket&&netSocket.readyState===1)sendNet({type:'sk',sk:sel})}catch(e){}
   if(!isOn())return Promise.resolve(false);return api('skins',idb({sk:sel})).then(j=>{if(j.prof){keep(j.prof);return true}if(j._st===409)setSt('busy');return false}).catch(()=>false)}
@@ -12564,7 +12687,7 @@ const SKIN=(()=>{
  // compte a rebours de l'offre du week-end (fin : lundi 0 h, heure de New York)
  const pkLeft=()=>{const s=Math.max(0,Math.floor(((SHOPI&&SHOPI.pkEndL||0)-Date.now())/1000)),d=Math.floor(s/86400),P2=n=>String(n).padStart(2,'0');return(d?d+LG(' j ','d '):'')+P2(Math.floor(s%86400/3600))+':'+P2(Math.floor(s%3600/60))+':'+P2(s%60)};
  const left=()=>{const s=Math.max(0,Math.round(((SHOPI&&SHOPI.end||0)-Date.now())/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?h+' h '+String(m).padStart(2,'0')+' min':m?m+' min '+String(s%60).padStart(2,'0')+' s':s+' s'};
- // boutique : 8 skins, deux par rarete, tires au hasard toutes les 8 heures (par le serveur)
+ // boutique : 8 skins, deux par rarete, tires au hasard toutes les 4 heures (par le serveur)
  function listShop(){const L=SHOPI&&SHOPI.items||[],cur=Object.assign({},worn(),TRY),on_=SHOPI&&SHOPI.on;
   $('skTabs').innerHTML='<div class="shHead"><b>'+LG('Nouveaux skins dans ','New skins in ')+'<span id="shLeft">'+(SHOPI&&SHOPI.end?left():'…')+'</span></b><small>'+(!SHOPI?'':on_?(CUR==='usd'&&SHOPI.fx?LG('Prix convertis au cours du jour : 1 € = ','Prices converted at today’s rate: €1 = ')+new Intl.NumberFormat(LANG==='en'?'en-US':'fr-FR',{minimumFractionDigits:4,maximumFractionDigits:4}).format(SHOPI.fx.usd)+' $':LG('8 skins, deux par rareté · paiement sécurisé par Stripe · ','8 skins, two per rarity · secure payment by Stripe · ')+'<a href="#cgv" data-lg="cgv" style="color:inherit">'+LG('CGV','Terms')+'</a>'):LG('boutique bientôt disponible','shop coming soon'))+'</small></div>'+
    '<div class="shCur" role="group" aria-label="'+LG('Devise','Currency')+'"><button data-cur="eur" class="'+(CUR==='eur'?'on':'')+'">€ EUR</button><button data-cur="usd" class="'+(CUR==='usd'?'on':'')+'">$ USD</button></div>';
@@ -12659,7 +12782,7 @@ const SKIN=(()=>{
  init();initRew();
  // bouton « Boutique » du menu principal, sous « Partie privée »
  {const pb=document.getElementById('privateBtn');if(pb){const sb=document.createElement('button');sb.className='menuBtn big';sb.id='shopBtn';
-   sb.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg><span class="bt"><span>'+LG('Boutique','Shop')+'</span><small>'+LG('8 skins, renouvelés toutes les 8 h','8 skins, refreshed every 8 h')+'</small></span>';
+   sb.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg><span class="bt"><span>'+LG('Boutique','Shop')+'</span><small>'+LG('8 skins, renouvelés toutes les 4 h','8 skins, refreshed every 4 h')+'</small></span>';
    pb.insertAdjacentElement('afterend',sb);sb.addEventListener('click',()=>openShop())}}
  // retour de la page de paiement Stripe (?shop=ok&cs=... ou ?shop=cancel) : le serveur verifie le paiement aupres de Stripe,
  // puis le skin achete est equipe et le casier s'ouvre dessus
