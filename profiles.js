@@ -264,7 +264,9 @@ function pinTry(P, pin, who) {
   const n = f && now - f.t < PIN_LOCK ? f.n + 1 : 1; PINF.set(kf, { n, t: now });
   return n >= 5 ? { err: 'locked', wait: PIN_LOCK / 1000 } : { err: 'pin', left: 5 - n };
 }
-const pub = P => { const l = lvlOf(P.xp); return { pin: P.pin ? 1 : 0, pinr: P.pinr ? P.pinr + PIN_WAIT : 0, id: P.id, n: P.n, xp: P.xp, lvl: l, g: P.g, w: P.w, k: P.k, d: P.d, mvp: P.mvp, sk: cleanSkins(P.skn, l, ownOf(P)), own: ownOf(P) }; };
+// dy : bonus de la premiere victoire du jour deja recu aujourd'hui (jour UTC) ; dyR : temps restant avant le prochain (minuit UTC), en ms
+const dayLeft = () => { const n = new Date(); return Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate() + 1) - n.getTime(); };
+const pub = P => { const l = lvlOf(P.xp); return { pin: P.pin ? 1 : 0, pinr: P.pinr ? P.pinr + PIN_WAIT : 0, id: P.id, n: P.n, xp: P.xp, lvl: l, g: P.g, w: P.w, k: P.k, d: P.d, mvp: P.mvp, sk: cleanSkins(P.skn, l, ownOf(P)), own: ownOf(P), dy: P.day === day() ? 1 : 0, dyR: dayLeft() }; };
 function auth(id, s) {
   const P = typeof id === 'string' && DB[id];
   if (!P || typeof s !== 'string' || sha(s) !== P.sk) return null;
