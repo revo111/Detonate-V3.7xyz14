@@ -286,6 +286,7 @@ body.inmenu #muteBtn svg,body.inmenu #fsBtn svg{width:20px;height:20px}
 #profBox .ppLv{font:600 13px/1 var(--fd);color:#ffcf5a;letter-spacing:.04em}
 #profBox .ppBar{height:10px;border-radius:5px;margin:16px 0 7px}
 #profBox .ppXp{font-size:12.5px;color:#c8d0dd}
+#profBox .ppDay{margin-top:6px;font-size:12.5px;font-weight:600;color:#ffcf5a}#profBox .ppDay.got{color:#ff9ae0}
 #profBox .ppStats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}
 #profBox .ppStats div{padding:10px 6px;border-radius:10px;background:rgba(255,255,255,.045);text-align:center}
 #profBox .ppStats b{display:block;font:700 19px/1.1 var(--fd)}#profBox .ppStats span{display:block;margin-top:3px;font-size:11px;color:#9aa6b9}
@@ -3808,13 +3809,11 @@ ${LITE?'':`<h3>7. Conditions de vente</h3>
   document.addEventListener('click',e=>{const a=e.target.closest&&e.target.closest('[data-lg]');if(!a||(box&&box.contains(a)&&!a.closest('.lgBody')))return;e.preventDefault();e.stopPropagation();open(a.dataset.lg)},true);
   addEventListener('keydown',e=>{if(e.key==='Escape'&&isOpen()){close();e.stopPropagation()}},true);
   addEventListener('hashchange',fromHash);
-  // liens en bas du menu : version allegee seulement (en V3.7, ils sont dans la boutique et la fenetre du profil)
-  if(LITE){const d=document.createElement('div');d.id='lgLinks';d.innerHTML=TABS.map(t=>'<a href="#'+t[0]+'" data-lg="'+t[0]+'">'+(typeof LANG!=='undefined'&&LANG==='en'?t[2]:t[1])+'</a>').join('<span>·</span>');document.body.appendChild(d);
-  setInterval(()=>{const m=typeof menu!=='undefined'&&menu&&!menu.classList.contains('hidden');d.style.display=m?'':'none'},700)}
+  // pages legales : ouvertes par les liens de la boutique, de la fenetre du profil, de la case des CGV, ou par leur adresse (plus de liens dans le menu)
   fromHash()}
  return{init,open,close,isOpen,v:V}})();
 setTimeout(()=>{if(typeof HEADLESS!=='undefined'&&HEADLESS)return;try{LEGAL.init()}catch(e){console.error(e)}},0);
-const BUILD='2026-11-13T00:26Z';   // version du jeu (date de construction, UTC)
+const BUILD='2026-11-13T05:22Z';   // version du jeu (date de construction, UTC)
 function netBannerOff(){const d=$('netb');if(d)d.remove()}
 // fin de partie (ou partie arretee) : retour dans le salon, sans recharger la page
 function toMenu(){try{dropSock()}catch(e){}netMode=false;isHost=false;netStarted=false;netRoomCode='';netPlayers=[];netInputs={};netRecon=0;netBye=false;localSlot=0;rematchAsked=false;ENDT0=0;SBO=false;ENDR.length=0;netBannerOff();try{quitBox.style.display='none'}catch(e){}try{for(const k in keys)keys[k]=0;mouse.down=0}catch(e){}try{if(document.activeElement&&document.activeElement.blur)document.activeElement.blur()}catch(e){}menu.classList.remove('hidden');menuShow('mainMenu');try{menuMessage('')}catch(e){}GM='obj';try{loadMap(mapId());newRound();MBGa=Math.PI/2;FORCE=1}catch(e){console.error(e)}}
@@ -11533,7 +11532,7 @@ const PROF=(()=>{
   if(!I&&c&&c.v===1)MIG={xp:c.xp,g:c.g,w:c.w,k:c.k,d:c.d,mvp:c.mvp};   // profil local de l'etape 1 : repris a la creation du profil (plafonne par le serveur)
   if(!P.n)P.n=gname()}
  const old=q=>{if(!q||!q.id)return;const h=(get(KH)||[]).filter(x=>x&&x.id!==q.id);h.unshift({id:q.id,s:q.s,srv:SRV,t:Date.now()});put(KH,h.slice(0,10))};   // anciens codes de cet appareil
- const keep=pr=>{if(!pr)return;P={n:pr.n||'',xp:pr.xp||0,lvl:pr.lvl||lvlOf(pr.xp||0),g:pr.g||0,w:pr.w||0,k:pr.k||0,d:pr.d||0,mvp:pr.mvp||0,sk:pr.sk||null,own:Array.isArray(pr.own)?pr.own:[],pin:pr.pin?1:0,pinr:+pr.pinr||0};put(KC,Object.assign({v:2},P));
+ const keep=pr=>{if(!pr)return;P={n:pr.n||'',xp:pr.xp||0,lvl:pr.lvl||lvlOf(pr.xp||0),g:pr.g||0,w:pr.w||0,k:pr.k||0,d:pr.d||0,mvp:pr.mvp||0,sk:pr.sk||null,own:Array.isArray(pr.own)?pr.own:[],pin:pr.pin?1:0,pinr:+pr.pinr||0,dy:pr.dy?1:0,dyT:+pr.dyT||(pr.dyR?Date.now()+(+pr.dyR):0)};put(KC,Object.assign({v:2},P));
   if(typeof SKIN!=='undefined'&&SKIN.fromProf)SKIN.fromProf(P.sk);
   // quelqu'un a demande un nouveau PIN pour ce profil : le joueur est averti et peut annuler en entrant son PIN
   if(P.pinr&&!PRW&&!HEADLESS){PRW=1;try{netBanner(LG('Un nouveau code PIN a été demandé pour ton profil. Si ce n’est pas toi : ouvre ton profil, appuie sur « Voir » et entre ton PIN pour annuler la demande.','A new PIN was requested for your profile. If it was not you: open your profile, press “Show” and enter your PIN to cancel the request.'),12000)}catch(e){}}else if(!P.pinr)PRW=0;
@@ -11589,8 +11588,11 @@ const PROF=(()=>{
  const ERR={offline:()=>LG('XP non comptée : serveur du jeu injoignable','XP not counted: game server unreachable'),remote:()=>LG('XP non reçue du serveur','XP not received from the server'),late:()=>LG('XP non comptée : arrivé moins d’une minute avant la fin','XP not counted: joined less than a minute before the end'),
   session:()=>LG('XP non comptée : ton profil est ouvert ailleurs','XP not counted: your profile is open elsewhere'),left:()=>LG('XP non comptée : partie quittée','XP not counted: you left the game')};
  ERR.profile=()=>LG('Partie en invité : XP non sauvegardée · crée ton profil dans le menu','Guest game: XP not saved · create your profile in the menu');
+ // bonus de la premiere victoire du jour : deja recu aujourd'hui ? temps avant le prochain (minuit UTC, comme le serveur)
+ const dayGot=()=>!!(P&&P.dy&&P.dyT>Date.now()),dayLeft=()=>{const ms=Math.max(0,(P&&P.dyT||0)-Date.now()),h=Math.floor(ms/3600000),m=Math.ceil(ms%3600000/60000);return h?h+' h '+String(m>=60?59:m).padStart(2,'0'):m+' min'};
+ const dayTxt=()=>dayGot()?LG('Bonus du jour reçu · prochain dans ','Daily bonus received · next in ')+dayLeft():LG('Bonus du jour disponible : +150 XP à ta prochaine victoire','Daily bonus available: +150 XP on your next win');
  function drawXP(y,R){if(!R)return y;const mob=H<500,now=performance.now(),w=Math.min(W-16,640),x=W/2-w/2,h=mob?48:56,r=mob?15:19,bx=x+12+r*1.55,tx=bx+r*1.55+12,rB=n=>{if(typeof BDG==='undefined')return r;const e=BDG.EXT(BDG.tier(n));return Math.min(r,(h/2+3)/Math.max(e.t,e.b),(r*1.55+10)/e.w)},tw_=x+w-16-tx,ty=y+(mob?15:19),by=y+(mob?31:37),bh=mob?6:8;
-  const gst=R.err==='profile';HUI.box(x,y,w,h,{r:12,bar:R.err&&!gst?'#ff8a7a':'#ffcf5a'});
+  const gst=R.err==='profile',res=!(R.wait||R.err),ih=mob?17:21;HUI.box(x,y,w,res?h+ih:h,{r:12,bar:R.err&&!gst?'#ff8a7a':'#ffcf5a'});
   const bar=f=>{g.save();g.fillStyle='rgba(255,255,255,.1)';g.beginPath();g.roundRect?g.roundRect(tx,by,tw_,bh,bh/2):g.rect(tx,by,tw_,bh);g.fill();if(f>0){const gr=g.createLinearGradient(tx,0,tx+tw_,0);gr.addColorStop(0,'#ffb83a');gr.addColorStop(1,'#ffe08a');g.fillStyle=gr;g.beginPath();g.roundRect?g.roundRect(tx,by,Math.max(bh,tw_*f),bh,bh/2):g.rect(tx,by,tw_*f,bh);g.fill()}g.restore()};
   if(R.wait||R.err){const[lv,cur,nd]=prog(P.xp);hexBadge(bx,y+h/2,rB(I?lv:1),I?lv:'?',!!R.err);
    const t_=R.err?(ERR[R.err]||ERR.remote)():LG('Calcul de l’XP','Counting XP')+'.'.repeat(1+Math.floor(now/400)%3);let z=mob?13:15;while(z>9.5&&HUI.tw(t_,z,600,R.err?0:1)>tw_)z-=.5;
@@ -11598,11 +11600,24 @@ const PROF=(()=>{
   const k=ease((now-R.t0-350)/1700),xs=R.x0+(R.x1-R.x0)*k,[lv,cur,nd]=prog(xs),up=lvlOf(xs)>R.l0;
   if(up&&!R.snd){R.snd=1;try{boostSnd()}catch(e){}}
   if(R.l1>R.l0&&!R.ann&&now-R.t0>2300){R.ann=1;try{SKIN.announce(R.l0,R.l1)}catch(e){}}   // skins debloques par les niveaux gagnes
-  hexBadge(bx,y+h/2,rB(lv),lv);
+  hexBadge(bx,y+(h+ih)/2,rB(lv),lv);
   const xt='+'+Math.round(R.tot*Math.min(1,k*1.1))+' XP',xz=mob?15:18;HUI.T(xt,tx,ty,xz,'#ffcf5a','left',700,1);
   const rt=R.note&&NOTE[R.note]?NOTE[R.note]():(lv>=LMAX?LG('Niveau maximum','Max level'):(up?LG('Niveau '+lv+' atteint !','Level '+lv+' reached!'):LG('Niveau ','Level ')+lv+' · '+Math.floor(cur)+' / '+nd+' XP'));
   const rw=tw_-HUI.tw('+'+R.tot+' XP',xz,700,1)-12;let rz=mob?11.5:13;while(rz>8.5&&HUI.tw(rt,rz,up?700:600,up?1:0)>rw)rz-=.5;
-  HUI.T(rt,x+w-16,ty,rz,up&&!R.note?'#ffcf5a':HUI.SOFT,'right',up?700:600,up?1:0);bar(nd?cur/nd:1);return y+h+10}
+  HUI.T(rt,x+w-16,ty,rz,up&&!R.note?'#ffcf5a':HUI.SOFT,'right',up?700:600,up?1:0);
+  // jauge : XP d'avant la partie (or), XP gagnee pendant la partie (vert), part du bonus du jour (rose) ; apres un passage de niveau, tout le niveau est gagne
+  const dl=R.L&&R.L.find(q=>q[0]==='daily'),dv=dl?Math.min(dl[1],R.x1-R.x0):0,st0=xs-cur,f=nd?cur/nd:1,fb=nd?Math.max(0,Math.min(f,(R.x0-st0)/nd)):0,fd=dv&&nd?Math.max(fb,(R.x1-dv-st0)/nd):2;
+  g.save();g.beginPath();g.roundRect?g.roundRect(tx,by,tw_,bh,bh/2):g.rect(tx,by,tw_,bh);g.clip();g.fillStyle='rgba(255,255,255,.1)';g.fillRect(tx,by,tw_,bh);
+  const seg=(a,b_,c0,c1)=>{if(b_<=a)return;const gr=g.createLinearGradient(tx+tw_*a,0,tx+tw_*b_,0);gr.addColorStop(0,c0);gr.addColorStop(1,c1);g.fillStyle=gr;g.fillRect(tx+tw_*a,by,tw_*(b_-a),bh)};
+  seg(0,fb,'#ffb83a','#ffe08a');seg(fb,Math.min(f,fd),'#38e88a','#7dffc4');seg(Math.max(fb,fd),f,'#ff5fc8','#ffb0ec');
+  if(f>fb&&lv<LMAX){const pu=.5+.5*Math.sin(now/180);g.fillStyle='rgba(255,255,255,'+(.25+.35*pu)+')';g.fillRect(tx+tw_*f-2,by,2,bh)}g.restore();
+  // ligne du dessous : XP gagnee et bonus du jour
+  const iy=by+bh+(mob?10:12),gn=Math.round((R.tot-dv)*Math.min(1,k*1.1)),gt=dv?LG('+'+gn+' XP de la partie','+'+gn+' XP from the game'):LG('+'+gn+' XP gagnée','+'+gn+' XP earned'),iz=mob?10.5:12;
+  g.save();g.fillStyle='#4ff0a0';g.beginPath();g.arc(tx+4,iy,3.5,0,Math.PI*2);g.fill();g.restore();HUI.T(gt,tx+12,iy,iz,'#7dffc4','left',600,0);
+  const dt_=dl?'★ '+LG('Bonus du jour reçu : +','Daily bonus received: +')+dv+' XP':(dayGot()?LG('Bonus du jour déjà reçu · prochain dans ','Daily bonus already received · next in ')+dayLeft():'☆ '+LG('Bonus du jour : +150 XP à ta prochaine victoire','Daily bonus: +150 XP on your next win'));
+  let dz=iz;const dw=tw_-HUI.tw(gt,iz,600,0)-28;while(dz>8&&HUI.tw(dt_,dz,dl?700:600,0)>dw)dz-=.5;
+  if(dl){g.save();g.fillStyle='#ff5fc8';g.beginPath();g.arc(x+w-16-HUI.tw(dt_,dz,700,0)-8,iy,3.5,0,Math.PI*2);g.fill();g.restore()}
+  HUI.T(dt_,x+w-16,iy,dz,dl?'#ff9ae0':HUI.SOFT,'right',dl?700:600,0);return y+h+ih+10}
  // ---------- menu : pastille du profil et fenetre du profil ----------
  const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
  const nm=()=>P.n||LG('Joueur','Player'),fr=v=>Number(v).toLocaleString(LANG==='en'?'en':'fr'),kd=()=>KD(P.k,P.d);
@@ -11631,6 +11646,7 @@ const PROF=(()=>{
    nx.className='ppNext'+(r?' r'+r.r:'');nx.style.cssText=r?r.sty:'';
    nx.innerHTML=r?'<img alt="" src="'+r.img+'"><span><em>'+LG('Prochaine récompense · niveau ','Next reward · level ')+r.lv+'</em><b>'+esc(r.name)+'</b><small>'+esc(r.cat)+' <i>'+esc(r.rar)+'</i></small></span>':'<span><em>'+LG('Toutes les récompenses sont débloquées','All rewards unlocked')+'</em></span>'}
   b.querySelector('.ppXp').textContent=lv>=LMAX?LG('Niveau maximum atteint · ','Max level reached · ')+fr(P.xp)+' XP':fr(cur)+' / '+fr(nd)+' XP · '+LG('encore ','')+fr(nd-cur)+LG(' XP pour le niveau ',' XP to level ')+(lv+1);
+  {const dd=b.querySelector('.ppDay');if(dd){dd.textContent=(dayGot()?'★ ':'☆ ')+dayTxt();dd.classList.toggle('got',dayGot())}}
   const S=[[LG('Parties','Games'),fr(P.g)],[LG('Victoires','Wins'),fr(P.w)],[LG('Éliminations','Eliminations'),fr(P.k)],[LG('Ratio K/D','K/D ratio'),kd()],['MVP',fr(P.mvp)],[LG('XP totale','Total XP'),fr(P.xp)]];
   b.querySelector('.ppStats').innerHTML=S.map(s=>'<div><b>'+esc(s[1])+'</b><span>'+esc(s[0])+'</span></div>').join('');
   $('profCode').value=CSHOW?code():CMASK;const nn=$('profNew');if(nn&&!nn.value&&document.activeElement!==nn)nn.value=gname();
@@ -11686,7 +11702,7 @@ const PROF=(()=>{
      '<p class="ppPinH">'+LG('Le code PIN protège ton profil : il sera demandé pour voir ta clé privée et pour ouvrir ton profil sur un autre appareil. Retiens-le bien.','The PIN protects your profile: it is asked to show your private key and to open your profile on another device. Remember it.')+'</p><p class="ppMig"></p></div>'+
     '<div class="ppBusyBox"><p>'+LG('Ton profil est ouvert dans un autre onglet ou une autre fenêtre de cet appareil.','Your profile is open in another tab or window on this device.')+'</p><button class="ppB ppWide" id="profTake">'+LG('Jouer ici avec mon profil','Play here with my profile')+'</button></div>'+
     '<div class="ppMain"><div class="ppHead"><span class="ppBadge"><b>1</b></span><div class="ppId"><label for="profName">'+LG('Pseudo','Name')+'</label><input id="profName" maxlength="14" autocomplete="off" placeholder="'+LG('Joueur','Player')+'"><span class="ppLv"></span></div></div>'+
-     '<div class="ppBar"><i></i></div><div class="ppXp"></div><div class="ppNext"></div><div class="ppBdg"><div class="ppBdgH"><b>'+LG('Insignes','Badges')+'</b><small>'+LG('Un nouvel insigne tous les 10 niveaux','A new badge every 10 levels')+'</small></div><div class="ppBdgL"></div></div><div class="ppStats"></div><div class="ppLegal">'+'<span class="lgMini">'+[['mentions-legales',LG('Mentions légales','Legal notice')],['cgv',LG('CGV','Terms')],['confidentialite',LG('Confidentialité','Privacy')]].map(t=>'<a href="#'+t[0]+'" data-lg="'+t[0]+'">'+t[1]+'</a>').join(' · ')+'</span>'+'</div>'+
+     '<div class="ppBar"><i></i></div><div class="ppXp"></div><div class="ppDay"></div><div class="ppNext"></div><div class="ppBdg"><div class="ppBdgH"><b>'+LG('Insignes','Badges')+'</b><small>'+LG('Un nouvel insigne tous les 10 niveaux','A new badge every 10 levels')+'</small></div><div class="ppBdgL"></div></div><div class="ppStats"></div><div class="ppLegal">'+'<span class="lgMini">'+[['mentions-legales',LG('Mentions légales','Legal notice')],['cgv',LG('CGV','Terms')],['confidentialite',LG('Confidentialité','Privacy')]].map(t=>'<a href="#'+t[0]+'" data-lg="'+t[0]+'">'+t[1]+'</a>').join(' · ')+'</span>'+'</div>'+
      '<div class="ppCodeBox"><div class="ppT">'+LG('Clé privée','Private key')+'</div><div class="ppRow"><input id="profCode" readonly autocomplete="off" spellcheck="false"><button class="ppB ppB2" id="profShow">'+LG('Voir','Show')+'</button><button class="ppB" id="profCopy">'+LG('Copier','Copy')+'</button></div>'+
       '<div class="ppPin" id="profPin"><p class="ppPinT"></p><div class="ppRow"><input id="profPinI" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" placeholder="• • • •"><button class="ppB" id="profPinOk">OK</button><button class="ppB ppB2" id="profPinNo">'+LG('Annuler','Cancel')+'</button></div><button class="ppPinF" id="profPinF">'+LG('PIN oublié ?','Forgot PIN?')+'</button></div>'+
       '<div class="ppKeep"><b>'+LG('Garde cette clé secrète et en lieu sûr.','Keep this key secret and safe.')+'</b>'+
@@ -11733,6 +11749,8 @@ const PROF=(()=>{
   {const sn=sendNet;sendNet=function(o){if(o&&(o.type==='create'||o.type==='join')&&isOn()){o.pid=I.id;o.ps=I.s;o.psid=SID}return sn.apply(this,arguments)}}
   {const nmsg=netMessage;netMessage=function(m){if(m&&m.type==='xp')return onXP(m);return nmsg.apply(this,arguments)}}
   // temps de jeu reel (parties solo) ; une nouvelle partie peut redonner de l'XP des que l'ecran de fin est quitte
+  // bonus du jour : compte a rebours tenu a jour dans la fenetre du profil
+  setInterval(()=>{const dd=b.querySelector('.ppDay');if(dd&&b.classList.contains('on')){dd.textContent=(dayGot()?'★ ':'☆ ')+dayTxt();dd.classList.toggle('got',dayGot())}},20000);
   setInterval(()=>{if(menu.classList.contains('hidden')&&b.classList.contains('on'))close();if(typeof st==='undefined')return;if(!menu.classList.contains('hidden'))SS=0;
    if(st.s!=='end'){if(!ARM){ARM=1;LAST=null;PLAY=0;SS=0}if(st.s==='live'&&menu.classList.contains('hidden')&&!netMode)PLAY+=.4;
     // debut d'une partie solo : annonce au serveur (il mesure lui-meme la duree de la partie)
